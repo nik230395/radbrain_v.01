@@ -97,7 +97,8 @@ public class AdminQuizController {
     }
 
     /**
-     * Get authenticated user without admin check (for create operation).
+     * Get authenticated user without admin check.
+     * Used for the create operation which allows any authenticated user to create quizzes.
      * 
      * @param auth Spring Security authentication object
      * @return User object if authenticated

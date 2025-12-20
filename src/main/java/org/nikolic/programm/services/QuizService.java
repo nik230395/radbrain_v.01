@@ -132,21 +132,23 @@ public class QuizService {
     }
 
     /**
-     * Find a quiz by ID (wrapper for repository method)
+     * Find a quiz by ID (wrapper for repository method).
+     * Note: This method is used by other controllers (e.g., QuizController) for compatibility.
      */
     public java.util.Optional<Quiz> findById(Long id) {
         return quizRepository.findById(id);
     }
 
     /**
-     * Evaluate quiz attempt and save results
-     * This is a placeholder method that needs to be implemented properly
-     * based on business requirements
+     * Evaluate quiz attempt and save results.
+     * Note: This is a placeholder method for compatibility with QuizController.
+     * The full implementation should be in QuizAttemptService once that functionality is completed.
+     * 
+     * @deprecated This method is a placeholder. Use QuizAttemptService for quiz evaluation.
      */
+    @Deprecated
     public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
-        // TODO: Implement proper quiz evaluation logic
-        // This is a placeholder to maintain compatibility with existing code
-        logger.warn("evaluateAndSaveAttempt called but not fully implemented");
+        logger.warn("evaluateAndSaveAttempt called but not fully implemented - this should be moved to QuizAttemptService");
         Map<String, Object> result = new java.util.HashMap<>();
         result.put("message", "Quiz evaluation not implemented yet");
         result.put("quizId", quiz.getId());
