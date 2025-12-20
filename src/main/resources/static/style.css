@@ -263,3 +263,39 @@ body{
     .hero-subtitle{ font-size:1rem; }
     .nav-left img{ height:34px; }
 }
+
+/* Style for Admin Header */
+.admin-header {
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+}
+
+.admin-header nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+}
+
+/* Style for admin main sections */
+.admin-main {
+    padding: 20px;
+    display: grid;
+    gap: 40px;
+}
+
+.admin-section {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+/* Footer styling */
+.admin-footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #f5f5f5;
+    color: #555;
+}
