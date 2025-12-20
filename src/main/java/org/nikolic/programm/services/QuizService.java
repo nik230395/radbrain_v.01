@@ -43,22 +43,17 @@ public class QuizService {
             throw new IllegalArgumentException("Quiz title cannot be empty");
         }
         
-        // Check if quiz with same title already exists for this user
-        List<Quiz> existingQuizzes = quizRepository.findAll();
-        boolean exists = existingQuizzes.stream()
-                .anyMatch(q -> q.getTitle().equalsIgnoreCase(req.getTitle().trim()) 
-                        && q.getCreatedBy() != null 
-                        && q.getCreatedBy().getId().equals(user.getId()));
-        
-        if (exists) {
+        // Check if quiz with same title already exists for this user (database-level check for efficiency)
+        String trimmedTitle = req.getTitle().trim();
+        if (quizRepository.existsByTitleIgnoreCaseAndCreatedBy(trimmedTitle, user)) {
             logger.error("Quiz creation failed: quiz with title '{}' already exists for user '{}'", 
-                    req.getTitle(), user.getEmail());
+                    trimmedTitle, user.getEmail());
             throw new QuizAlreadyExistsException(
-                    String.format("A quiz with title '%s' already exists", req.getTitle()));
+                    String.format("A quiz with title '%s' already exists", trimmedTitle));
         }
         
         Quiz quiz = new Quiz();
-        quiz.setTitle(req.getTitle().trim());
+        quiz.setTitle(trimmedTitle);
         quiz.setDescription(req.getDescription());
         quiz.setCreatedBy(user);
         quiz.setCreatedAt(LocalDateTime.now());
