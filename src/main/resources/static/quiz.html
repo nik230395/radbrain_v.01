@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Quiz - RadBrain</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<main class="container" style="max-width:900px;margin:28px auto;">
+    <h1 id="qTitle">Quiz</h1>
+    <p id="qDesc"></p>
+    <div id="questions"></div>
+    <div style="margin-top:12px;">
+        <button id="submitBtn">Abgeben</button>
+    </div>
+    <div id="result" style="margin-top:12px;"></div>
+</main>
+
+<script src="/auth.js"></script>
+<script>
+    (async function() {
+        const params = new URLSearchParams(location.search);
+        const id = params.get('id');
+        if (!id) { alert('Kein Quiz angegeben'); location.href = '/'; return; }
+
+        const titleEl = document.getElementById('qTitle');
+        const descEl = document.getElementById('qDesc');
+        const questionsEl = document.getElementById('questions');
+        const submitBtn = document.getElementById('submitBtn');
+        const resultEl = document.getElementById('result');
+
+        const res = await fetch('/api/quizzes/' + id);
+        if (!res.ok) { alert('Quiz nicht gefunden'); location.href='/'; return; }
+        const quiz = await res.json();
+        titleEl.textContent = quiz.title;
+        descEl.textContent = quiz.description || '';
+
+        const answers = {};
+
+        quiz.questions.forEach((q, idx) => {
+            const div = document.createElement('div'); div.className='question';
+            div.innerHTML = `<div><strong>${idx+1}. ${q.text}</strong></div>`;
+            const choicesDiv = document.createElement('div');
+            if (q.qtype === 'SHORT_TEXT') {
+                const ta = document.createElement('textarea'); ta.style.width='100%'; ta.rows=3;
+                ta.addEventListener('input', ()=> { answers[q.id] = ta.value; });
+                choicesDiv.appendChild(ta);
+            } else {
+                q.choices.forEach(c => {
+                    const wrapper = document.createElement('label');
+                    wrapper.style='display:flex;gap:8px;align-items:center';
+                    const inp = document.createElement('input');
+                    inp.type = (q.qtype === 'SINGLE') ? 'radio' : 'checkbox';
+                    inp.name = 'q_' + q.id;
+                    inp.value = c.id;
+                    inp.addEventListener('change', ()=> {
+                        if (q.qtype === 'SINGLE') {
+                            answers[q.id] = [Number(inp.value)];
+                        } else {
+                            const boxes = Array.from(document.querySelectorAll('input[name="q_' + q.id + '"]'));
+                            const sel = boxes.filter(b=>b.checked).map(b=>Number(b.value));
+                            answers[q.id] = sel;
+                        }
+                    });
+                    wrapper.appendChild(inp);
+                    const span = document.createElement('span'); span.textContent = c.text;
+                    wrapper.appendChild(span);
+                    choicesDiv.appendChild(wrapper);
+                });
+            }
+            div.appendChild(choicesDiv);
+            questionsEl.appendChild(div);
+        });
+
+        submitBtn.addEventListener('click', async () => {
+            const payload = { answers };
+            const submitRes = await window.auth.authFetch('/api/quizzes/' + id + '/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+            const body = await submitRes.json().catch(()=> ({}));
+            if (!submitRes.ok) {
+                resultEl.innerHTML = '<div style="color:#e04e4e">Fehler: ' + (body.error || body.message || submitRes.statusText) + '</div>';
+                return;
+            }
+            resultEl.innerHTML = '<div style="background:#e8ffef;padding:12px;border-radius:8px">Dein Ergebnis: <strong>' + (body.scorePct?.toString() || body.score||0) + '</strong></div>';
+        });
+
+    })();
+</script>
+</body>
+</html>

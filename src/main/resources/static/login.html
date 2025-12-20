@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Anmelden - RadBrain</title>
+    <link rel="stylesheet" href="style.css"/>
+    <style>
+        .auth-card { max-width:420px; margin:80px auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 12px 40px rgba(14,10,36,0.06); }
+        input { width:100%; padding:10px; border-radius:8px; border:1px solid #eef; margin-bottom:10px; }
+        .btn { padding:10px 14px; border-radius:10px; border:0; cursor:pointer; background:linear-gradient(135deg,#645CBB,#A084DC); color:#fff; }
+    </style>
+</head>
+<body>
+<main class="container">
+    <div class="auth-card">
+        <h1>Anmelden</h1>
+        <form id="loginForm">
+            <input id="email" type="email" placeholder="E-Mail" required />
+            <input id="password" type="password" placeholder="Passwort" required />
+            <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn" type="submit">Anmelden</button>
+                <a href="/register.html" style="margin-left:8px;">Registrieren</a>
+            </div>
+            <div id="msg" style="margin-top:10px;color:#e04e4e"></div>
+        </form>
+    </div>
+</main>
+
+<script src="/auth.js"></script>
+<script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e){
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const msg = document.getElementById('msg');
+        msg.textContent = '';
+        try {
+            const res = await fetch('/api/auth/login', {
+                method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, password })
+            });
+            const body = await res.json().catch(()=> ({}));
+            if (!res.ok) { msg.textContent = body.error || body.message || 'Login fehlgeschlagen'; return; }
+            // save login info via auth helper
+            if (window.auth && typeof window.auth.saveLogin === 'function') {
+                // adjust keys if backend returns different names (e.g. accessToken)
+                const payload = {
+                    token: body.token || body.accessToken || body.jwt,
+                    email: body.email || email,
+                    fullname: body.fullname || body.name || '',
+                    roles: body.roles || body.authorities || []
+                };
+                window.auth.saveLogin(payload);
+                // update nav immediately if available
+                if (typeof window.auth._renderNavAccount === 'function') window.auth._renderNavAccount();
+                // redirect to account or homepage
+                window.location.href = '/';
+            } else {
+                // fallback
+                localStorage.setItem('authToken', body.token || '');
+                localStorage.setItem('userEmail', body.email || email);
+                window.location.href = '/';
+            }
+        } catch (err) {
+            msg.textContent = 'Netzwerkfehler';
+        }
+    });
+</script>
+</body>
+</html>

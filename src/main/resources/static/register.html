@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Registrieren - RadBrain</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .auth-card { max-width:520px; margin:48px auto; background:#fff; padding:22px; border-radius:12px; box-shadow:0 12px 40px rgba(64,48,120,0.08); }
+        .input-row { margin-bottom:12px; }
+        label { display:block; font-weight:600; margin-bottom:6px; color:#444; }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6e6f2;
+            font-size:1rem;
+        }
+        .helper { color:#666; margin-top:10px; }
+        .btn { display:inline-block; padding:10px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:700; }
+        .btn-primary { background:linear-gradient(135deg,#645CBB,#A084DC); color:#fff; }
+        .btn-link { background:transparent; color:#645CBB; border:1px solid rgba(100,92,187,0.08); }
+        .message { margin-top:12px; padding:10px; border-radius:8px; display:none; }
+        .message.error { background:#ffecec; color:#8a1f1f; display:block; }
+        .message.success { background:#e8ffef; color:#0a5f2b; display:block; }
+    </style>
+</head>
+<body>
+<main class="container">
+    <div class="auth-card">
+        <h1 style="margin:0 0 8px;">Registrieren</h1>
+        <p class="helper">Erstelle ein Konto, um Fortschritte zu speichern und alle Funktionen zu nutzen.</p>
+
+        <form id="registerForm" novalidate>
+            <div class="input-row">
+                <label for="fullname">Vor- und Nachname</label>
+                <input id="fullname" name="fullname" type="text" required placeholder="Max Mustermann">
+            </div>
+
+            <div class="input-row">
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" required placeholder="name@beispiel.de">
+            </div>
+
+            <div class="input-row">
+                <label for="password">Passwort</label>
+                <input id="password" name="password" type="password" required minlength="6" placeholder="Mind. 6 Zeichen">
+            </div>
+
+            <div class="input-row">
+                <label for="password2">Passwort wiederholen</label>
+                <input id="password2" name="password2" type="password" required minlength="6" placeholder="">
+            </div>
+
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button id="submitBtn" class="btn btn-primary" type="submit">Registrieren</button>
+                <a href="/login.html" class="btn btn-link" style="text-decoration:none;">Ich habe bereits ein Konto</a>
+            </div>
+
+            <div id="msg" class="message" role="status" aria-live="polite"></div>
+        </form>
+    </div>
+</main>
+
+<script src="auth.js"></script>
+<script>
+    (function(){
+        const form = document.getElementById('registerForm');
+        const fullnameEl = document.getElementById('fullname');
+        const emailEl = document.getElementById('email');
+        const pwEl = document.getElementById('password');
+        const pw2El = document.getElementById('password2');
+        const msg = document.getElementById('msg');
+
+        function showMessage(text, type) {
+            msg.textContent = text;
+            msg.className = 'message ' + (type === 'error' ? 'error' : (type === 'success' ? 'success' : ''));
+        }
+
+        form.addEventListener('submit', async function(e){
+            e.preventDefault();
+            showMessage('', '');
+
+            const fullname = (fullnameEl.value || '').trim();
+            const email = (emailEl.value || '').trim();
+            const password = pwEl.value || '';
+            const password2 = pw2El.value || '';
+
+            if (!fullname) { showMessage('Bitte deinen Namen eingeben.', 'error'); return; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showMessage('Bitte eine gültige Email angeben.', 'error'); return; }
+            if (password.length < 6) { showMessage('Passwort muss mindestens 6 Zeichen haben.', 'error'); return; }
+            if (password !== password2) { showMessage('Passwörter stimmen nicht überein.', 'error'); return; }
+
+            showMessage('Registriere...', '');
+            // use helper from /static/auth.js
+            try {
+                await window.auth.doRegister(fullname, email, password);
+                // doRegister redirects to /verify.html on success, so normally we won't reach here
+            } catch (err) {
+                showMessage('Fehler: ' + (err.message || err), 'error');
+            }
+        });
+    })();
+</script>
+</body>
+</html>

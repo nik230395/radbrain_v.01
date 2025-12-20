@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RadBrain - Radiologie einfach lernen</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 2000; }
+        .modal-backdrop.active { display:flex; }
+        .auth-modal { background: white; border-radius: 12px; padding: 20px; width: 320px; max-width: calc(100% - 40px); box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; }
+        .auth-actions { display:flex; gap:10px; justify-content:center; }
+        .auth-actions a, .auth-actions button { padding: 10px 14px; border-radius: 8px; text-decoration: none; border: none; cursor: pointer; font-weight:600; }
+        .auth-actions .btn-login { background: linear-gradient(135deg,#645CBB,#A084DC); color: white; }
+        .auth-actions .btn-register { background: #f1f1f1; color:#333; }
+        .auth-close { position:absolute; right:10px; top:8px; background:transparent; border:none; font-size:18px; cursor:pointer; color:#888; }
+        .btn-login-nav { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: var(--white); border-radius: 20px; padding: 0.6rem 1rem; text-decoration:none; }
+        .navbar { height: 70px; background-color: #1a1a1a; color: white; padding: 0 20px; display: flex; align-items: center; }
+        .nav-left { display:flex; align-items:center; gap:10px; }
+        .nav-menu { margin: 0; padding: 0; list-style:none; display:flex; gap:30px; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); }
+        .nav-menu a { color: white; text-decoration:none; }
+        #navAccount { position: relative; display:inline-block; color: white; }
+        footer { margin-top:40px; padding:20px; background:#111; color:#ddd; }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="nav-left">
+        <img src="Bilder/logo.png" alt="RadBrain Logo" style="height:35px; width:auto;" />
+        <span style="font-size:1.2rem; font-weight:700;">RadBrain</span>
+    </div>
+
+    <ul class="nav-menu">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#quiz">Quiz</a></li>
+        <li><a href="#faq">FAQ</a></li>
+    </ul>
+
+    <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
+        <a href="#" id="authBtn" class="btn-login-nav">Anmelden / Registrieren</a>
+        <div id="navAccount"></div>
+    </div>
+</nav>
+
+<section id="home" class="hero" style="padding:40px;">
+    <h1>Radiologie einfach verstehen</h1>
+    <p>Die moderne Lernplattform für jeden!</p>
+</section>
+
+<!-- Auth Modal -->
+<div id="authModalBackdrop" class="modal-backdrop" aria-hidden="true">
+    <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="authTitle" style="position:relative;">
+        <button class="auth-close" id="authClose" aria-label="Schließen">&times;</button>
+        <h3 id="authTitle">Anmelden oder Registrieren</h3>
+        <p>Logge dich ein oder erstelle ein Konto, um alle Funktionen zu nutzen.</p>
+        <div class="auth-actions">
+            <a href="/login.html" class="btn-login" id="modalLogin">Anmelden</a>
+            <a href="/register.html" class="btn-register" id="modalRegister">Registrieren</a>
+        </div>
+    </div>
+</div>
+
+<!-- Footer (wieder eingefügt) -->
+<footer>
+    <div style="max-width:1100px;margin:0 auto;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;">
+            <div>
+                <h4>RadBrain</h4>
+                <p>Deine Online-Plattform für radiologisches Lernen</p>
+            </div>
+            <div>
+                <h4>Kontakt</h4>
+                <p>info@radbrain.de</p>
+            </div>
+        </div>
+        <p style="margin-top:16px;">© 2025 RadBrain</p>
+    </div>
+</footer>
+
+<script src="/auth.js"></script>
+
+<script>
+    (function(){
+        // debug helper to see auth state
+        function log(...args){ if (window.console) console.log('[nav]', ...args); }
+
+        if (!window.auth) log('auth.js nicht geladen - prüfe /auth.js Pfad');
+
+        const container = document.getElementById('navAccount');
+        const authBtn = document.getElementById('authBtn');
+        const modalBackdrop = document.getElementById('authModalBackdrop');
+        const authClose = document.getElementById('authClose');
+        const modalLogin = document.getElementById('modalLogin');
+        const modalRegister = document.getElementById('modalRegister');
+
+        function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+        function showModal(){ if (!modalBackdrop) return; modalBackdrop.classList.add('active'); modalBackdrop.setAttribute('aria-hidden','false'); }
+        function hideModal(){ if (!modalBackdrop) return; modalBackdrop.classList.remove('active'); modalBackdrop.setAttribute('aria-hidden','true'); }
+
+        if (authBtn) authBtn.addEventListener('click', e => { e.preventDefault(); showModal(); });
+        if (authClose) authClose.addEventListener('click', hideModal);
+        if (modalBackdrop) modalBackdrop.addEventListener('click', e => { if (e.target === modalBackdrop) hideModal(); });
+        if (modalLogin) modalLogin.addEventListener('click', hideModal);
+        if (modalRegister) modalRegister.addEventListener('click', hideModal);
+
+        function renderNav(){
+            const isLoggedIn = window.auth && typeof window.auth.isLoggedIn === 'function' && window.auth.isLoggedIn();
+            log('renderNav called', { isLoggedIn });
+            if (authBtn) authBtn.style.display = isLoggedIn ? 'none' : '';
+
+            if (!container) return;
+
+            if (!isLoggedIn) {
+                container.innerHTML = '<a id="loginLink" href="/login.html">Anmelden</a> <a id="registerLink" href="/register.html" style="margin-left:8px">Registrieren</a>';
+                return;
+            }
+
+            const user = (window.auth && typeof window.auth.getUser === 'function') ? window.auth.getUser() : {};
+            const roles = (window.auth && typeof window.auth.getRoles === 'function') ? window.auth.getRoles() : (user.roles || []);
+            log('user', user, 'roles', roles);
+
+            const name = (user.fullname && user.fullname.trim()) ? user.fullname : (user.email || 'Account');
+            // treat possible role names in different formats
+            const normalizedRoles = (Array.isArray(roles) ? roles : []).map(r => String(r).toUpperCase());
+            const isAdmin = normalizedRoles.includes('ROLE_ADMIN') || normalizedRoles.includes('ADMIN');
+
+            container.innerHTML = `
+      <button id="profileBtn" aria-haspopup="true" aria-expanded="false" style="background:none;border:0;cursor:pointer;padding:6px 10px;border-radius:6px;color:white">
+        <span style="font-weight:600">${escapeHtml(name)}</span> ▾
+      </button>
+      <div id="profileMenu" role="menu" aria-hidden="true" style="display:none; position:absolute; right:0; top:36px; background:#fff; border:1px solid #eee; box-shadow:0 10px 30px rgba(0,0,0,0.06); border-radius:8px; min-width:200px; z-index:1000; padding:6px 0;">
+        <a role="menuitem" href="/account.html" style="display:block;padding:8px 12px;color:#222;text-decoration:none">Mein Account</a>
+        ${isAdmin ? '<a role="menuitem" id="adminLink" href="/admin-dashboard.html" style="display:block;padding:8px 12px;color:#222;text-decoration:none">Admin-Seite öffnen</a>' : ''}
+        <button id="logoutMenuBtn" role="menuitem" style="display:block;width:100%;text-align:left;padding:8px 12px;background:none;border:0;cursor:pointer;color:#d33">Abmelden</button>
+      </div>
+    `;
+
+            const btn = document.getElementById('profileBtn');
+            const menu = document.getElementById('profileMenu');
+            const logoutBtn = document.getElementById('logoutMenuBtn');
+
+            function openMenu() {
+                menu.style.display = 'block';
+                menu.setAttribute('aria-hidden','false');
+                btn.setAttribute('aria-expanded','true');
+                setTimeout(()=> document.addEventListener('click', onDocClick), 0);
+            }
+            function closeMenu() {
+                menu.style.display = 'none';
+                menu.setAttribute('aria-hidden','true');
+                btn.setAttribute('aria-expanded','false');
+                document.removeEventListener('click', onDocClick);
+            }
+            function onDocClick(e) { if (!container.contains(e.target)) closeMenu(); }
+
+            if (btn) btn.addEventListener('click', function(e){ e.stopPropagation(); const expanded = btn.getAttribute('aria-expanded') === 'true'; if (expanded) closeMenu(); else openMenu(); });
+            if (logoutBtn) logoutBtn.addEventListener('click', function(){
+                if (window.auth && typeof window.auth.logout === 'function') {
+                    window.auth.logout('/'); // redirect to homepage after logout
+                } else {
+                    localStorage.removeItem('authToken'); localStorage.removeItem('userEmail'); localStorage.removeItem('userFullname'); localStorage.removeItem('userRoles');
+                    window.location.href = '/';
+                }
+            });
+        }
+
+        renderNav();
+        window.auth = window.auth || {};
+        window.auth._renderNavAccount = renderNav;
+
+        // re-render when localStorage changes (other tab or after login)
+        window.addEventListener('storage', function(e){
+            if (['authToken','userEmail','userFullname','userRoles'].includes(e.key)) renderNav();
+        });
+
+    })();
+</script>
+</body>
+</html>

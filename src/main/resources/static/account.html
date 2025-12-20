@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Mein Konto - RadBrain</title>
+  <link rel="stylesheet" href="style.css"/>
+  <style>
+    .panel{ max-width:900px; margin:28px auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 14px 40px rgba(14,10,36,0.06); }
+    .btn{ padding:8px 12px; border-radius:8px; border:0; cursor:pointer; }
+  </style>
+</head>
+<body>
+<main class="container">
+  <div class="panel">
+    <h1>Mein Konto</h1>
+    <p id="userInfo"></p>
+    <div>
+      <button id="logoutBtn" class="btn">Abmelden</button>
+    </div>
+    <hr/>
+    <h3>Meine Ergebnisse</h3>
+    <div id="attempts"></div>
+  </div>
+</main>
+
+<script src="/auth.js"></script>
+<script>
+  (async function(){
+    if (!window.auth || !window.auth.isLoggedIn()) { window.location.href = '/login.html'; return; }
+    const email = localStorage.getItem('userEmail') || 'Unbekannt';
+    const name = localStorage.getItem('userFullname') || '';
+    document.getElementById('userInfo').textContent = (name ? name + ' — ' : '') + email;
+
+    document.getElementById('logoutBtn').addEventListener('click', ()=> {
+      localStorage.removeItem('authToken'); localStorage.removeItem('userEmail'); localStorage.removeItem('userFullname'); window.location.href = '/';
+    });
+
+    // Load attempts (optional) - if you have an endpoint for /api/users/me/attempts replace accordingly
+    // For now show placeholder
+    document.getElementById('attempts').innerHTML = '<div class="small">(Bisher keine Ergebnisse angezeigt. Implementiere /api/users/me/attempts im Backend.)</div>';
+  })();
+</script>
+</body>
+</html>

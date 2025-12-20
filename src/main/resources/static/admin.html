@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Admin - Quizzes verwalten</title>
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<main class="container" style="max-width:1200px;margin:28px auto;">
+    <h1>Admin — Quizzes</h1>
+    <div style="display:flex; gap:18px;">
+        <div style="flex:0 0 360px;">
+            <h3>Existierende Quizzes</h3>
+            <div id="quizList"></div>
+        </div>
+        <div style="flex:1;">
+            <h3>Neues Quiz erstellen</h3>
+            <form id="quizForm">
+                <div><label>Titel</label><input id="qTitle" required style="width:100%"/></div>
+                <div><label>Beschreibung</label><textarea id="qDesc" rows="3" style="width:100%"></textarea></div>
+                <div style="margin-top:8px;">
+                    <button type="button" id="addQuestion">+ Frage</button>
+                </div>
+                <div id="questions" style="margin-top:12px;"></div>
+                <div style="margin-top:12px;">
+                    <button type="submit">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+<script src="/auth.js"></script>
+<script>
+    (async function(){
+        if (!window.auth || !window.auth.isLoggedIn()) { alert('Bitte einloggen.'); window.location.href = '/login.html'; return; }
+        async function loadQuizzes(){
+            const res = await window.auth.authFetch('/api/secure/admin/quizzes');
+            if (!res.ok) { document.getElementById('quizList').innerText='Fehler'; return; }
+            const list = await res.json();
+            const el = document.getElementById('quizList');
+            el.innerHTML = '';
+            list.forEach(q => {
+                const item = document.createElement('div');
+                item.style='padding:12px;border-bottom:1px solid #eee;display:flex;justify-content:space-between';
+                item.innerHTML = `<div><strong>${q.title}</strong><div style="font-size:0.9rem">${q.description||''}</div></div>
+                        <div><button data-id="${q.id}" class="del">Löschen</button></div>`;
+                el.appendChild(item);
+                item.querySelector('.del').onclick = async ()=> {
+                    if (!confirm('Löschen?')) return;
+                    const r = await window.auth.authFetch('/api/secure/admin/quizzes/' + q.id, { method:'DELETE' });
+                    if (r.ok) loadQuizzes(); else alert('Fehler');
+                };
+            });
+        }
+        loadQuizzes();
+    })();
+</script>
+</body>
+</html>

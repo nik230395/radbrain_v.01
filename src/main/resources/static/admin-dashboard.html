@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Admin Dashboard - RadBrain</title>
+    <link rel="stylesheet" href="style.css"/>
+    <style>
+        body { background:#f6f7fb; font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:#222; }
+        .wrap{ max-width:1200px; margin:28px auto; padding:18px; }
+        .panel{ background:#fff; border-radius:12px; padding:16px; box-shadow:0 8px 30px rgba(14,10,36,0.06); margin-bottom:18px; }
+        .row{ display:flex; gap:18px; align-items:flex-start; }
+        .col{ flex:1; }
+        .col-sm{ flex:0 0 360px; }
+        .stat{ font-size:1.8rem; font-weight:700; }
+        .small{ font-size:0.9rem; color:#666; }
+        .card-grid{ display:flex; gap:12px; }
+        .card{ flex:1; background:#fff; border-radius:10px; padding:12px; box-shadow:0 8px 20px rgba(14,10,36,0.04); }
+        .quiz-list-row{ display:flex; justify-content:space-between; padding:10px 8px; border-bottom:1px solid #f0eef8; align-items:center; }
+        .btn{ padding:8px 10px; border-radius:8px; border:0; cursor:pointer; }
+        .btn-primary{ background:linear-gradient(135deg,#645CBB,#A084DC); color:white; }
+        .btn-danger{ background:#e04e4e; color:white; }
+        .muted{ color:#888; font-size:0.95rem; }
+        table.users { width:100%; border-collapse:collapse; }
+        table.users th, table.users td { text-align:left; padding:8px 6px; }
+        table.users tr:nth-child(even){ background:#fbfbfd; }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div>
+            <h2>Admin Dashboard</h2>
+            <div class="small">Übersicht über Nutzer und Quizzes</div>
+        </div>
+        <div>
+            <a href="/admin.html" class="btn btn-primary" style="margin-right:8px">Quiz Verwaltung</a>
+            <a href="/" class="btn">Zur Seite</a>
+        </div>
+    </header>
+
+    <section class="panel">
+        <div class="row">
+            <div class="col-sm">
+                <div class="small">Benutzer gesamt</div>
+                <div id="userCount" class="stat">–</div>
+                <div class="small" style="margin-top:8px;">Letzte Anmeldung / Fortschritt sichtbar beim Anklicken eines Users</div>
+            </div>
+
+            <div class="col">
+                <h3 style="margin-top:0">Letzte 3 Quiz‑Vorschau</h3>
+                <div id="quizPreview" class="card-grid">
+                    <!-- Cards injected here -->
+                </div>
+                <div style="margin-top:10px;">
+                    <button id="showMorePreview" class="btn">Mehr anzeigen</button>
+                    <a href="/admin.html" class="btn" style="margin-left:8px">Neues Quiz erstellen</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h3>Benutzerliste</h3>
+        <div style="overflow:auto;">
+            <table class="users" id="usersTable">
+                <thead>
+                <tr><th>Benutzer</th><th>Email</th><th>Aktiv</th><th>Erstellt</th><th>Aktionen</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h3>Quiz Verwaltung</h3>
+        <div id="quizListAdmin">
+            <!-- wide list rows -->
+        </div>
+    </section>
+</div>
+
+<script src="/auth.js"></script>
+<script>
+    (async function(){
+        if (!window.auth || !window.auth.isLoggedIn()) { alert('Bitte als Admin einloggen.'); window.location.href = '/login.html'; return; }
+        // helper
+        function fmtDate(d){ if(!d) return ''; try { const dt = new Date(d); return dt.toLocaleString(); } catch(e){ return String(d); } }
+        function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+        // Load users summary
+        async function loadUsers(){
+            const res = await window.auth.authFetch('/api/secure/admin/users');
+            if (!res.ok) { console.error('users res', res.status); return; }
+            const body = await res.json();
+            document.getElementById('userCount').textContent = body.count ?? 0;
+            const tbody = document.querySelector('#usersTable tbody');
+            tbody.innerHTML = '';
+            (body.users || []).forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${escapeHtml(u.fullname || '')}</td>
+                      <td class="muted">${escapeHtml(u.email || '')}</td>
+                      <td>${u.is_active ? 'Ja' : 'Nein'}</td>
+                      <td class="muted">${fmtDate(u.created_at)}</td>
+                      <td>
+                        <button class="btn view-user" data-id="${u.id}">Anzeigen</button>
+                      </td>`;
+                tbody.appendChild(tr);
+            });
+
+            // view user handlers (detailed view can be extended)
+            document.querySelectorAll('.view-user').forEach(b => b.onclick = async ()=>{
+                const id = b.getAttribute('data-id');
+                alert('User-Details (noch nicht implementiert): ID=' + id + '\\nImplementiere /api/secure/admin/users/{id} für detail view.');
+            });
+        }
+
+        // Load preview quizzes (limit 3)
+        let previewLimit = 3;
+        async function loadPreview(){
+            const res = await window.auth.authFetch('/api/secure/admin/quizzes/summary?limit=' + previewLimit);
+            if (!res.ok) { console.error('preview res', res.status); return; }
+            const list = await res.json();
+            const container = document.getElementById('quizPreview');
+            container.innerHTML = '';
+            (list || []).forEach(q => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:start">
+                          <div>
+                            <h4 style="margin:0">${escapeHtml(q.title)}</h4>
+                            <div class="small muted" style="margin-top:6px">${escapeHtml(q.description || '').substring(0,140)}</div>
+                          </div>
+                          <div style="text-align:right">
+                            <div class="small">${q.isPublished ? '<strong style="color:green">Veröff.</strong>' : '<span class="muted">Entwurf</span>'}</div>
+                            <div class="muted" style="font-size:0.8rem">${fmtDate(q.createdAt)}</div>
+                          </div>
+                        </div>
+                        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+                          <a class="btn" href="/quiz.html?id=${q.id}">Vorschau</a>
+                          <button class="btn btn-primary start-quiz" data-id="${q.id}">Quiz starten</button>
+                        </div>`;
+                container.appendChild(card);
+            });
+
+            // start-quiz simply navigates to quiz page
+            document.querySelectorAll('.start-quiz').forEach(b => b.onclick = ()=> { const id=b.getAttribute('data-id'); window.location.href = '/quiz.html?id=' + id; });
+        }
+
+        // Load all quizzes for management list
+        async function loadQuizList(){
+            const res = await window.auth.authFetch('/api/secure/admin/quizzes');
+            if (!res.ok) { console.error('quizlist', res.status); return; }
+            const list = await res.json();
+            const container = document.getElementById('quizListAdmin');
+            container.innerHTML = '';
+            (list || []).forEach(q => {
+                const row = document.createElement('div');
+                row.className = 'quiz-list-row';
+                row.innerHTML = `<div style="flex:1">
+                          <strong>${escapeHtml(q.title)}</strong>
+                          <div class="muted">${escapeHtml(q.description || '')}</div>
+                       </div>
+                       <div style="width:240px;display:flex;gap:8px;justify-content:flex-end;align-items:center">
+                          <div class="muted">${q.isPublished ? 'Veröffentlicht' : 'Entwurf'}</div>
+                          <a class="btn" href="/quiz.html?id=${q.id}">Vorschau</a>
+                          <button class="btn" data-id="${q.id}" data-action="togglePublish">${q.isPublished ? 'Unpublish' : 'Publish'}</button>
+                          <button class="btn btn-danger" data-id="${q.id}" data-action="delete">Löschen</button>
+                       </div>`;
+                container.appendChild(row);
+            });
+
+            // actions
+            container.querySelectorAll('button[data-action]').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = btn.getAttribute('data-id');
+                    const action = btn.getAttribute('data-action');
+                    if (action === 'delete') {
+                        if (!confirm('Quiz löschen?')) return;
+                        const r = await window.auth.authFetch('/api/secure/admin/quizzes/' + id, { method:'DELETE' });
+                        if (r.ok) { alert('Gelöscht'); loadQuizList(); loadPreview(); } else { alert('Fehler beim Löschen'); }
+                    } else if (action === 'togglePublish') {
+                        const isPub = btn.textContent.includes('Unpublish');
+                        const path = isPub ? '/api/secure/admin/quizzes/' + id + '/unpublish' : '/api/secure/admin/quizzes/' + id + '/publish';
+                        const r = await window.auth.authFetch(path, { method:'POST' });
+                        if (r.ok) { loadQuizList(); loadPreview(); } else { alert('Fehler'); }
+                    }
+                };
+            });
+        }
+
+        // initial load
+        await loadUsers();
+        await loadPreview();
+        await loadQuizList();
+
+        // events
+        document.getElementById('showMorePreview').addEventListener('click', () => {
+            previewLimit = 10;
+            loadPreview();
+        });
+
+    })();
+</script>
+</body>
+</html>
