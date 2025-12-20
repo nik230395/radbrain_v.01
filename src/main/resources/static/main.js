@@ -129,17 +129,32 @@ if(document.getElementById("quiz-list")) {
             let answers = {};
             questions.forEach(q => {
                 if(q.qtype==='MULTIPLE')
-                    answers[q.id]=Array.from(document.querySelectorAll(`input[name=q${q.id}]:checked`)).map(x=>x.value)
-                else
-                    answers[q.id]=document.querySelector(`input[name=q${q.id}]:checked`)?.value||null;
+                    answers[q.id]=Array.from(document.querySelectorAll(`input[name=q${q.id}]:checked`)).map(x=>parseInt(x.value))
+                else {
+                    let selected = document.querySelector(`input[name=q${q.id}]:checked`)?.value;
+                    answers[q.id]= selected ? parseInt(selected) : null;
+                }
             });
-            let scorePct = Math.round(Math.random()*100); // Dummy score
-            await fetch(`/api/attempts/${attempt.id}/complete`, {
-                method:"POST", headers:{"Content-Type":"application/json"},
-                body: JSON.stringify({answersJson: JSON.stringify(answers), scorePct})
-            });
-            alert("Quiz abgeschlossen! (Dein Ergebnis wurde gespeichert)");
-            window.location.href="dashboard.html";
+            
+            // Submit to backend for evaluation
+            try {
+                let submitRes = await fetch(`/api/quizzes/${quizId}/submit`, {
+                    method:"POST", 
+                    headers:{"Content-Type":"application/json"},
+                    body: JSON.stringify({answers})
+                });
+                let result = await submitRes.json();
+                
+                if (result.score !== undefined) {
+                    alert(`Quiz abgeschlossen! Dein Ergebnis: ${result.correct}/${result.total} richtig (${Math.round(result.score)}%)`);
+                } else {
+                    alert("Quiz abgeschlossen! (Dein Ergebnis wurde gespeichert)");
+                }
+                window.location.href="dashboard.html";
+            } catch(error) {
+                console.error("Error submitting quiz:", error);
+                alert("Fehler beim Übermitteln des Quiz. Bitte versuche es erneut.");
+            }
         }
     }
 }

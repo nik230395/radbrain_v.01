@@ -3,9 +3,6 @@ package org.nikolic.programm.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
-
-import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -20,7 +17,6 @@ public class QuizCategory {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @ManyToMany(mappedBy = "categories")
-    @ToString.Exclude
-    private List<Quiz> quizzes;
+    @Column(length = 500)
+    private String description;
 }

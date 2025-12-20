@@ -6,6 +6,8 @@ import org.nikolic.programm.entities.*;
 import org.nikolic.programm.repositories.QuizAttemptRepository;
 import org.nikolic.programm.repositories.QuizRepository;
 import org.nikolic.programm.repositories.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,8 @@ import java.util.regex.Pattern;
 @Service
 @Transactional
 public class QuizService {
+
+    private static final Logger logger = LoggerFactory.getLogger(QuizService.class);
 
     private final QuizRepository quizRepository;
     private final UserRepository userRepository;
@@ -154,7 +158,7 @@ public class QuizService {
                 attemptId = saved.getId();
             } catch (Exception e) {
                 // Log but don't fail the evaluation
-                e.printStackTrace();
+                logger.error("Failed to save quiz attempt for user {}: {}", user.getEmail(), e.getMessage(), e);
             }
         }
 
