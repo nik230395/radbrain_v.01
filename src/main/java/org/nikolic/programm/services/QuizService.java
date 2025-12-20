@@ -1,13 +1,16 @@
 package org.nikolic.programm.services;
 
-import org.nikolic.programm.entities.*;
-import org.nikolic.programm.repositories.*;
+import org.nikolic.programm.dtos.CreateQuizRequest;
+import org.nikolic.programm.entities.Quiz;
+import org.nikolic.programm.entities.User;
+import org.nikolic.programm.repositories.QuizRepository;
+import org.nikolic.programm.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @Transactional
@@ -15,137 +18,60 @@ public class QuizService {
 
     private final QuizRepository quizRepository;
     private final UserRepository userRepository;
-    private final QuestionRepository questionRepository;
-    private final ChoiceRepository choiceRepository;
 
     public QuizService(QuizRepository quizRepository,
-                       UserRepository userRepository,
-                       QuestionRepository questionRepository,
-                       ChoiceRepository choiceRepository) {
+                       UserRepository userRepository) {
         this.quizRepository = quizRepository;
         this.userRepository = userRepository;
-        this.questionRepository = questionRepository;
-        this.choiceRepository = choiceRepository;
     }
 
     /**
-     * Create a new quiz with questions and choices
+     * Create a quiz from a request DTO and user
      */
-    public Quiz createQuiz(String title, String description, Long createdById, List<Map<String, Object>> questionsData) {
-        User creator = userRepository.findById(createdById)
-                .orElseThrow(() -> new IllegalStateException("User not found with ID: " + createdById));
-
+    public Quiz createFromRequest(CreateQuizRequest req, User user) {
         Quiz quiz = new Quiz();
-        quiz.setTitle(title);
-        quiz.setDescription(description);
-        quiz.setIsPublished(false);
-        quiz.setCreatedBy(creator);
+        quiz.setTitle(req.getTitle());
+        quiz.setDescription(req.getDescription());
+        quiz.setCreatedBy(user);
         quiz.setCreatedAt(LocalDateTime.now());
-        quiz = quizRepository.save(quiz);
-
-        // Add questions and choices to the quiz
-        if (questionsData != null && !questionsData.isEmpty()) {
-            List<Question> questions = attachQuestionsAndChoices(quiz, questionsData);
-            quiz.setQuestions(questions);
-        }
-
+        quiz.setIsPublished(false);
         return quizRepository.save(quiz);
     }
 
-    private List<Question> attachQuestionsAndChoices(Quiz quiz, List<Map<String, Object>> questionsData) {
-        List<Question> questions = new ArrayList<>();
-        int positionCounter = 1;
-
-        for (Map<String, Object> questionData : questionsData) {
-            Question question = new Question();
-            question.setQuiz(quiz);
-            question.setText((String) questionData.get("text"));
-            question.setQtype(QuestionType.valueOf((String) questionData.get("type")));
-            question.setPosition(positionCounter++);
-
-            // Map choices
-            List<Map<String, Object>> choicesData = (List<Map<String, Object>>) questionData.get("choices");
-            if (choicesData != null) {
-                List<Choice> choices = choicesData.stream()
-                        .map(choiceData -> createChoiceFromData(choiceData, question))
-                        .collect(Collectors.toList());
-                question.setChoices(choices);
-            }
-            questionRepository.save(question);  // Save question to establish relationships
-            questions.add(question);
-        }
-
-        return questions;
-    }
-
-    private Choice createChoiceFromData(Map<String, Object> choiceData, Question question) {
-        Choice choice = new Choice();
-        choice.setQuestion(question);
-        choice.setText((String) choiceData.get("text"));
-        choice.setIsCorrect((Boolean) choiceData.get("isCorrect"));
-        return choice;
-    }
-
     /**
-     * Retrieve all published quizzes
+     * Update a quiz from a request DTO
      */
-    public List<Quiz> getAllPublished() {
-        return quizRepository.findAll().stream()
-                .filter(Quiz::getIsPublished)
-                .collect(Collectors.toList());
+    public Quiz updateFromRequest(Long id, CreateQuizRequest req) {
+        Quiz quiz = quizRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Quiz not found with ID: " + id));
+        quiz.setTitle(req.getTitle());
+        quiz.setDescription(req.getDescription());
+        return quizRepository.save(quiz);
     }
 
     /**
-     * Retrieve all quizzes (admin access)
+     * Set publish status of a quiz
+     */
+    public Quiz setPublished(Long id, boolean published) {
+        Quiz quiz = quizRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Quiz not found with ID: " + id));
+        quiz.setIsPublished(published);
+        return quizRepository.save(quiz);
+    }
+
+    /**
+     * Retrieve all quizzes
      */
     public List<Quiz> getAllQuizzes() {
         return quizRepository.findAll();
     }
 
     /**
-     * Get a quiz by its ID
+     * Delete a quiz by ID
      */
-    public Optional<Quiz> getQuizById(Long id) {
-        return quizRepository.findById(id);
-    }
-
-    /**
-     * Update a quiz's metadata
-     */
-    public Quiz updateQuizMetadata(Long quizId, String title, String description) {
-        Quiz quiz = quizRepository.findById(quizId)
-                .orElseThrow(() -> new NoSuchElementException("Quiz not found with ID: " + quizId));
-        if (title != null) quiz.setTitle(title);
-        if (description != null) quiz.setDescription(description);
-        return quizRepository.save(quiz);
-    }
-
-    /**
-     * Publish a quiz
-     */
-    public Quiz markAsPublished(Long quizId) {
-        Quiz quiz = quizRepository.findById(quizId)
-                .orElseThrow(() -> new NoSuchElementException("Quiz not found with ID: " + quizId));
-        quiz.setIsPublished(true);
-        return quizRepository.save(quiz);
-    }
-
-    /**
-     * Unpublish a quiz
-     */
-    public Quiz markAsPrivate(Long quizId) {
-        Quiz quiz = quizRepository.findById(quizId)
-                .orElseThrow(() -> new NoSuchElementException("Quiz not found with ID: " + quizId));
-        quiz.setIsPublished(false);
-        return quizRepository.save(quiz);
-    }
-
-    /**
-     * Delete a quiz
-     */
-    public void deleteQuizById(Long quizId) {
-        Quiz quiz = quizRepository.findById(quizId)
-                .orElseThrow(() -> new IllegalStateException("Quiz not found with ID: " + quizId));
+    public void deleteQuizById(Long id) {
+        Quiz quiz = quizRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Quiz not found with ID: " + id));
         quizRepository.delete(quiz);
     }
 }

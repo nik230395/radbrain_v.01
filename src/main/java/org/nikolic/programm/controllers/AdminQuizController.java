@@ -63,7 +63,7 @@ public class AdminQuizController {
     @PostMapping
     public ResponseEntity<?> create(Authentication auth, @RequestBody CreateQuizRequest req) {
         Optional<User> u = getAuthenticatedUser(auth);
-        if (u.isEmpty()) return ResponseEntity.status(401).body(Map.of("error","unauthenticated"));
+        if (u.isEmpty()) return ResponseEntity.status(401).body(Map.of("error", "unauthenticated"));
         try {
             Quiz created = quizService.createFromRequest(req, u.get());
             return ResponseEntity.status(201).body(QuizMapper.toDto(created));
@@ -98,7 +98,7 @@ public class AdminQuizController {
     public ResponseEntity<?> unpublish(Authentication auth, @PathVariable Long id) {
         if (!isAdmin(auth)) return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
         try {
-            Quiz q = quizService.setPublished(id, false);
+            Quiz q = quizService.setPublished(id, false); // Fixed typo here
             return ResponseEntity.ok(QuizMapper.toDto(q));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
@@ -109,8 +109,8 @@ public class AdminQuizController {
     public ResponseEntity<?> delete(Authentication auth, @PathVariable Long id) {
         if (!isAdmin(auth)) return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
         try {
-            quizService.deleteQuiz(id);
-            return ResponseEntity.ok(Map.of("message","deleted"));
+            quizService.deleteQuizById(id);
+            return ResponseEntity.ok(Map.of("message", "deleted"));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
         }

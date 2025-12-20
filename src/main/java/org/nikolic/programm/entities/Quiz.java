@@ -2,53 +2,33 @@ package org.nikolic.programm.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
 @Entity
-@Table(name = "quizzes")
+@Data
 public class Quiz {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Quiz-ID
+    private Long id;
 
-    @Column(nullable = false)
-    private String title; // Titel des Quiz
+    private String title;
 
-    @Column(columnDefinition = "TEXT")
-    private String description; // Beschreibung zum Quiz
+    @Column(length = 500)
+    private String description;
 
-    @Column(name = "is_published")
-    private Boolean isPublished; // Veröffentlicht (öffentlich) oder nicht
+    private String category; // New field for quiz category
 
     @ManyToOne
-    @JoinColumn(name = "created_by")
-    @ToString.Exclude
-    private User createdBy; // Autor / Ersteller
+    @JoinColumn(name = "created_by_id", nullable = false)
+    private User createdBy; // Reference to the creator of the quiz (User entity)
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt; // Erstellungsdatum
+    private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
-    @ToString.Exclude
-    private List<Question> questions; // Fragen des Quiz
+    private Boolean isPublished;
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
-    @ToString.Exclude
-    private List<QuizAttempt> attempts; // Alle Versuche zu diesem Quiz
-
-    @ManyToMany
-    @JoinTable(
-            name = "quiz_category_mapping",
-            joinColumns = @JoinColumn(name = "quiz_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    @ToString.Exclude
-    private List<QuizCategory> categories;
+    private List<Question> questions;
 }
