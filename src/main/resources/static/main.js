@@ -143,3 +143,130 @@ if(document.getElementById("quiz-list")) {
         }
     }
 }
+// Define Base API URLs
+const apiBaseUrl = "/api";
+
+// Load User List
+function loadUserList() {
+    fetch(`${apiBaseUrl}/users`)
+        .then(response => response.json())
+        .then(data => {
+            const userListDiv = document.getElementById("user-list");
+            userListDiv.innerHTML = ""; // Clear any existing data
+
+            data.forEach(user => {
+                const userItem = document.createElement("div");
+                userItem.className = "user-item";
+                userItem.innerHTML = `
+                    <p><strong>${user.name}</strong> - ${user.email}</p>
+                    <button onclick="deleteUser(${user.id})">Delete</button>
+                    <button onclick="editUser(${user.id})">Edit</button>
+                `;
+                userListDiv.appendChild(userItem);
+            });
+        })
+        .catch(error => {
+            console.error("Error loading user data:", error);
+        });
+}
+
+// Load Quiz Management
+function loadQuizManagement() {
+    fetch(`${apiBaseUrl}/quizzes`)
+        .then(response => response.json())
+        .then(data => {
+            const quizManagementDiv = document.getElementById("quiz-management");
+            quizManagementDiv.innerHTML = ""; // Clear any existing data
+
+            data.forEach(quiz => {
+                const quizItem = document.createElement("div");
+                quizItem.className = "quiz-item";
+                quizItem.innerHTML = `
+                    <p><strong>${quiz.title}</strong></p>
+                    <button onclick="deleteQuiz(${quiz.id})">Delete</button>
+                    <button onclick="editQuiz(${quiz.id})">Edit</button>
+                `;
+                quizManagementDiv.appendChild(quizItem);
+            });
+        })
+        .catch(error => {
+            console.error("Error loading quizzes:", error);
+        });
+}
+
+// Create New Quiz
+function createQuiz() {
+    const title = prompt("Enter quiz title:");
+    if (!title) {
+        return alert("Quiz title is required!");
+    }
+
+    fetch(`${apiBaseUrl}/quizzes`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ title })
+    })
+        .then(response => response.json())
+        .then(data => {
+            alert("Quiz created successfully!");
+            loadQuizManagement(); // Refresh quiz list
+        })
+        .catch(error => {
+            console.error("Error creating quiz:", error);
+        });
+}
+
+// Delete User
+function deleteUser(userId) {
+    fetch(`${apiBaseUrl}/users/${userId}`, { method: "DELETE" })
+        .then(response => {
+            if (response.ok) {
+                alert("User deleted successfully!");
+                loadUserList(); // Refresh user list
+            } else {
+                alert("Failed to delete user.");
+            }
+        })
+        .catch(error => {
+            console.error("Error deleting user:", error);
+        });
+}
+
+// Delete Quiz
+function deleteQuiz(quizId) {
+    fetch(`${apiBaseUrl}/quizzes/${quizId}`, { method: "DELETE" })
+        .then(response => {
+            if (response.ok) {
+                alert("Quiz deleted successfully!");
+                loadQuizManagement(); // Refresh quiz list
+            } else {
+                alert("Failed to delete quiz.");
+            }
+        })
+        .catch(error => {
+            console.error("Error deleting quiz:", error);
+        });
+}
+
+// Load Statistics
+function loadStatistics() {
+    fetch(`${apiBaseUrl}/statistics`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("user-count").textContent = data.totalUsers;
+            document.getElementById("quiz-count").textContent = data.totalQuizzes;
+            document.getElementById("attempt-count").textContent = data.totalAttempts;
+        })
+        .catch(error => {
+            console.error("Error loading statistics:", error);
+        });
+}
+
+// Initialize Dashboard
+document.addEventListener("DOMContentLoaded", () => {
+    loadUserList();
+    loadQuizManagement();
+    loadStatistics();
+});
