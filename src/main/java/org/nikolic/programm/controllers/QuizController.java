@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,6 +33,15 @@ public class QuizController {
         this.quizService = quizService;
         this.userRepository = userRepository;
         this.objectMapper = objectMapper;
+    }
+
+    @GetMapping("/published")
+    public ResponseEntity<?> getPublishedQuizzes() {
+        List<Quiz> quizzes = quizService.findPublished();
+        List<QuizDto> dtos = quizzes.stream()
+                .map(QuizMapper::toDto)
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")
