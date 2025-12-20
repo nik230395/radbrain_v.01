@@ -158,7 +158,7 @@ public class QuizService {
                 attemptId = saved.getId();
             } catch (Exception e) {
                 // Log but don't fail the evaluation
-                logger.error("Failed to save quiz attempt for user {}: {}", user.getEmail(), e.getMessage(), e);
+                logger.error("Failed to save quiz attempt for user ID {}: {}", user.getId(), e.getMessage(), e);
             }
         }
 
@@ -286,8 +286,20 @@ public class QuizService {
                 return userAnswer.toLowerCase().contains(acceptableAnswer.toLowerCase());
             case REGEX:
                 try {
-                    return Pattern.compile(acceptableAnswer).matcher(userAnswer).matches();
+                    // Limit regex matching to prevent ReDoS attacks
+                    // Only allow simple patterns and set length limits
+                    if (acceptableAnswer.length() > 100) {
+                        logger.warn("Regex pattern too long, treating as non-match");
+                        return false;
+                    }
+                    if (userAnswer.length() > 10000) {
+                        logger.warn("User answer too long for regex matching, treating as non-match");
+                        return false;
+                    }
+                    Pattern pattern = Pattern.compile(acceptableAnswer);
+                    return pattern.matcher(userAnswer).matches();
                 } catch (Exception e) {
+                    logger.warn("Invalid regex pattern or matching error: {}", e.getMessage());
                     return false;
                 }
             default:
