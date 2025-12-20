@@ -37,20 +37,19 @@ public class QuizController {
     @GetMapping("/{id}")
     public ResponseEntity<?> getQuiz(@PathVariable Long id) {
         Optional<Quiz> q = quizService.findById(id);
-        if (q.isEmpty()) return ResponseEntity.status(404).body(Map.of("error","not_found"));
+        if (q.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "not_found"));
+        }
         QuizDto dto = QuizMapper.toDto(q.get());
         return ResponseEntity.ok(dto);
     }
 
-    /**
-     * Submit answers for a quiz.
-     * Body: { "answers": { "<questionId>": <selected> } }
-     * where <selected> is list of choice ids for MC questions or string for text answers.
-     */
     @PostMapping("/{id}/submit")
-    public ResponseEntity<?> submit(@PathVariable Long id, @RequestBody Map<String, Object> body, Authentication auth) throws Exception {
+    public ResponseEntity<?> submit(@PathVariable Long id, @RequestBody Map<String, Object> body, Authentication auth) {
         Optional<Quiz> qopt = quizService.findById(id);
-        if (qopt.isEmpty()) return ResponseEntity.status(404).body(Map.of("error","not_found"));
+        if (qopt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "not_found"));
+        }
         Quiz quiz = qopt.get();
 
         User user = null;
@@ -59,20 +58,19 @@ public class QuizController {
             user = userRepository.findByEmail(email).orElse(null);
         }
 
-        Object answersObj = body.get("answers");
-        // convertValue to Map (keys likely String) then build Map<Long,Object>
-        Map<String,Object> raw = objectMapper.convertValue(answersObj, Map.class);
-        Map<Long,Object> structured = new HashMap<>();
-        if (raw != null) {
-            for (Map.Entry<String,Object> e : raw.entrySet()) {
+        Map<String, Object> rawAnswers = objectMapper.convertValue(body.get("answers"), Map.class);
+        Map<Long, Object> structuredAnswers = new HashMap<>();
+        if (rawAnswers != null) {
+            for (Map.Entry<String, Object> entry : rawAnswers.entrySet()) {
                 try {
-                    Long qid = Long.parseLong(e.getKey());
-                    structured.put(qid, e.getValue());
-                } catch (NumberFormatException ignored) {}
+                    Long questionId = Long.parseLong(entry.getKey());
+                    structuredAnswers.put(questionId, entry.getValue());
+                } catch (NumberFormatException ignored) {
+                }
             }
         }
 
-        Map<String,Object> result = quizService.evaluateAndSaveAttempt(quiz, user, structured);
+        Map<String, Object> result = quizService.evaluateAndSaveAttempt(quiz, user, structuredAnswers);
         return ResponseEntity.ok(result);
     }
 }

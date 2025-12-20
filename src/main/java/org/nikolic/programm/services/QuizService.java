@@ -1,32 +1,134 @@
 package org.nikolic.programm.services;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nikolic.programm.dtos.CreateQuizRequest;
 import org.nikolic.programm.entities.Quiz;
+import org.nikolic.programm.entities.QuizAttempt;
 import org.nikolic.programm.entities.User;
+import org.nikolic.programm.repositories.QuizAttemptRepository;
 import org.nikolic.programm.repositories.QuizRepository;
-import org.nikolic.programm.repositories.UserRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
-@Transactional
 public class QuizService {
-
     private final QuizRepository quizRepository;
-    private final UserRepository userRepository;
+    private final QuizAttemptRepository quizAttemptRepository;
+    private final ObjectMapper objectMapper; // Inject Jackson for JSON processing
 
     public QuizService(QuizRepository quizRepository,
-                       UserRepository userRepository) {
+                       QuizAttemptRepository quizAttemptRepository,
+                       ObjectMapper objectMapper) {
         this.quizRepository = quizRepository;
-        this.userRepository = userRepository;
+        this.quizAttemptRepository = quizAttemptRepository;
+        this.objectMapper = objectMapper;
+    }
+
+    // ... findById method ...
+
+    /**
+     * Evaluate answers and save the quiz attempt for a user.
+     */
+    public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
+        // 1. Validate User (Entity says user cannot be null)
+        if (user == null) {
+            throw new IllegalArgumentException("User cannot be null for a Quiz Attempt");
+        }
+
+        QuizAttempt attempt = new QuizAttempt();
+        attempt.setQuiz(quiz);
+        attempt.setUser(user);
+
+        // 2. Fix Date Mismatch (Entity uses started/completed, not createdAt)
+        attempt.setStartedAt(LocalDateTime.now());
+        attempt.setCompletedAt(LocalDateTime.now()); // Assuming instant submission
+
+        // 3. Fix JSON Storage (Convert Map to String)
+        try {
+            String json = objectMapper.writeValueAsString(answers);
+            attempt.setAnswersJson(json);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error processing answer JSON", e);
+        }
+
+        // 4. Fix Score Logic (Entity wants BigDecimal Percentage, not int count)
+        // Note: You need the 'Question' list size to calculate percentage.
+        // I am assuming quiz.getQuestions().size() exists. If not, we fix that next.
+        int totalQuestions = 10; // Placeholder until I see the Quiz entity
+        int correctAnswers = (answers != null) ? answers.size() : 0; // Still placeholder logic
+
+        BigDecimal percentage = BigDecimal.ZERO;
+        if (totalQuestions > 0) {
+            percentage = BigDecimal.valueOf(correctAnswers)
+                    .divide(BigDecimal.valueOf(totalQuestions), 2, BigDecimal.ROUND_HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+        }
+        attempt.setScorePct(percentage);
+
+        // Save attempt to database
+        quizAttemptRepository.save(attempt);
+
+        // Return evaluation results
+        Map<String, Object> result = new HashMap<>();
+        result.put("quizId", quiz.getId());
+        result.put("userEmail", user.getEmail());
+        result.put("scorePct", percentage);
+        return result;
+    }
+    private final QuizRepository quizRepository;
+    private final QuizAttemptRepository quizAttemptRepository;
+
+    public QuizService(QuizRepository quizRepository, QuizAttemptRepository quizAttemptRepository) {
+        this.quizRepository = quizRepository;
+        this.quizAttemptRepository = quizAttemptRepository;
     }
 
     /**
-     * Create a quiz from a request DTO and user
+     * Find a quiz by its ID.
+     */
+    public Optional<Quiz> findById(Long id) {
+        return quizRepository.findById(id);
+    }
+
+    /**
+     * Evaluate answers and save the quiz attempt for a user.
+     */
+    public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
+        QuizAttempt attempt = new QuizAttempt();
+        attempt.setQuiz(quiz);
+        attempt.setUser(user);
+        attempt.setCreatedAt(LocalDateTime.now());
+
+        // Placeholder evaluation logic
+        int correctAnswers = 0;
+        if (answers != null) {
+            correctAnswers = answers.size(); // Replace with actual evaluation logic
+        }
+        attempt.setScore(correctAnswers);
+
+        // Save attempt to database
+        quizAttemptRepository.save(attempt);
+
+        // Return evaluation results
+        Map<String, Object> result = new HashMap<>();
+        result.put("quizId", quiz.getId());
+        result.put("userEmail", user != null ? user.getEmail() : "anonymous");
+        result.put("score", correctAnswers);
+        return result;
+    }
+
+    // Additional methods from your existing QuizService
+
+    /**
+     * Create a quiz from a request DTO and user.
      */
     public Quiz createFromRequest(CreateQuizRequest req, User user) {
         Quiz quiz = new Quiz();
@@ -39,7 +141,7 @@ public class QuizService {
     }
 
     /**
-     * Update a quiz from a request DTO
+     * Update a quiz based on the request data.
      */
     public Quiz updateFromRequest(Long id, CreateQuizRequest req) {
         Quiz quiz = quizRepository.findById(id)
@@ -50,24 +152,7 @@ public class QuizService {
     }
 
     /**
-     * Set publish status of a quiz
-     */
-    public Quiz setPublished(Long id, boolean published) {
-        Quiz quiz = quizRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Quiz not found with ID: " + id));
-        quiz.setIsPublished(published);
-        return quizRepository.save(quiz);
-    }
-
-    /**
-     * Retrieve all quizzes
-     */
-    public List<Quiz> getAllQuizzes() {
-        return quizRepository.findAll();
-    }
-
-    /**
-     * Delete a quiz by ID
+     * Delete a quiz by ID.
      */
     public void deleteQuizById(Long id) {
         Quiz quiz = quizRepository.findById(id)

@@ -16,10 +16,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Admin controller to manage quizzes.
- * Protected endpoints should be accessed with an Admin JWT.
- */
 @RestController
 @RequestMapping("/api/secure/admin/quizzes")
 @CrossOrigin(origins = "*")
@@ -39,11 +35,13 @@ public class AdminQuizController {
         return userRepository.findByEmail(email)
                 .map(u -> {
                     try {
+                        // Check roles for ADMIN
                         return u.getRoles() != null && u.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_ADMIN"));
                     } catch (Exception ex) {
                         return "ADMIN".equalsIgnoreCase(u.getRole());
                     }
-                }).orElse(false);
+                })
+                .orElse(false);
     }
 
     private Optional<User> getAuthenticatedUser(Authentication auth) {
@@ -62,11 +60,11 @@ public class AdminQuizController {
 
     @PostMapping
     public ResponseEntity<?> create(Authentication auth, @RequestBody CreateQuizRequest req) {
-        Optional<User> u = getAuthenticatedUser(auth);
-        if (u.isEmpty()) return ResponseEntity.status(401).body(Map.of("error", "unauthenticated"));
+        Optional<User> user = getAuthenticatedUser(auth);
+        if (user.isEmpty()) return ResponseEntity.status(401).body(Map.of("error", "unauthenticated"));
         try {
-            Quiz created = quizService.createFromRequest(req, u.get());
-            return ResponseEntity.status(201).body(QuizMapper.toDto(created));
+            Quiz createdQuiz = quizService.createFromRequest(req, user.get());
+            return ResponseEntity.status(201).body(QuizMapper.toDto(createdQuiz));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
         }
@@ -76,8 +74,8 @@ public class AdminQuizController {
     public ResponseEntity<?> update(Authentication auth, @PathVariable Long id, @RequestBody CreateQuizRequest req) {
         if (!isAdmin(auth)) return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
         try {
-            Quiz updated = quizService.updateFromRequest(id, req);
-            return ResponseEntity.ok(QuizMapper.toDto(updated));
+            Quiz updatedQuiz = quizService.updateFromRequest(id, req);
+            return ResponseEntity.ok(QuizMapper.toDto(updatedQuiz));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
         }
@@ -87,8 +85,8 @@ public class AdminQuizController {
     public ResponseEntity<?> publish(Authentication auth, @PathVariable Long id) {
         if (!isAdmin(auth)) return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
         try {
-            Quiz q = quizService.setPublished(id, true);
-            return ResponseEntity.ok(QuizMapper.toDto(q));
+            Quiz publishedQuiz = quizService.setPublished(id, true);
+            return ResponseEntity.ok(QuizMapper.toDto(publishedQuiz));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
         }
@@ -98,8 +96,8 @@ public class AdminQuizController {
     public ResponseEntity<?> unpublish(Authentication auth, @PathVariable Long id) {
         if (!isAdmin(auth)) return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
         try {
-            Quiz q = quizService.setPublished(id, false); // Fixed typo here
-            return ResponseEntity.ok(QuizMapper.toDto(q));
+            Quiz unpublishedQuiz = quizService.setPublished(id, false);
+            return ResponseEntity.ok(QuizMapper.toDto(unpublishedQuiz));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
         }
