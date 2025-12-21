@@ -1,10 +1,12 @@
 package org.nikolic.programm.dtos;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 public class QuestionDto {
     private Long id;
     private String qtype;
