@@ -1,7 +1,6 @@
 package org.nikolic.programm.security;
 
 import org.nikolic.programm.entities.Role;
-import org.nikolic.programm.repositories.RoleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;

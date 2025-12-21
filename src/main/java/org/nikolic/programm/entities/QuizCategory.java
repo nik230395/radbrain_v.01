@@ -20,7 +20,7 @@ public class QuizCategory {
     @Column(nullable = false, unique = true)
     private String name;
 
-    @ManyToMany(mappedBy = "categories")
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Quiz> quizzes;
 }

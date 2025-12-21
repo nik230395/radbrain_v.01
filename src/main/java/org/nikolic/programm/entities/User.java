@@ -4,59 +4,59 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
+/**
+ * User Entity - verwendet ENUM für Rollen (einfachste Lösung)
+ * Passt zur bestehenden DB-Struktur mit role ENUM('user','admin')
+ */
 @Data
 @Entity
 @Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // User-ID
+    private Long id;
 
     @Column(unique = true, nullable = false)
-    private String email; // Login-E-Mail-Adresse
+    private String email;
 
-    // explizite Spalten-Mapping, damit es mit deinem SQL-Dump passt
     @Column(name = "password_hash", nullable = false)
-    private String password_hash; // Verschlüsseltes Passwort
+    private String password_hash;
 
     @Column(name = "full_name")
-    private String fullname; // Name des Benutzers (mapped to full_name)
+    private String fullname;
 
     @Column(name = "is_active")
-    private Boolean is_active; // Ist der Account aktiv/sichtbar
+    private Boolean is_active;
 
     @Column(name = "created_at")
-    private LocalDateTime created_at; // Registriert am
+    private LocalDateTime created_at;
+
+    // ENUM Role - passt zur DB: enum('user','admin')
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private UserRole role = UserRole.USER; // keine klasse UserRole sondern nur Role
 
     @OneToMany(mappedBy = "createdBy")
-    private List<Quiz> createdQuizzes; // Vom User erstelle Quizzes
+    private List<Quiz> createdQuizzes;
 
-    // explizites Mapping zum role-Feld in der users-Tabelle
-    @Column(name = "role")
-    private String role; // Rolle des Benutzers (z.B. ADMIN, USER)
-
-    @ManyToMany(fetch = FetchType.EAGER) // kein Cascade: rollen separat verwalten
-    @JoinTable(
-            name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles = new HashSet<>();
-
-    public User() {}
-
-    // Hilfsmethoden zum Verwalten der Rollen
-    public void addRole(Role role) {
-        if (role == null) return;
-        this.roles.add(role);
+    public User() {
+        this.is_active = true;
+        this.created_at = LocalDateTime.now();
+        this.role = UserRole.USER;
     }
 
-    public void removeRole(Role role) {
-        if (role == null) return;
-        this.roles.remove(role);
+    // Helper methods für Role-Checks
+    public boolean isAdmin() {
+        return this.role == UserRole.ADMIN;
+    }
+
+    public boolean isUser() {
+        return this.role == UserRole.USER;
+    }
+
+    public String getRoleAsString() {
+        return "ROLE_" + this.role.name();
     }
 }

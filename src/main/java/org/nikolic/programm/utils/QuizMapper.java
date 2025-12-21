@@ -10,7 +10,7 @@ public class QuizMapper {
         dto.setId(quiz.getId());
         dto.setTitle(quiz.getTitle());
         dto.setDescription(quiz.getDescription());
-        dto.setCategory(quiz.getCategory());
+        dto.setCategory(quiz.getCategory().getName());
         dto.setIsPublished(quiz.getIsPublished());
         if (quiz.getCreatedBy() != null) {
             dto.setCreatedByEmail(quiz.getCreatedBy().getEmail());
