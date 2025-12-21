@@ -3,11 +3,10 @@ package org.nikolic.programm.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.nikolic.programm.enums.UserRole;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -37,28 +36,30 @@ public class User {
     @OneToMany(mappedBy = "createdBy")
     private List<Quiz> createdQuizzes; // Vom User erstelle Quizzes
 
-    // explizites Mapping zum role-Feld in der users-Tabelle
-    @Column(name = "role")
-    private String role; // Rolle des Benutzers (z.B. ADMIN, USER)
-
-    @ManyToMany(fetch = FetchType.EAGER) // kein Cascade: rollen separat verwalten
-    @JoinTable(
-            name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles = new HashSet<>();
+    // Use UserRole enum instead of Set<Role> for better performance and simplicity
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", nullable = false)
+    private UserRole userRole = UserRole.USER; // Default to USER role
 
     public User() {}
 
-    // Hilfsmethoden zum Verwalten der Rollen
-    public void addRole(Role role) {
-        if (role == null) return;
-        this.roles.add(role);
+    // Utility methods for checking user roles
+    public boolean isAdmin() {
+        return this.userRole == UserRole.ADMIN;
     }
 
-    public void removeRole(Role role) {
-        if (role == null) return;
-        this.roles.remove(role);
+    public boolean isUser() {
+        return this.userRole == UserRole.USER;
+    }
+
+    public boolean hasRole(UserRole role) {
+        return this.userRole == role;
+    }
+
+    /**
+     * Get role name with ROLE_ prefix for Spring Security compatibility
+     */
+    public String getRoleNameForSecurity() {
+        return userRole != null ? userRole.getRoleName() : UserRole.USER.getRoleName();
     }
 }

@@ -33,14 +33,7 @@ public class AdminQuizController {
         if (auth == null) return false;
         String email = auth.getName();
         return userRepository.findByEmail(email)
-                .map(u -> {
-                    try {
-                        // Check roles for ADMIN
-                        return u.getRoles() != null && u.getRoles().stream().anyMatch(r -> r.getName().equals("ROLE_ADMIN"));
-                    } catch (Exception ex) {
-                        return "ADMIN".equalsIgnoreCase(u.getRole());
-                    }
-                })
+                .map(User::isAdmin)
                 .orElse(false);
     }
 

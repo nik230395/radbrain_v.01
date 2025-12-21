@@ -2,7 +2,6 @@ package org.nikolic.programm.controllers;
 
 import org.nikolic.programm.dtos.RegisterRequest;
 import org.nikolic.programm.entities.User;
-import org.nikolic.programm.repositories.RoleRepository;
 import org.nikolic.programm.repositories.UserRepository;
 import org.nikolic.programm.security.JwtUtil;
 import org.nikolic.programm.services.RegistrationCacheService;
@@ -24,9 +23,6 @@ public class UserApiController {
     private final UserRepository userRepository;
     private final RegistrationCacheService registrationCacheService;
     private final JwtUtil jwtUtil;
-
-    @Autowired(required = false)
-    private RoleRepository roleRepository;
 
     public UserApiController(UserRepository userRepository,
                              RegistrationCacheService registrationCacheService,
