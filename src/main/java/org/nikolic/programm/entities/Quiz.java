@@ -19,7 +19,9 @@ public class Quiz {
     @Column(length = 500)
     private String description;
 
-    private String category; // New field for quiz category
+    @ManyToOne
+    @JoinColumn(name = "quiz_category_id") // Foreign key column
+    private QuizCategory category;
 
     @ManyToOne
     @JoinColumn(name = "created_by_id", nullable = false)

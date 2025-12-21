@@ -5,6 +5,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Choice Entity (Multiple Choice Antwort-Option)
+ * ✅ FIX: Field names passen zur DB (snake_case)
+ */
 @Data
 @NoArgsConstructor
 @Entity
@@ -13,18 +17,20 @@ public class Choice {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Antwort-ID
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)
     @ToString.Exclude
-    private Question question; // Zugehörige Frage
+    private Question question;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String text; // Antworttext
+    private String text;
 
+    // ✅ FIX: is_correct in DB
     @Column(name = "is_correct")
-    private Boolean isCorrect; // Ist diese Antwort korrekt?
+    private Boolean is_correct = false; // Verwende snake_case wie DB
 
-    private Integer position; // Position unter den Auswahlmöglichkeiten
+    @Column(name = "position")
+    private Integer position = 0;
 }

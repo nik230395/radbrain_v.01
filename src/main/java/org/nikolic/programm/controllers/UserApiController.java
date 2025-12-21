@@ -2,7 +2,6 @@ package org.nikolic.programm.controllers;
 
 import org.nikolic.programm.dtos.RegisterRequest;
 import org.nikolic.programm.entities.User;
-import org.nikolic.programm.repositories.RoleRepository;
 import org.nikolic.programm.repositories.UserRepository;
 import org.nikolic.programm.security.JwtUtil;
 import org.nikolic.programm.services.RegistrationCacheService;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -80,12 +78,21 @@ public class UserApiController {
         // create JWT token for the newly created user
         String token = jwtUtil.createToken(created.getEmail(), created.getId());
 
+        // Include roles in response
+        java.util.List<String> roleNames = new java.util.ArrayList<>();
+        if (created.getRoles() != null && !created.getRoles().isEmpty()) {
+            created.getRoles().forEach(role -> roleNames.add(role.getName()));
+        } else if (created.getRole() != null) {
+            roleNames.add(created.getRole());
+        }
+
         Map<String, Object> resp = new HashMap<>();
         resp.put("message", "verified");
         resp.put("id", created.getId());
         resp.put("email", created.getEmail());
         resp.put("fullname", created.getFullname());
         resp.put("token", token);
+        resp.put("roles", roleNames);
 
         return ResponseEntity.ok(resp);
     }

@@ -3,7 +3,6 @@ package org.nikolic.programm.services;
 import org.nikolic.programm.dtos.RegistrationCacheEntry;
 import org.nikolic.programm.entities.User;
 import org.nikolic.programm.entities.Role;
-import org.nikolic.programm.repositories.RoleRepository;
 import org.nikolic.programm.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

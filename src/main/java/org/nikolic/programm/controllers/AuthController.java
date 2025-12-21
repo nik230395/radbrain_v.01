@@ -53,12 +53,22 @@ public class AuthController {
         }
 
         String token = jwtUtil.createToken(user.getEmail(), user.getId());
+        
+        // Include roles in response
+        java.util.List<String> roleNames = new java.util.ArrayList<>();
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            user.getRoles().forEach(role -> roleNames.add(role.getName()));
+        } else if (user.getRole() != null) {
+            roleNames.add(user.getRole());
+        }
+        
         return ResponseEntity.ok(Map.of(
                 "message", "login_success",
                 "id", user.getId(),
                 "email", user.getEmail(),
                 "fullname", user.getFullname(),
-                "token", token
+                "token", token,
+                "roles", roleNames
         ));
     }
 }

@@ -7,18 +7,32 @@
     <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
+<nav class="navbar" style="margin-bottom: 20px;">
+    <div class="nav-left">
+        <span class="logo-text" style="font-size: 1.4rem; font-weight: bold;">RadBrain Quiz</span>
+    </div>
+    <ul class="nav-menu">
+        <li class="nav-item"><a href="dashboard.html" class="nav-link">Dashboard</a></li>
+        <li class="nav-item" id="adminNavItem" style="display: none;"><a href="admin-dashboard.html" class="nav-link">Admin Panel</a></li>
+    </ul>
+</nav>
 <main class="container" style="max-width:900px;margin:28px auto;">
     <h1 id="qTitle">Quiz</h1>
     <p id="qDesc"></p>
     <div id="questions"></div>
-    <div style="margin-top:12px;">
-        <button id="submitBtn">Abgeben</button>
+    <div style="margin-top:20px;">
+        <button id="submitBtn" style="padding:12px 30px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:1.1rem;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='var(--primary-700)'" onmouseout="this.style.background='var(--primary)'">Abgeben</button>
     </div>
     <div id="result" style="margin-top:12px;"></div>
 </main>
 
 <script src="/auth.js"></script>
 <script>
+    // Check if user is admin and show admin panel link
+    if (window.auth && window.auth.isLoggedIn() && window.auth.hasRole('ADMIN')) {
+        document.getElementById('adminNavItem').style.display = 'block';
+    }
+    
     (async function() {
         const params = new URLSearchParams(location.search);
         const id = params.get('id');
@@ -39,22 +53,46 @@
         const answers = {};
 
         quiz.questions.forEach((q, idx) => {
-            const div = document.createElement('div'); div.className='question';
-            div.innerHTML = `<div><strong>${idx+1}. ${q.text}</strong></div>`;
+            const div = document.createElement('div'); 
+            div.className='question-card';
+            div.style.cssText = 'background:var(--card);padding:20px;margin:15px 0;border-radius:12px;border:1px solid #e0e0e0;';
+            
+            const questionHeader = document.createElement('div');
+            questionHeader.style.cssText = 'margin-bottom:15px;';
+            questionHeader.innerHTML = `<strong style="font-size:1.1rem;color:var(--primary);">${idx+1}. ${q.text}</strong>`;
+            div.appendChild(questionHeader);
+            
             const choicesDiv = document.createElement('div');
+            choicesDiv.style.cssText = 'margin-top:12px;';
+            
             if (q.qtype === 'SHORT_TEXT') {
-                const ta = document.createElement('textarea'); ta.style.width='100%'; ta.rows=3;
+                const ta = document.createElement('textarea'); 
+                ta.style.cssText = 'width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:1rem;';
+                ta.rows = 4;
+                ta.placeholder = 'Geben Sie Ihre Antwort hier ein...';
                 ta.addEventListener('input', ()=> { answers[q.id] = ta.value; });
                 choicesDiv.appendChild(ta);
             } else {
                 q.choices.forEach(c => {
                     const wrapper = document.createElement('label');
-                    wrapper.style='display:flex;gap:8px;align-items:center';
+                    wrapper.style.cssText = 'display:flex;gap:12px;align-items:center;padding:12px;margin:8px 0;background:white;border-radius:8px;cursor:pointer;transition:all 0.2s;border:2px solid transparent;';
+                    wrapper.onmouseenter = () => wrapper.style.borderColor = 'var(--primary-light)';
+                    wrapper.onmouseleave = () => {
+                        if (!wrapper.querySelector('input').checked) wrapper.style.borderColor = 'transparent';
+                    };
+                    
                     const inp = document.createElement('input');
                     inp.type = (q.qtype === 'SINGLE') ? 'radio' : 'checkbox';
                     inp.name = 'q_' + q.id;
                     inp.value = c.id;
+                    inp.style.cssText = 'width:18px;height:18px;cursor:pointer;';
                     inp.addEventListener('change', ()=> {
+                        // Update border colors
+                        document.querySelectorAll(`input[name="q_${q.id}"]`).forEach(i => {
+                            i.parentElement.style.borderColor = i.checked ? 'var(--primary)' : 'transparent';
+                            i.parentElement.style.background = i.checked ? '#f0edff' : 'white';
+                        });
+                        
                         if (q.qtype === 'SINGLE') {
                             answers[q.id] = [Number(inp.value)];
                         } else {
@@ -64,7 +102,9 @@
                         }
                     });
                     wrapper.appendChild(inp);
-                    const span = document.createElement('span'); span.textContent = c.text;
+                    const span = document.createElement('span'); 
+                    span.textContent = c.text;
+                    span.style.cssText = 'flex:1;font-size:1rem;';
                     wrapper.appendChild(span);
                     choicesDiv.appendChild(wrapper);
                 });
@@ -74,14 +114,40 @@
         });
 
         submitBtn.addEventListener('click', async () => {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Wird gesendet...';
+            
             const payload = { answers };
-            const submitRes = await window.auth.authFetch('/api/quizzes/' + id + '/submit', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+            const submitRes = await window.auth.authFetch('/api/quizzes/' + id + '/submit', { 
+                method:'POST', 
+                headers:{'Content-Type':'application/json'}, 
+                body: JSON.stringify(payload) 
+            });
             const body = await submitRes.json().catch(()=> ({}));
+            
             if (!submitRes.ok) {
-                resultEl.innerHTML = '<div style="color:#e04e4e">Fehler: ' + (body.error || body.message || submitRes.statusText) + '</div>';
+                resultEl.innerHTML = `
+                    <div style="background:#fee;padding:20px;border-radius:12px;border-left:4px solid var(--danger);margin-top:20px;">
+                        <strong style="color:var(--danger);">Fehler:</strong> ${body.error || body.message || submitRes.statusText}
+                    </div>`;
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Abgeben';
                 return;
             }
-            resultEl.innerHTML = '<div style="background:#e8ffef;padding:12px;border-radius:8px">Dein Ergebnis: <strong>' + (body.scorePct?.toString() || body.score||0) + '</strong></div>';
+            
+            const score = body.scorePct?.toString() || body.score || 0;
+            resultEl.innerHTML = `
+                <div style="background:#e8ffef;padding:25px;border-radius:12px;border-left:4px solid var(--success);margin-top:20px;">
+                    <h3 style="margin:0 0 15px 0;color:var(--success);">Quiz abgeschlossen! 🎉</h3>
+                    <p style="font-size:1.2rem;margin:0;">Dein Ergebnis: <strong style="font-size:1.8rem;color:var(--primary);">${score}%</strong></p>
+                    <div style="margin-top:20px;display:flex;gap:12px;">
+                        <button onclick="location.reload()" style="padding:10px 20px;background:var(--primary);color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">Nochmal versuchen</button>
+                        <button onclick="location.href='dashboard.html'" style="padding:10px 20px;background:var(--primary-light);color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">Zurück zum Dashboard</button>
+                    </div>
+                </div>`;
+            
+            // Hide submit button after successful submission
+            submitBtn.style.display = 'none';
         });
 
     })();

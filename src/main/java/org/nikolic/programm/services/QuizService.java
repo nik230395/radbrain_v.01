@@ -3,26 +3,25 @@ package org.nikolic.programm.services;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.nikolic.programm.dtos.CreateQuizRequest;
-import org.nikolic.programm.entities.Quiz;
-import org.nikolic.programm.entities.QuizAttempt;
-import org.nikolic.programm.entities.User;
+import org.nikolic.programm.entities.*;
 import org.nikolic.programm.repositories.QuizAttemptRepository;
 import org.nikolic.programm.repositories.QuizRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.*;
 
+/**
+ * Quiz Service - Business Logic für Quizzes
+ * ✅ FIX: Korrekte Answer Validation statt Fake Scoring!
+ */
 @Service
 public class QuizService {
     private final QuizRepository quizRepository;
     private final QuizAttemptRepository quizAttemptRepository;
-    private final ObjectMapper objectMapper; // Inject Jackson for JSON processing
+    private final ObjectMapper objectMapper;
 
     public QuizService(QuizRepository quizRepository,
                        QuizAttemptRepository quizAttemptRepository,
@@ -32,13 +31,27 @@ public class QuizService {
         this.objectMapper = objectMapper;
     }
 
-    // ... findById method ...
+    public Optional<Quiz> findById(Long id) {
+        return quizRepository.findById(id);
+    }
+
+    public List<Quiz> getAllQuizzes() {
+        return quizRepository.findAll();
+    }
+
+    public List<Quiz> getPublishedQuizzes() {
+        return quizRepository.findByIsPublishedTrue();
+    }
 
     /**
-     * Evaluate answers and save the quiz attempt for a user.
+     * ✅ FIX: Evaluate answers properly and save quiz attempt
+     *
+     * @param quiz The quiz being taken
+     * @param user The user taking the quiz
+     * @param answers Map of questionId -> answer (can be Long for SINGLE, List<Long> for MULTIPLE, String for TEXT)
+     * @return Map with evaluation results
      */
     public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
-        // 1. Validate User (Entity says user cannot be null)
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null for a Quiz Attempt");
         }
@@ -46,12 +59,10 @@ public class QuizService {
         QuizAttempt attempt = new QuizAttempt();
         attempt.setQuiz(quiz);
         attempt.setUser(user);
-
-        // 2. Fix Date Mismatch (Entity uses started/completed, not createdAt)
         attempt.setStartedAt(LocalDateTime.now());
-        attempt.setCompletedAt(LocalDateTime.now()); // Assuming instant submission
+        attempt.setCompletedAt(LocalDateTime.now());
 
-        // 3. Fix JSON Storage (Convert Map to String)
+        // Convert answers to JSON
         try {
             String json = objectMapper.writeValueAsString(answers);
             attempt.setAnswersJson(json);
@@ -59,77 +70,230 @@ public class QuizService {
             throw new RuntimeException("Error processing answer JSON", e);
         }
 
-        // 4. Fix Score Logic (Entity wants BigDecimal Percentage, not int count)
-        // Note: You need the 'Question' list size to calculate percentage.
-        // I am assuming quiz.getQuestions().size() exists. If not, we fix that next.
-        int totalQuestions = 10; // Placeholder until I see the Quiz entity
-        int correctAnswers = (answers != null) ? answers.size() : 0; // Still placeholder logic
-
-        BigDecimal percentage = BigDecimal.ZERO;
-        if (totalQuestions > 0) {
-            percentage = BigDecimal.valueOf(correctAnswers)
-                    .divide(BigDecimal.valueOf(totalQuestions), 2, BigDecimal.ROUND_HALF_UP)
-                    .multiply(BigDecimal.valueOf(100));
+        // ✅ FIX: Calculate REAL score by validating answers!
+        List<Question> questions = quiz.getQuestions();
+        if (questions == null || questions.isEmpty()) {
+            attempt.setScorePct(BigDecimal.ZERO);
+            quizAttemptRepository.save(attempt);
+            return buildResult(quiz, user, BigDecimal.ZERO, 0, 0);
         }
-        attempt.setScorePct(percentage);
 
-        // Save attempt to database
+        int totalQuestions = questions.size();
+        int correctAnswers = 0;
+
+        // Evaluate each question
+        for (Question question : questions) {
+            Object userAnswer = answers.get(question.getId());
+            if (userAnswer == null) {
+                continue; // Unanswered question
+            }
+
+            boolean isCorrect = evaluateQuestion(question, userAnswer);
+            if (isCorrect) {
+                correctAnswers++;
+            }
+        }
+
+        // Calculate percentage
+        BigDecimal percentage = BigDecimal.valueOf(correctAnswers)
+                .divide(BigDecimal.valueOf(totalQuestions), 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(2, RoundingMode.HALF_UP);
+
+        attempt.setScorePct(percentage);
         quizAttemptRepository.save(attempt);
 
-        // Return evaluation results
+        return buildResult(quiz, user, percentage, correctAnswers, totalQuestions);
+    }
+
+    /**
+     * ✅ NEW: Evaluate a single question
+     *
+     * @param question The question to evaluate
+     * @param userAnswer User's answer (Long, List<Long>, or String depending on question type)
+     * @return true if answer is correct
+     */
+    private boolean evaluateQuestion(Question question, Object userAnswer) {
+        switch (question.getQtype()) {
+            case SINGLE:
+                return evaluateSingleChoice(question, userAnswer);
+
+            case MULTIPLE:
+                return evaluateMultipleChoice(question, userAnswer);
+
+            case SHORT_TEXT:
+            case FILL_GAP:
+                return evaluateTextAnswer(question, userAnswer);
+
+            case TRUE_FALSE:
+                return evaluateTrueFalse(question, userAnswer);
+
+            default:
+                return false; // Unknown question type
+        }
+    }
+
+    /**
+     * Evaluate SINGLE choice question (one correct answer)
+     */
+    private boolean evaluateSingleChoice(Question question, Object userAnswer) {
+        if (question.getChoices() == null || question.getChoices().isEmpty()) {
+            return false;
+        }
+
+        Long selectedChoiceId;
+        if (userAnswer instanceof List) {
+            List<?> list = (List<?>) userAnswer;
+            if (list.isEmpty()) return false;
+            selectedChoiceId = convertToLong(list.get(0));
+        } else {
+            selectedChoiceId = convertToLong(userAnswer);
+        }
+
+        if (selectedChoiceId == null) return false;
+
+        // Find the selected choice
+        for (Choice choice : question.getChoices()) {
+            if (choice.getId().equals(selectedChoiceId)) {
+                return Boolean.TRUE.equals(choice.getIs_correct());
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Evaluate MULTIPLE choice question (multiple correct answers)
+     */
+    private boolean evaluateMultipleChoice(Question question, Object userAnswer) {
+        if (question.getChoices() == null || question.getChoices().isEmpty()) {
+            return false;
+        }
+
+        List<?> selectedIds;
+        if (userAnswer instanceof List) {
+            selectedIds = (List<?>) userAnswer;
+        } else {
+            selectedIds = List.of(userAnswer);
+        }
+
+        Set<Long> userSelection = new HashSet<>();
+        for (Object id : selectedIds) {
+            Long choiceId = convertToLong(id);
+            if (choiceId != null) {
+                userSelection.add(choiceId);
+            }
+        }
+
+        // Get all correct choice IDs
+        Set<Long> correctIds = new HashSet<>();
+        for (Choice choice : question.getChoices()) {
+            if (Boolean.TRUE.equals(choice.getIs_correct())) {
+                correctIds.add(choice.getId());
+            }
+        }
+
+        // User must select EXACTLY the correct choices (no more, no less)
+        return userSelection.equals(correctIds);
+    }
+
+    /**
+     * Evaluate text answer (SHORT_TEXT, FILL_GAP)
+     */
+    private boolean evaluateTextAnswer(Question question, Object userAnswer) {
+        if (!(userAnswer instanceof String)) {
+            return false;
+        }
+
+        String answer = ((String) userAnswer).trim();
+        if (answer.isEmpty()) {
+            return false;
+        }
+
+        // Check against acceptable answers
+        if (question.getAcceptableAnswers() == null || question.getAcceptableAnswers().isEmpty()) {
+            // No acceptable answers defined -> cannot evaluate
+            return false;
+        }
+
+        for (AcceptableAnswer acceptable : question.getAcceptableAnswers()) {
+            if (matchesAcceptableAnswer(answer, acceptable)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Evaluate TRUE/FALSE question
+     */
+    private boolean evaluateTrueFalse(Question question, Object userAnswer) {
+        // TRUE_FALSE is essentially a SINGLE choice with 2 options
+        return evaluateSingleChoice(question, userAnswer);
+    }
+
+    /**
+     * Check if user answer matches an acceptable answer
+     */
+    private boolean matchesAcceptableAnswer(String userAnswer, AcceptableAnswer acceptable) {
+        String acceptableText = acceptable.getAnswer_text();
+        if (acceptableText == null) return false;
+
+        switch (acceptable.getMatch_mode()) {
+            case EXACT:
+                return userAnswer.equals(acceptableText);
+
+            case CASE_INSENSITIVE:
+                return userAnswer.equalsIgnoreCase(acceptableText);
+
+            case CONTAINS:
+                return userAnswer.toLowerCase().contains(acceptableText.toLowerCase());
+
+            case REGEX:
+                try {
+                    return userAnswer.matches(acceptableText);
+                } catch (Exception e) {
+                    return false; // Invalid regex
+                }
+
+            default:
+                return false;
+        }
+    }
+
+    /**
+     * Helper to convert various number types to Long
+     */
+    private Long convertToLong(Object obj) {
+        if (obj == null) return null;
+        if (obj instanceof Long) return (Long) obj;
+        if (obj instanceof Integer) return ((Integer) obj).longValue();
+        if (obj instanceof String) {
+            try {
+                return Long.parseLong((String) obj);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Build evaluation result map
+     */
+    private Map<String, Object> buildResult(Quiz quiz, User user, BigDecimal percentage,
+                                            int correct, int total) {
         Map<String, Object> result = new HashMap<>();
         result.put("quizId", quiz.getId());
+        result.put("quizTitle", quiz.getTitle());
         result.put("userEmail", user.getEmail());
         result.put("scorePct", percentage);
-        return result;
-    }
-    private final QuizRepository quizRepository;
-    private final QuizAttemptRepository quizAttemptRepository;
-
-    public QuizService(QuizRepository quizRepository, QuizAttemptRepository quizAttemptRepository) {
-        this.quizRepository = quizRepository;
-        this.quizAttemptRepository = quizAttemptRepository;
-    }
-
-    /**
-     * Find a quiz by its ID.
-     */
-    public Optional<Quiz> findById(Long id) {
-        return quizRepository.findById(id);
-    }
-
-    /**
-     * Evaluate answers and save the quiz attempt for a user.
-     */
-    public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
-        QuizAttempt attempt = new QuizAttempt();
-        attempt.setQuiz(quiz);
-        attempt.setUser(user);
-        attempt.setCreatedAt(LocalDateTime.now());
-
-        // Placeholder evaluation logic
-        int correctAnswers = 0;
-        if (answers != null) {
-            correctAnswers = answers.size(); // Replace with actual evaluation logic
-        }
-        attempt.setScore(correctAnswers);
-
-        // Save attempt to database
-        quizAttemptRepository.save(attempt);
-
-        // Return evaluation results
-        Map<String, Object> result = new HashMap<>();
-        result.put("quizId", quiz.getId());
-        result.put("userEmail", user != null ? user.getEmail() : "anonymous");
-        result.put("score", correctAnswers);
+        result.put("correctAnswers", correct);
+        result.put("totalQuestions", total);
         return result;
     }
 
-    // Additional methods from your existing QuizService
+    // === CRUD Operations ===
 
-    /**
-     * Create a quiz from a request DTO and user.
-     */
     public Quiz createFromRequest(CreateQuizRequest req, User user) {
         Quiz quiz = new Quiz();
         quiz.setTitle(req.getTitle());
@@ -140,9 +304,6 @@ public class QuizService {
         return quizRepository.save(quiz);
     }
 
-    /**
-     * Update a quiz based on the request data.
-     */
     public Quiz updateFromRequest(Long id, CreateQuizRequest req) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Quiz not found with ID: " + id));
@@ -151,9 +312,13 @@ public class QuizService {
         return quizRepository.save(quiz);
     }
 
-    /**
-     * Delete a quiz by ID.
-     */
+    public Quiz setPublished(Long id, boolean published) {
+        Quiz quiz = quizRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Quiz not found with ID: " + id));
+        quiz.setIsPublished(published);
+        return quizRepository.save(quiz);
+    }
+
     public void deleteQuizById(Long id) {
         Quiz quiz = quizRepository.findById(id)
                 .orElseThrow(() -> new IllegalStateException("Quiz not found with ID: " + id));
