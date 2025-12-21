@@ -2,11 +2,9 @@ package org.nikolic.programm.controllers;
 
 import org.nikolic.programm.dtos.RegisterRequest;
 import org.nikolic.programm.entities.User;
-import org.nikolic.programm.repositories.RoleRepository;
 import org.nikolic.programm.repositories.UserRepository;
 import org.nikolic.programm.security.JwtUtil;
 import org.nikolic.programm.services.RegistrationCacheService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.MailException;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
@@ -24,9 +21,6 @@ public class UserApiController {
     private final UserRepository userRepository;
     private final RegistrationCacheService registrationCacheService;
     private final JwtUtil jwtUtil;
-
-    @Autowired(required = false)
-    private RoleRepository roleRepository;
 
     public UserApiController(UserRepository userRepository,
                              RegistrationCacheService registrationCacheService,
