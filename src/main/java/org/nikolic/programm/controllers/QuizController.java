@@ -36,9 +36,7 @@ public class QuizController {
 
     @GetMapping("/published")
     public ResponseEntity<?> getPublishedQuizzes() {
-        List<Quiz> publishedQuizzes = quizService.getAllQuizzes().stream()
-                .filter(q -> Boolean.TRUE.equals(q.getIsPublished()))
-                .collect(java.util.stream.Collectors.toList());
+        List<Quiz> publishedQuizzes = quizService.getPublishedQuizzes();
         List<QuizDto> dtos = publishedQuizzes.stream()
                 .map(QuizMapper::toDto)
                 .collect(java.util.stream.Collectors.toList());

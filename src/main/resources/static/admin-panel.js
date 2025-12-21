@@ -241,11 +241,13 @@ const adminPanel = (function() {
             return;
         }
         
+        const auxText = prompt('Enter auxiliary text (optional, leave empty to skip):') || null;
+        
         try {
             const response = await window.auth.authFetch(`${apiBaseUrl}/questions`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ quizId, qtype, text, auxText: '' })
+                body: JSON.stringify({ quizId, qtype, text, auxText })
             });
             
             if (!response.ok) {
@@ -288,12 +290,8 @@ const adminPanel = (function() {
     // Load statistics
     async function loadStatistics() {
         try {
-            // Load users count
-            const usersResponse = await window.auth.authFetch(`${apiBaseUrl}/users`);
-            if (usersResponse.ok) {
-                const users = await usersResponse.json();
-                document.getElementById('user-count').textContent = users.length;
-            }
+            // For now, use quiz count only. User count requires admin endpoint
+            // TODO: Create admin-specific statistics endpoint
             
             // Load quizzes count
             const quizzesResponse = await window.auth.authFetch(`${apiBaseUrl}/secure/admin/quizzes`);
@@ -302,7 +300,8 @@ const adminPanel = (function() {
                 document.getElementById('quiz-count').textContent = quizzes.length;
             }
             
-            // Attempt count placeholder
+            // Placeholders for future implementation
+            document.getElementById('user-count').textContent = 'N/A';
             document.getElementById('attempt-count').textContent = 'N/A';
         } catch (error) {
             console.error('Error loading statistics:', error);

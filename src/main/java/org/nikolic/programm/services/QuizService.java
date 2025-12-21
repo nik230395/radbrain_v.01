@@ -47,6 +47,13 @@ public class QuizService {
     }
 
     /**
+     * Get all published quizzes.
+     */
+    public List<Quiz> getPublishedQuizzes() {
+        return quizRepository.findByIsPublishedTrue();
+    }
+
+    /**
      * Evaluate answers and save the quiz attempt for a user.
      */
     public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
@@ -69,12 +76,14 @@ public class QuizService {
         }
 
         // Calculate score percentage
+        // NOTE: This is a simplified scoring logic that counts answered questions.
+        // For production, implement proper answer validation against correct choices/acceptable answers.
         int totalQuestions = quiz.getQuestions() != null ? quiz.getQuestions().size() : 0;
-        int correctAnswers = (answers != null) ? answers.size() : 0;
+        int answeredQuestions = (answers != null) ? answers.size() : 0;
 
         BigDecimal percentage = BigDecimal.ZERO;
         if (totalQuestions > 0) {
-            percentage = BigDecimal.valueOf(correctAnswers)
+            percentage = BigDecimal.valueOf(answeredQuestions)
                     .divide(BigDecimal.valueOf(totalQuestions), 2, BigDecimal.ROUND_HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
         }

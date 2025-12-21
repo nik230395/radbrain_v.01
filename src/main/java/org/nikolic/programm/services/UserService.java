@@ -15,6 +15,11 @@ import java.util.Optional;
 @Service
 @Transactional
 public class UserService {
+    
+    // Role constants
+    public static final String ROLE_ADMIN = "ROLE_ADMIN";
+    public static final String ADMIN = "ADMIN";
+    
     @Autowired
     private UserRepository userRepository;
 
@@ -105,9 +110,9 @@ public class UserService {
         // Check roles set first
         if (user.getRoles() != null && !user.getRoles().isEmpty()) {
             return user.getRoles().stream()
-                    .anyMatch(role -> "ROLE_ADMIN".equals(role.getName()) || "ADMIN".equals(role.getName()));
+                    .anyMatch(role -> ROLE_ADMIN.equals(role.getName()) || ADMIN.equals(role.getName()));
         }
         // Fallback to role string field
-        return "ADMIN".equalsIgnoreCase(user.getRole());
+        return ADMIN.equalsIgnoreCase(user.getRole());
     }
 }
