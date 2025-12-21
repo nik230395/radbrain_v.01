@@ -38,7 +38,7 @@ public class Role {
         if (this == o) return true;
         if (!(o instanceof Role)) return false;
         Role role = (Role) o;
-        return name != null && name.equals(role.getName());
+        return name != null && name.equals(role.name);
     }
 
     @Override

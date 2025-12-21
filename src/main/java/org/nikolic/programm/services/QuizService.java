@@ -32,7 +32,29 @@ public class QuizService {
         this.objectMapper = objectMapper;
     }
 
-    // ... findById method ...
+    /**
+     * Find a quiz by its ID.
+     */
+    public Optional<Quiz> findById(Long id) {
+        return quizRepository.findById(id);
+    }
+
+    /**
+     * Get all quizzes
+     */
+    public List<Quiz> getAllQuizzes() {
+        return quizRepository.findAll();
+    }
+
+    /**
+     * Set published status
+     */
+    public Quiz setPublished(Long id, boolean published) {
+        Quiz quiz = quizRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Quiz not found with ID: " + id));
+        quiz.setIsPublished(published);
+        return quizRepository.save(quiz);
+    }
 
     /**
      * Evaluate answers and save the quiz attempt for a user.
@@ -60,10 +82,8 @@ public class QuizService {
         }
 
         // 4. Fix Score Logic (Entity wants BigDecimal Percentage, not int count)
-        // Note: You need the 'Question' list size to calculate percentage.
-        // I am assuming quiz.getQuestions().size() exists. If not, we fix that next.
-        int totalQuestions = 10; // Placeholder until I see the Quiz entity
-        int correctAnswers = (answers != null) ? answers.size() : 0; // Still placeholder logic
+        int totalQuestions = 10; // Placeholder until actual quiz questions are evaluated
+        int correctAnswers = (answers != null) ? answers.size() : 0; // Placeholder logic
 
         BigDecimal percentage = BigDecimal.ZERO;
         if (totalQuestions > 0) {
@@ -83,49 +103,6 @@ public class QuizService {
         result.put("scorePct", percentage);
         return result;
     }
-    private final QuizRepository quizRepository;
-    private final QuizAttemptRepository quizAttemptRepository;
-
-    public QuizService(QuizRepository quizRepository, QuizAttemptRepository quizAttemptRepository) {
-        this.quizRepository = quizRepository;
-        this.quizAttemptRepository = quizAttemptRepository;
-    }
-
-    /**
-     * Find a quiz by its ID.
-     */
-    public Optional<Quiz> findById(Long id) {
-        return quizRepository.findById(id);
-    }
-
-    /**
-     * Evaluate answers and save the quiz attempt for a user.
-     */
-    public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
-        QuizAttempt attempt = new QuizAttempt();
-        attempt.setQuiz(quiz);
-        attempt.setUser(user);
-        attempt.setCreatedAt(LocalDateTime.now());
-
-        // Placeholder evaluation logic
-        int correctAnswers = 0;
-        if (answers != null) {
-            correctAnswers = answers.size(); // Replace with actual evaluation logic
-        }
-        attempt.setScore(correctAnswers);
-
-        // Save attempt to database
-        quizAttemptRepository.save(attempt);
-
-        // Return evaluation results
-        Map<String, Object> result = new HashMap<>();
-        result.put("quizId", quiz.getId());
-        result.put("userEmail", user != null ? user.getEmail() : "anonymous");
-        result.put("score", correctAnswers);
-        return result;
-    }
-
-    // Additional methods from your existing QuizService
 
     /**
      * Create a quiz from a request DTO and user.
