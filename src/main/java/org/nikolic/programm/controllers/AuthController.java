@@ -58,7 +58,8 @@ public class AuthController {
                 "id", user.getId(),
                 "email", user.getEmail(),
                 "fullname", user.getFullname(),
-                "token", token
+                "token", token,
+                "role", user.getRole() // Include role in login response
         ));
     }
 }

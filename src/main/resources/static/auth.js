@@ -6,20 +6,19 @@ window.auth = (function(){
     const TOKEN_KEY = 'authToken';
     const EMAIL_KEY = 'userEmail';
     const NAME_KEY = 'userFullname';
-    const ROLES_KEY = 'userRoles'; // JSON array string
+    const ROLE_KEY = 'userRole'; // Single role string
 
     function getToken() { return localStorage.getItem(TOKEN_KEY); }
     function isLoggedIn() { return !!getToken(); }
 
-    // save login response (expects body.token, body.email, body.fullname, body.roles)
+    // save login response (expects body.token, body.email, body.fullname, body.role)
     function saveLogin(body) {
         if (!body) return;
         if (body.token) localStorage.setItem(TOKEN_KEY, body.token);
         if (body.email) localStorage.setItem(EMAIL_KEY, body.email);
         if (body.fullname) localStorage.setItem(NAME_KEY, body.fullname);
-        if (body.roles) {
-            const r = Array.isArray(body.roles) ? body.roles : (typeof body.roles === 'string' ? body.roles.split(',') : []);
-            localStorage.setItem(ROLES_KEY, JSON.stringify(r));
+        if (body.role) {
+            localStorage.setItem(ROLE_KEY, body.role);
         }
     }
 
@@ -27,22 +26,26 @@ window.auth = (function(){
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(EMAIL_KEY);
         localStorage.removeItem(NAME_KEY);
-        localStorage.removeItem(ROLES_KEY);
+        localStorage.removeItem(ROLE_KEY);
         if (redirect) window.location.href = redirect;
     }
 
+    function getRole() {
+        return localStorage.getItem(ROLE_KEY) || '';
+    }
+
+    // For backward compatibility, return role as array
     function getRoles() {
-        try {
-            const r = localStorage.getItem(ROLES_KEY);
-            return r ? JSON.parse(r) : [];
-        } catch (e) { return []; }
+        const role = getRole();
+        return role ? [role] : [];
     }
 
     function getUser() {
         return {
             email: localStorage.getItem(EMAIL_KEY),
             fullname: localStorage.getItem(NAME_KEY),
-            roles: getRoles()
+            role: getRole(),
+            roles: getRoles() // for backward compatibility
         };
     }
 
@@ -56,7 +59,9 @@ window.auth = (function(){
     }
 
     function hasRole(role) {
-        return getRoles().some(r => r === role || r === ('ROLE_' + role));
+        const userRole = getRole();
+        return userRole === role || userRole === ('ROLE_' + role) || 
+               ('ROLE_' + userRole) === role || ('ROLE_' + userRole) === ('ROLE_' + role);
     }
 
     return {
@@ -65,6 +70,7 @@ window.auth = (function(){
         saveLogin,
         logout,
         getUser,
+        getRole,
         getRoles,
         hasRole,
         authFetch

@@ -80,6 +80,7 @@ public class UserApiController {
         resp.put("email", created.getEmail());
         resp.put("fullname", created.getFullname());
         resp.put("token", token);
+        resp.put("role", created.getRole()); // Include role in verification response
 
         return ResponseEntity.ok(resp);
     }
