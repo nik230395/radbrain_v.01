@@ -1,8 +1,10 @@
 package org.nikolic.programm.dtos;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class VerifyEmailDto {
     private String email;
 
