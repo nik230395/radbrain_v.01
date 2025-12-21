@@ -96,4 +96,18 @@ public class UserService {
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
     }
+
+    // Check if user is admin
+    public boolean isUserAdmin(User user) {
+        if (user == null) {
+            return false;
+        }
+        // Check roles set first
+        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+            return user.getRoles().stream()
+                    .anyMatch(role -> "ROLE_ADMIN".equals(role.getName()) || "ADMIN".equals(role.getName()));
+        }
+        // Fallback to role string field
+        return "ADMIN".equalsIgnoreCase(user.getRole());
+    }
 }

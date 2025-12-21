@@ -22,7 +22,7 @@ import java.util.Optional;
 public class QuizService {
     private final QuizRepository quizRepository;
     private final QuizAttemptRepository quizAttemptRepository;
-    private final ObjectMapper objectMapper; // Inject Jackson for JSON processing
+    private final ObjectMapper objectMapper;
 
     public QuizService(QuizRepository quizRepository,
                        QuizAttemptRepository quizAttemptRepository,
@@ -32,13 +32,24 @@ public class QuizService {
         this.objectMapper = objectMapper;
     }
 
-    // ... findById method ...
+    /**
+     * Find a quiz by its ID.
+     */
+    public Optional<Quiz> findById(Long id) {
+        return quizRepository.findById(id);
+    }
+
+    /**
+     * Get all quizzes.
+     */
+    public List<Quiz> getAllQuizzes() {
+        return quizRepository.findAll();
+    }
 
     /**
      * Evaluate answers and save the quiz attempt for a user.
      */
     public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
-        // 1. Validate User (Entity says user cannot be null)
         if (user == null) {
             throw new IllegalArgumentException("User cannot be null for a Quiz Attempt");
         }
@@ -46,12 +57,10 @@ public class QuizService {
         QuizAttempt attempt = new QuizAttempt();
         attempt.setQuiz(quiz);
         attempt.setUser(user);
-
-        // 2. Fix Date Mismatch (Entity uses started/completed, not createdAt)
         attempt.setStartedAt(LocalDateTime.now());
-        attempt.setCompletedAt(LocalDateTime.now()); // Assuming instant submission
+        attempt.setCompletedAt(LocalDateTime.now());
 
-        // 3. Fix JSON Storage (Convert Map to String)
+        // Convert answers to JSON string
         try {
             String json = objectMapper.writeValueAsString(answers);
             attempt.setAnswersJson(json);
@@ -59,11 +68,9 @@ public class QuizService {
             throw new RuntimeException("Error processing answer JSON", e);
         }
 
-        // 4. Fix Score Logic (Entity wants BigDecimal Percentage, not int count)
-        // Note: You need the 'Question' list size to calculate percentage.
-        // I am assuming quiz.getQuestions().size() exists. If not, we fix that next.
-        int totalQuestions = 10; // Placeholder until I see the Quiz entity
-        int correctAnswers = (answers != null) ? answers.size() : 0; // Still placeholder logic
+        // Calculate score percentage
+        int totalQuestions = quiz.getQuestions() != null ? quiz.getQuestions().size() : 0;
+        int correctAnswers = (answers != null) ? answers.size() : 0;
 
         BigDecimal percentage = BigDecimal.ZERO;
         if (totalQuestions > 0) {
@@ -83,49 +90,6 @@ public class QuizService {
         result.put("scorePct", percentage);
         return result;
     }
-    private final QuizRepository quizRepository;
-    private final QuizAttemptRepository quizAttemptRepository;
-
-    public QuizService(QuizRepository quizRepository, QuizAttemptRepository quizAttemptRepository) {
-        this.quizRepository = quizRepository;
-        this.quizAttemptRepository = quizAttemptRepository;
-    }
-
-    /**
-     * Find a quiz by its ID.
-     */
-    public Optional<Quiz> findById(Long id) {
-        return quizRepository.findById(id);
-    }
-
-    /**
-     * Evaluate answers and save the quiz attempt for a user.
-     */
-    public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
-        QuizAttempt attempt = new QuizAttempt();
-        attempt.setQuiz(quiz);
-        attempt.setUser(user);
-        attempt.setCreatedAt(LocalDateTime.now());
-
-        // Placeholder evaluation logic
-        int correctAnswers = 0;
-        if (answers != null) {
-            correctAnswers = answers.size(); // Replace with actual evaluation logic
-        }
-        attempt.setScore(correctAnswers);
-
-        // Save attempt to database
-        quizAttemptRepository.save(attempt);
-
-        // Return evaluation results
-        Map<String, Object> result = new HashMap<>();
-        result.put("quizId", quiz.getId());
-        result.put("userEmail", user != null ? user.getEmail() : "anonymous");
-        result.put("score", correctAnswers);
-        return result;
-    }
-
-    // Additional methods from your existing QuizService
 
     /**
      * Create a quiz from a request DTO and user.
@@ -148,6 +112,16 @@ public class QuizService {
                 .orElseThrow(() -> new NoSuchElementException("Quiz not found with ID: " + id));
         quiz.setTitle(req.getTitle());
         quiz.setDescription(req.getDescription());
+        return quizRepository.save(quiz);
+    }
+
+    /**
+     * Set published status of a quiz.
+     */
+    public Quiz setPublished(Long id, boolean published) {
+        Quiz quiz = quizRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Quiz not found with ID: " + id));
+        quiz.setIsPublished(published);
         return quizRepository.save(quiz);
     }
 

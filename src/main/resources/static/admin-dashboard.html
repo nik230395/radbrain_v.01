@@ -3,54 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin Control Panel - RadBrain</title>
     <link href="style.css" rel="stylesheet">
-    <script src="main.js" defer></script>
+    <script src="auth.js"></script>
+    <script src="admin-panel.js" defer></script>
 </head>
 <body>
 <!-- Header -->
 <header class="admin-header">
-    <h1>Admin Dashboard</h1>
-    <nav class="admin-nav">
-        <a href="#user-control">Manage Users</a>
-        <a href="#quiz-control">Manage Quizzes</a>
-        <a href="#statistics">Statistics</a>
-    </nav>
+    <div class="admin-header-content">
+        <h1>Admin Control Panel</h1>
+        <nav class="admin-nav">
+            <a href="dashboard.html">Back to Dashboard</a>
+            <a href="#quiz-control">Manage Quizzes</a>
+            <a href="#statistics">Statistics</a>
+        </nav>
+    </div>
 </header>
 
 <!-- Main Section -->
 <main class="admin-main">
-    <section id="user-control" class="admin-section">
-        <h2>User Control</h2>
-        <button onclick="loadUserList()">View/Edit/Delete Users</button>
-        <div id="user-list">
-            <!-- User data dynamically loaded -->
-        </div>
-    </section>
-
     <section id="quiz-control" class="admin-section">
-        <h2>Quiz Control</h2>
-        <button onclick="loadQuizManagement()">View/Edit/Delete Quizzes</button>
-        <button onclick="createQuiz()">Add New Quiz</button>
+        <div class="section-header">
+            <h2>Quiz Management</h2>
+            <button class="btn-primary" onclick="adminPanel.createNewQuiz()">+ Create New Quiz</button>
+        </div>
         <div id="quiz-management">
             <!-- Quiz management panel, dynamically loaded -->
+            <p>Loading quizzes...</p>
         </div>
     </section>
 
     <section id="statistics" class="admin-section">
         <h2>Statistics</h2>
-        <div id="stats-overview">
+        <div id="stats-overview" class="stats-grid">
             <!-- Statistics dynamically generated -->
-            <p>Total Users: <span id="user-count">...</span></p>
-            <p>Total Quizzes: <span id="quiz-count">...</span></p>
-            <p>Total Quiz Attempts: <span id="attempt-count">...</span></p>
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <p class="stat-number" id="user-count">...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Quizzes</h3>
+                <p class="stat-number" id="quiz-count">...</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Quiz Attempts</h3>
+                <p class="stat-number" id="attempt-count">...</p>
+            </div>
         </div>
     </section>
 </main>
 
 <!-- Footer -->
 <footer class="admin-footer">
-    <p>&copy; 2025 Admin Dashboard</p>
+    <p>&copy; 2025 RadBrain Admin Panel</p>
 </footer>
 </body>
 </html>
