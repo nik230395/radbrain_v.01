@@ -88,7 +88,7 @@ public class QuizService {
         BigDecimal percentage = BigDecimal.ZERO;
         if (totalQuestions > 0) {
             percentage = BigDecimal.valueOf(correctAnswers)
-                    .divide(BigDecimal.valueOf(totalQuestions), 2, BigDecimal.ROUND_HALF_UP)
+                    .divide(BigDecimal.valueOf(totalQuestions), 2, java.math.RoundingMode.HALF_UP)
                     .multiply(BigDecimal.valueOf(100));
         }
         attempt.setScorePct(percentage);
