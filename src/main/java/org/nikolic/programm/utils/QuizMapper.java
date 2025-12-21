@@ -7,10 +7,11 @@ public class QuizMapper {
 
     public static QuizDto toDto(Quiz quiz) {
         QuizDto dto = new QuizDto();
+
         dto.setId(quiz.getId());
         dto.setTitle(quiz.getTitle());
         dto.setDescription(quiz.getDescription());
-        dto.setCategory(quiz.getCategory()); // fehler
+        dto.setCategory(quiz.getCategory().getName());
         return dto;
     }
 }

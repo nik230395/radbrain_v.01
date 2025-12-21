@@ -16,25 +16,31 @@ public class QuizAttempt {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Versuch-ID
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "quiz_id", nullable = false)
     @ToString.Exclude
-    private Quiz quiz; // Das Quiz, das gespielt wurde
+    private Quiz quiz;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @ToString.Exclude
-    private User user; // Der teilnehmende Benutzer
+    private User user;
 
-    private LocalDateTime startedAt; // Beginn des Versuchs
+    private LocalDateTime startedAt;
 
-    private LocalDateTime completedAt; // Abschluss des Versuchs
+    private LocalDateTime completedAt;
 
     @Column(name = "score_pct", precision = 5, scale = 2)
-    private BigDecimal scorePct; // Prozentzahl der richtigen Antworten
+    private BigDecimal scorePct;
 
     @Column(columnDefinition = "LONGTEXT")
-    private String answersJson; // Antworten als JSON (für spätere Auswertung)
+    private String answersJson;
+
+    // Optional fields
+    @Column(length = 1000)
+    private String feedback; // Feedback from the user
+
+    private Integer attemptCount; // Number of attempts made
 }

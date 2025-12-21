@@ -19,16 +19,18 @@ public class Quiz {
     @Column(length = 500)
     private String description;
 
-    private String category; // New field for quiz category
+    @ManyToOne
+    @JoinColumn(name = "category_id") // Foreign key column
+    private QuizCategory category;
 
     @ManyToOne
     @JoinColumn(name = "created_by_id", nullable = false)
-    private User createdBy; // Reference to the creator of the quiz (User entity)
+    private User createdBy;
 
     private LocalDateTime createdAt;
 
     private Boolean isPublished;
 
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Question> questions;
 }

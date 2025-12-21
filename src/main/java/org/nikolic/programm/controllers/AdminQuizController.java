@@ -53,7 +53,7 @@ public class AdminQuizController {
     @GetMapping
     public ResponseEntity<?> listAll(Authentication auth) {
         if (!isAdmin(auth)) return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
-        List<Quiz> all = quizService.getAllQuizzes();
+        List<Quiz> all = quizService.getAllQuizzes(); // there is no method getAllQuizzes yet
         List<QuizDto> dtos = all.stream().map(QuizMapper::toDto).collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
@@ -85,7 +85,7 @@ public class AdminQuizController {
     public ResponseEntity<?> publish(Authentication auth, @PathVariable Long id) {
         if (!isAdmin(auth)) return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
         try {
-            Quiz publishedQuiz = quizService.setPublished(id, true);
+            Quiz publishedQuiz = quizService.setPublished(id, true); // doesnt exist yet
             return ResponseEntity.ok(QuizMapper.toDto(publishedQuiz));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
