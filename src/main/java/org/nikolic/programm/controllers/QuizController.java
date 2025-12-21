@@ -12,12 +12,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 /**
  * Public endpoints for taking quizzes (get quiz, submit answers).
- * list/published is provided by another controller to avoid duplicate mappings.
  */
 @RestController
 @RequestMapping("/api/quizzes")
@@ -32,6 +32,17 @@ public class QuizController {
         this.quizService = quizService;
         this.userRepository = userRepository;
         this.objectMapper = objectMapper;
+    }
+
+    @GetMapping("/published")
+    public ResponseEntity<?> getPublishedQuizzes() {
+        List<Quiz> publishedQuizzes = quizService.getAllQuizzes().stream()
+                .filter(q -> Boolean.TRUE.equals(q.getIsPublished()))
+                .collect(java.util.stream.Collectors.toList());
+        List<QuizDto> dtos = publishedQuizzes.stream()
+                .map(QuizMapper::toDto)
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping("/{id}")

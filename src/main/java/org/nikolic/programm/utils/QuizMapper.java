@@ -10,7 +10,11 @@ public class QuizMapper {
         dto.setId(quiz.getId());
         dto.setTitle(quiz.getTitle());
         dto.setDescription(quiz.getDescription());
-        dto.setCategory(quiz.getCategory()); // fehler
+        dto.setCategory(quiz.getCategory());
+        dto.setIsPublished(quiz.getIsPublished());
+        if (quiz.getCreatedBy() != null) {
+            dto.setCreatedByEmail(quiz.getCreatedBy().getEmail());
+        }
         return dto;
     }
 }
