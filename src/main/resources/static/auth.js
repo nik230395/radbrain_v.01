@@ -60,8 +60,7 @@ window.auth = (function(){
 
     function hasRole(role) {
         const userRole = getRole();
-        return userRole === role || userRole === ('ROLE_' + role) || 
-               ('ROLE_' + userRole) === role || ('ROLE_' + userRole) === ('ROLE_' + role);
+        return userRole === role || userRole === ('ROLE_' + role) || ('ROLE_' + userRole) === role;
     }
 
     return {
