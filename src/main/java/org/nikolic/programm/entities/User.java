@@ -1,19 +1,13 @@
 package org.nikolic.programm.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
-
 import java.time.LocalDateTime;
-import java.util.List;
+import java. util.List;
 
-/**
- * User Entity - verwendet ENUM für Rollen (einfachste Lösung)
- * Passt zur bestehenden DB-Struktur mit role ENUM('user','admin')
- */
-@Data
 @Entity
 @Table(name = "users")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,33 +15,95 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
-    private String password_hash;
-
-    @Column(name = "full_name")
     private String fullname;
 
-    @Column(name = "is_active")
-    private Boolean is_active;
+    private String password_hash;
 
-    @Column(name = "created_at")
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
+
+    private boolean is_active;
+
     private LocalDateTime created_at;
 
-    // ENUM Role - passt zur DB: enum('user','admin')
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private UserRole role = UserRole.USER; // keine klasse UserRole sondern nur Role
+    // ✅ TEMPORÄR: Email-Verification-Felder als Transient (nicht in DB)
+    @Transient
+    private boolean emailVerified = true; // Default true für bestehende Users
 
-    @OneToMany(mappedBy = "createdBy")
-    private List<Quiz> createdQuizzes;
+    @Transient
+    private String verificationCode;
 
-    public User() {
-        this.is_active = true;
-        this.created_at = LocalDateTime.now();
-        this.role = UserRole.USER;
+    @Transient
+    private LocalDateTime verificationCodeExpiry;
+
+    @Transient
+    private String passwordResetCode;
+
+    @Transient
+    private LocalDateTime passwordResetExpiry;
+
+    @Transient
+    private String passwordResetToken;
+
+    @Transient
+    private LocalDateTime passwordResetTokenExpiry;
+
+    // Constructors
+    public User() {}
+
+    // Standard Getters and Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getFullname() { return fullname; }
+    public void setFullname(String fullname) { this.fullname = fullname; }
+
+    public String getPassword_hash() { return password_hash; }
+    public void setPassword_hash(String password_hash) { this.password_hash = password_hash; }
+
+    public UserRole getRole() { return role; }
+    public void setRole(UserRole role) { this.role = role; }
+
+    public boolean isActive() { return is_active; }
+    public boolean getIs_active() { return is_active; }
+    public void setIs_active(boolean is_active) { this.is_active = is_active; }
+
+    public LocalDateTime getCreated_at() { return created_at; }
+    public void setCreated_at(LocalDateTime created_at) { this.created_at = created_at; }
+
+    // Email Verification (Transient)
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+
+    public String getVerificationCode() { return verificationCode; }
+    public void setVerificationCode(String verificationCode) { this.verificationCode = verificationCode; }
+
+    public LocalDateTime getVerificationCodeExpiry() { return verificationCodeExpiry; }
+    public void setVerificationCodeExpiry(LocalDateTime verificationCodeExpiry) {
+        this.verificationCodeExpiry = verificationCodeExpiry;
     }
 
-    // Helper methods für Role-Checks
+    // Password Reset (Transient)
+    public String getPasswordResetCode() { return passwordResetCode; }
+    public void setPasswordResetCode(String passwordResetCode) { this.passwordResetCode = passwordResetCode; }
+
+    public LocalDateTime getPasswordResetExpiry() { return passwordResetExpiry; }
+    public void setPasswordResetExpiry(LocalDateTime passwordResetExpiry) {
+        this.passwordResetExpiry = passwordResetExpiry;
+    }
+
+    public String getPasswordResetToken() { return passwordResetToken; }
+    public void setPasswordResetToken(String passwordResetToken) { this.passwordResetToken = passwordResetToken; }
+
+    public LocalDateTime getPasswordResetTokenExpiry() { return passwordResetTokenExpiry; }
+    public void setPasswordResetTokenExpiry(LocalDateTime passwordResetTokenExpiry) {
+        this.passwordResetTokenExpiry = passwordResetTokenExpiry;
+    }
+
+    // Admin-Related Methods
     public boolean isAdmin() {
         return this.role == UserRole.ADMIN;
     }
@@ -56,7 +112,36 @@ public class User {
         return this.role == UserRole.USER;
     }
 
-    public String getRoleAsString() {
-        return "ROLE_" + this.role.name();
+    public String getRoleString() {
+        return this.role != null ? this.role.toString() : "USER";
+    }
+
+    public boolean hasRole(UserRole role) {
+        return this.role == role;
+    }
+
+    public boolean hasRole(String roleName) {
+        if (this.role == null || roleName == null) {
+            return false;
+        }
+        return this.role.toString().equalsIgnoreCase(roleName) ||
+                this.role. toString().equalsIgnoreCase("ROLE_" + roleName);
+    }
+
+    public List<String> getRoles() {
+        return this.role != null ? List.of(this.role.toString()) : List.of();
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", email='" + email + '\'' +
+                ", fullname='" + fullname + '\'' +
+                ", role=" + role +
+                ", is_active=" + is_active +
+                ", emailVerified=" + emailVerified +
+                ", created_at=" + created_at +
+                '}';
     }
 }

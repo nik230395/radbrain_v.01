@@ -1,37 +1,47 @@
 package org.nikolic.programm.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import java. time.LocalDateTime;
 
-import java.time.LocalDateTime;
-
-@Data
-@NoArgsConstructor
 @Entity
 @Table(name = "password_reset_codes")
 public class PasswordResetCode {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Welcher Nutzer? (Beziehung zu User)
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    @ToString.Exclude
     private User user;
 
-    // Der Reset-Code, z.B. sechsstellig als String
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false)
     private String code;
 
-    // Wann erzeugt?
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    // Schon benutzt?
-    @Column(name = "used", nullable = false)
+    @Column(nullable = false)
     private Boolean used = false;
+
+    // Constructors, getters, setters...
+    public PasswordResetCode() {
+        this.createdAt = LocalDateTime.now();
+        this.used = false;
+    }
+
+    // Add all getters and setters...
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+
+    public String getCode() { return code; }
+    public void setCode(String code) { this.code = code; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public Boolean getUsed() { return used; }
+    public void setUsed(Boolean used) { this.used = used; }
 }

@@ -1,22 +1,18 @@
-package org.nikolic.programm.services;
+package org.nikolic.programm. services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.nikolic.programm.dtos.CreateQuizRequest;
-import org.nikolic.programm.entities.*;
+import com.fasterxml.jackson. databind.ObjectMapper;
+import org.nikolic.programm. dtos.CreateQuizRequest;
+import org.nikolic. programm.entities.*;
 import org.nikolic.programm.repositories.QuizAttemptRepository;
-import org.nikolic.programm.repositories.QuizRepository;
-import org.springframework.stereotype.Service;
+import org. nikolic.programm.repositories. QuizRepository;
+import org. springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
-import java.util.*;
+import java. util.*;
 
-/**
- * Quiz Service - Business Logic für Quizzes
- * ✅ FIX: Korrekte Answer Validation statt Fake Scoring!
- */
 @Service
 public class QuizService {
     private final QuizRepository quizRepository;
@@ -39,17 +35,13 @@ public class QuizService {
         return quizRepository.findAll();
     }
 
+    // ✅ Fixed: Use the correct repository method
     public List<Quiz> getPublishedQuizzes() {
-        return quizRepository.findByIsPublishedTrue();
+        return quizRepository.findByIsPublishedTrueOrderByCreatedAtDesc();
     }
 
     /**
-     * ✅ FIX: Evaluate answers properly and save quiz attempt
-     *
-     * @param quiz The quiz being taken
-     * @param user The user taking the quiz
-     * @param answers Map of questionId -> answer (can be Long for SINGLE, List<Long> for MULTIPLE, String for TEXT)
-     * @return Map with evaluation results
+     * Evaluate answers properly and save quiz attempt
      */
     public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
         if (user == null) {
@@ -70,7 +62,7 @@ public class QuizService {
             throw new RuntimeException("Error processing answer JSON", e);
         }
 
-        // ✅ FIX: Calculate REAL score by validating answers!
+        // Calculate REAL score by validating answers
         List<Question> questions = quiz.getQuestions();
         if (questions == null || questions.isEmpty()) {
             attempt.setScorePct(BigDecimal.ZERO);
@@ -82,8 +74,8 @@ public class QuizService {
         int correctAnswers = 0;
 
         // Evaluate each question
-        for (Question question : questions) {
-            Object userAnswer = answers.get(question.getId());
+        for (Question question :  questions) {
+            Object userAnswer = answers.get(question. getId());
             if (userAnswer == null) {
                 continue; // Unanswered question
             }
@@ -95,7 +87,7 @@ public class QuizService {
         }
 
         // Calculate percentage
-        BigDecimal percentage = BigDecimal.valueOf(correctAnswers)
+        BigDecimal percentage = BigDecimal. valueOf(correctAnswers)
                 .divide(BigDecimal.valueOf(totalQuestions), 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100))
                 .setScale(2, RoundingMode.HALF_UP);
@@ -107,11 +99,7 @@ public class QuizService {
     }
 
     /**
-     * ✅ NEW: Evaluate a single question
-     *
-     * @param question The question to evaluate
-     * @param userAnswer User's answer (Long, List<Long>, or String depending on question type)
-     * @return true if answer is correct
+     * Evaluate a single question
      */
     private boolean evaluateQuestion(Question question, Object userAnswer) {
         switch (question.getQtype()) {
@@ -143,7 +131,7 @@ public class QuizService {
 
         Long selectedChoiceId;
         if (userAnswer instanceof List) {
-            List<?> list = (List<?>) userAnswer;
+            List<? > list = (List<?>) userAnswer;
             if (list.isEmpty()) return false;
             selectedChoiceId = convertToLong(list.get(0));
         } else {
@@ -155,7 +143,7 @@ public class QuizService {
         // Find the selected choice
         for (Choice choice : question.getChoices()) {
             if (choice.getId().equals(selectedChoiceId)) {
-                return Boolean.TRUE.equals(choice.getIs_correct());
+                return Boolean.TRUE. equals(choice.getIs_correct()); // ✅ Fixed: Use getIs_correct()
             }
         }
         return false;
@@ -187,7 +175,7 @@ public class QuizService {
         // Get all correct choice IDs
         Set<Long> correctIds = new HashSet<>();
         for (Choice choice : question.getChoices()) {
-            if (Boolean.TRUE.equals(choice.getIs_correct())) {
+            if (Boolean.TRUE.equals(choice.getIs_correct())) { // ✅ Fixed: Use getIs_correct()
                 correctIds.add(choice.getId());
             }
         }
@@ -211,7 +199,6 @@ public class QuizService {
 
         // Check against acceptable answers
         if (question.getAcceptableAnswers() == null || question.getAcceptableAnswers().isEmpty()) {
-            // No acceptable answers defined -> cannot evaluate
             return false;
         }
 
@@ -227,7 +214,6 @@ public class QuizService {
      * Evaluate TRUE/FALSE question
      */
     private boolean evaluateTrueFalse(Question question, Object userAnswer) {
-        // TRUE_FALSE is essentially a SINGLE choice with 2 options
         return evaluateSingleChoice(question, userAnswer);
     }
 
@@ -250,7 +236,7 @@ public class QuizService {
 
             case REGEX:
                 try {
-                    return userAnswer.matches(acceptableText);
+                    return userAnswer. matches(acceptableText);
                 } catch (Exception e) {
                     return false; // Invalid regex
                 }
@@ -321,7 +307,7 @@ public class QuizService {
 
     public void deleteQuizById(Long id) {
         Quiz quiz = quizRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Quiz not found with ID: " + id));
+                .orElseThrow(() -> new IllegalStateException("Quiz not found with ID:  " + id));
         quizRepository.delete(quiz);
     }
 }

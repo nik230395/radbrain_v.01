@@ -1,21 +1,15 @@
 package org.nikolic.programm.services;
 
-import org.nikolic.programm.entities.EmailCode;
 import org.nikolic.programm.entities.User;
-import org.nikolic.programm.entities.CodePurpose;
-import org.nikolic.programm.repositories.EmailCodeRepository;
 import org.nikolic.programm.repositories.UserRepository;
+import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Formatter;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 import java.util.Optional;
 
 @Service
@@ -23,115 +17,221 @@ public class VerificationService {
 
     private static final Logger logger = LoggerFactory.getLogger(VerificationService.class);
 
-    private final EmailCodeRepository emailCodeRepository;
-    private final UserRepository userRepository;
     private final EmailService emailService;
-    private final SecureRandom secureRandom = new SecureRandom();
+    private final UserRepository userRepository;
 
-    private static final int CODE_LENGTH = 6;
-    private static final int EXPIRATION_MINUTES = 15;
-    private static final int MAX_ATTEMPTS = 5;
+    // Cache für Verification Data (alternativ zu Database)
+    private final Map<String, VerificationData> verificationCache = new HashMap<>();
 
-    public VerificationService(EmailCodeRepository emailCodeRepository,
-                               UserRepository userRepository,
-                               EmailService emailService) {
-        this.emailCodeRepository = emailCodeRepository;
-        this.userRepository = userRepository;
+    public VerificationService(EmailService emailService, UserRepository userRepository) {
         this.emailService = emailService;
+        this.userRepository = userRepository;
     }
 
-    private String generateNumericCode(int digits) {
-        int min = (int) Math.pow(10, digits - 1);
-        int max = (int) Math.pow(10, digits) - 1;
-        int code = secureRandom.nextInt(max - min + 1) + min;
-        return Integer.toString(code);
+    // Inner class für Verification Data
+    public static class VerificationData {
+        private String code;
+        private LocalDateTime expiry;
+        private String fullname;
+        private String email;
+
+        public VerificationData(String code, LocalDateTime expiry, String fullname, String email) {
+            this.code = code;
+            this.expiry = expiry;
+            this.fullname = fullname;
+            this.email = email;
+        }
+
+        // Getters
+        public String getCode() { return code; }
+        public LocalDateTime getExpiry() { return expiry; }
+        public String getFullname() { return fullname; }
+        public String getEmail() { return email; }
+
+        public boolean isExpired() {
+            return LocalDateTime.now().isAfter(expiry);
+        }
     }
 
-    private String sha256Hex(String input) {
+    /**
+     * Erstellt Verification Code und speichert ihn
+     */
+    public String createVerificationCode(String email, String fullname) {
+        String code = generateVerificationCode();
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
+
+        verificationCache.put(email, new VerificationData(code, expiry, fullname, email));
+
+        logger.info("Created verification code for {}: {}", email, code);
+        return code;
+    }
+
+    /**
+     * Sendet Verification Email mit korrekten 3 Parametern
+     */
+    public void sendVerificationEmail(String email, String fullname) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] digest = md.digest(input.getBytes(StandardCharsets.UTF_8));
-            try (Formatter fmt = new Formatter()) {
-                for (byte b : digest) {
-                    fmt.format("%02x", b);
+            // Schaue zuerst im Cache nach
+            VerificationData data = verificationCache.get(email);
+            if (data == null) {
+                // Falls nicht im Cache, versuche aus Database
+                Optional<User> userOpt = userRepository.findByEmail(email);
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    if (user.getVerificationCode() != null && user.getVerificationCodeExpiry() != null) {
+                        // ✅ Korrigierter Aufruf mit allen 3 Parametern
+                        emailService.sendVerificationEmail(email, fullname, user.getVerificationCode());
+                        logger.info("Verification email sent to: {} from database", email);
+                        return;
+                    }
                 }
-                return fmt.toString();
+                throw new RuntimeException("Keine Verifikation gefunden für:  " + email);
             }
-        } catch (Exception ex) {
-            throw new RuntimeException("Failed to hash code", ex);
+
+            if (data.isExpired()) {
+                verificationCache.remove(email);
+                throw new RuntimeException("Verifikationscode ist abgelaufen");
+            }
+
+            // ✅ Korrigierter Aufruf mit allen 3 Parametern (email, fullname, code)
+            emailService.sendVerificationEmail(email, fullname, data.getCode());
+
+            logger.info("✅ Verification email sent to:  {}", email);
+        } catch (Exception e) {
+            logger.error("❌ Failed to send verification email to: {}", email, e);
+            throw new RuntimeException("E-Mail konnte nicht gesendet werden", e);
         }
     }
 
-    @Transactional
-    public void createAndSendVerificationCode(User user) {
-        String code = generateNumericCode(CODE_LENGTH);
-        String hash = sha256Hex(code);
+    /**
+     * Versendet Email erneut
+     */
+    public void resendVerificationEmail(String email) {
+        VerificationData data = verificationCache.get(email);
+        if (data == null) {
+            // Versuche aus Database zu laden
+            Optional<User> userOpt = userRepository.findByEmail(email);
+            if (userOpt.isEmpty()) {
+                throw new RuntimeException("Keine ausstehende Verifikation für diese E-Mail gefunden");
+            }
 
-        EmailCode ec = new EmailCode();
-        ec.setUser(user);
-        ec.setPurpose(CodePurpose.VERIFY);
-        ec.setCodeHash(hash);
-        ec.setCreatedAt(LocalDateTime.now());
-        ec.setExpiresAt(LocalDateTime.now().plusMinutes(EXPIRATION_MINUTES));
-        ec.setAttempts(0);
-        emailCodeRepository.save(ec);
+            User user = userOpt. get();
+            if (user. getVerificationCode() == null || user.isEmailVerified()) {
+                throw new RuntimeException("Keine ausstehende Verifikation für diese E-Mail gefunden");
+            }
 
-        // Try sending the email, but don't let a mail failure break the flow (dev/prod difference).
-        try {
-            emailService.sendVerificationEmail(user.getEmail(), code);
-        } catch (Exception ex) {
-            // Log error, keep code persisted so you can verify via logs / DB in dev if needed.
-            logger.error("Failed to send verification email to {}: {}", user.getEmail(), ex.getMessage());
-            // Optionally you could mark ec as not_sent or similar, or notify admin.
+            // ✅ Verwende User-Daten
+            sendVerificationEmail(user.getEmail(), user.getFullname());
+        } else {
+            // ✅ Verwende Cache-Daten
+            sendVerificationEmail(data.getEmail(), data.getFullname());
         }
-
-        // For local debug you can also log the code here (only enable in dev!)
-        // logger.info("Verification code for {} is {}", user.getEmail(), code);
     }
 
-    @Transactional
-    public boolean verifyCode(String email, String plainCode) {
-        Optional<User> u = userRepository.findByEmail(email);
-        if (u.isEmpty()) return false;
-        User user = u.get();
+    /**
+     * Verifiziert Code
+     */
+    public boolean verifyCode(String email, String code) {
+        // Prüfe Cache zuerst
+        VerificationData data = verificationCache.get(email);
+        if (data != null) {
+            if (data.isExpired()) {
+                verificationCache.remove(email);
+                return false;
+            }
 
-        List<EmailCode> codes = emailCodeRepository.findByUserAndPurposeOrderByCreatedAtDesc(user, CodePurpose.VERIFY);
-        if (codes.isEmpty()) return false;
+            boolean isValid = code.equals(data.getCode());
+            if (isValid) {
+                verificationCache.remove(email); // Code nach Verwendung entfernen
+            }
+            return isValid;
+        }
 
-        EmailCode candidate = null;
-        for (EmailCode c : codes) {
-            if (c.getConsumedAt() == null) {
-                candidate = c;
-                break;
+        // Prüfe Database
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (user.getVerificationCode() != null &&
+                    user.getVerificationCodeExpiry() != null &&
+                    user.getVerificationCodeExpiry().isAfter(LocalDateTime.now())) {
+                return code.equals(user.getVerificationCode());
             }
         }
-        if (candidate == null) return false;
 
-        if (candidate.getExpiresAt() != null && candidate.getExpiresAt().isBefore(LocalDateTime.now())) {
-            candidate.setConsumedAt(LocalDateTime.now());
-            emailCodeRepository.save(candidate);
-            return false;
+        return false;
+    }
+
+    /**
+     * Erstellt und versendet neuen Code
+     */
+    public void createAndSendVerificationCode(String email, String fullname) {
+        String code = createVerificationCode(email, fullname);
+
+        // ✅ Korrigierter Aufruf mit allen 3 Parametern
+        emailService.sendVerificationEmail(email, fullname, code);
+    }
+
+    /**
+     * Prüft ob Verifikation anhängig ist
+     */
+    public boolean hasVerificationPending(String email) {
+        // Cache prüfen
+        VerificationData data = verificationCache.get(email);
+        if (data != null && ! data.isExpired()) {
+            return true;
         }
 
-        if (candidate.getAttempts() != null && candidate.getAttempts() >= MAX_ATTEMPTS) {
-            candidate.setConsumedAt(LocalDateTime.now());
-            emailCodeRepository.save(candidate);
-            return false;
+        // Database prüfen
+        Optional<User> userOpt = userRepository. findByEmail(email);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            return ! user.isEmailVerified() &&
+                    user.getVerificationCode() != null &&
+                    user.getVerificationCodeExpiry() != null &&
+                    user.getVerificationCodeExpiry().isAfter(LocalDateTime. now());
         }
 
-        String providedHash = sha256Hex(plainCode);
-        if (!providedHash.equals(candidate.getCodeHash())) {
-            candidate.setAttempts((candidate.getAttempts() == null ? 0 : candidate.getAttempts()) + 1);
-            emailCodeRepository.save(candidate);
-            return false;
+        return false;
+    }
+
+    /**
+     * Räumt abgelaufene Einträge auf
+     */
+    public void cleanupExpiredEntries() {
+        verificationCache.entrySet().removeIf(entry -> entry.getValue().isExpired());
+        logger.info("Cleaned up expired verification entries");
+    }
+
+    /**
+     * Holt Fullname aus Cache oder Database
+     */
+    public String getFullnameForEmail(String email) {
+        // Cache prüfen
+        VerificationData data = verificationCache. get(email);
+        if (data != null) {
+            return data.getFullname();
         }
 
-        candidate.setConsumedAt(LocalDateTime.now());
-        emailCodeRepository.save(candidate);
+        // Database prüfen
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isPresent()) {
+            return userOpt.get().getFullname();
+        }
 
-        user.setIs_active(true); // mark user active after verification
-        userRepository.save(user);
+        return "User"; // Fallback
+    }
 
-        return true;
+    // Helper Methods
+    private String generateVerificationCode() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(1000000));
+    }
+
+    /**
+     * Markiert Email als verifiziert (optional für Cache-Management)
+     */
+    public void markEmailAsVerified(String email) {
+        verificationCache.remove(email);
+        logger.info("Marked email as verified and removed from cache:  {}", email);
     }
 }

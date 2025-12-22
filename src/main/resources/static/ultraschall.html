@@ -1,0 +1,444 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RadBrain - Radiologie einfach lernen</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Navigationsbar-->
+    <nav class="navbar navbar-inverse navbar-fixed-top" style="height: 70px; background-color: #1a1a1a; color: white; padding: 0 20px; display: flex; align-items: center;">
+        <div class="nav-left" style="display: flex; align-items: center; gap: 10px;">
+            <img src="Bilder/logo.png" alt="RadBrain Logo" style="height: 35px; width: auto;" />
+            <span class="logo-text" style="font-size: 1.4rem; font-weight: bold;"></span>
+        </div>
+
+
+        <ul class="nav-menu" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; list-style: none; gap: 30px; margin: 0; padding: 0;">
+            <li class="nav-item"><a href="index.html" class="nav-link" style="color: white; text-decoration: none;">Home</a></li>
+            <li class="nav-item dropdown">
+                <a href="#lernbereiche" class="nav-link" style="color: white; text-decoration: none;">Lernbereiche</a>
+                <ul class="dropdown-menu">
+                    <li><a href="ct.html">CT</a></li>
+                    <li><a href="mrt.html">MRT</a></li>
+                    <li><a href="roentgen.html">Röntgen</a></li>
+                </ul>
+            </li>
+            <li class="nav-item"><a href="#quiz" class="nav-link" style="color: white; text-decoration: none;">Quiz</a></li>
+            <li class="nav-item"><a href="#inhaltsverzeichnis" class="nav-link" style="color: white; text-decoration: none;">Inhaltsverzeichnis</a></li>
+            <li class="nav-item"><a href="#kontakt" class="nav-link" style="color: white; text-decoration: none;">Kontakt</a></li>
+        </ul>
+
+        <!-- Rechts: Anmelde-Button -->
+        <div class="nav-right" style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+            <a href="login.html" class="btn-login">Anmelden</a>
+            <!-- Hamburger für mobile -->
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+    </nav>
+
+
+    <section id="home" class="hero">
+        <div class="hero-background"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Ultraschall</h1>
+            <p class="hero-subtitle">Sonographie-Grundlagen und organspezifische Untersuchungstechniken</p>
+            <div class="hero-buttons">
+                <a href="login.html" class="btn-primary">Kostenlos starten</a>
+                <a href="#inhaltsverzeichnis" class="btn-secondary-outline">Zur Übersicht</a>
+            </div>
+        </div>
+        <div class="hero-wave">
+            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="white" />
+            </svg>
+        </div>
+    </section>
+
+    <!-- Inhaltsverzeichnis -->
+    <section id="inhaltsverzeichnis" class="toc-section">
+        <div class="container">
+            <h2 class="section-title">Inhaltsverzeichnis</h2>
+            <p class="section-subtitle">Kapitelübersicht der Ultraschall-Lerneinheit</p>
+
+            <div class="toc-grid">
+                <a href="#grundlagen" class="toc-card"><div class="toc-number">01</div><h3>Grundlagen</h3><p>Schall, Wellen und Reflexion</p></a>
+                <a href="#technik" class="toc-card"><div class="toc-number">02</div><h3>Gerätetechnik</h3><p>Sonden, Frequenzen und Bilddarstellung</p></a>
+                <a href="#darstellung" class="toc-card"><div class="toc-number">03</div><h3>Bilddarstellung</h3><p>Helligkeit, Kontrast und Artefakte</p></a>
+                <a href="#befundung" class="toc-card"><div class="toc-number">04</div><h3>Systematische Beurteilung</h3><p>Strukturierte Analyse und Orientierung</p></a>
+                <a href="#anwendung" class="toc-card"><div class="toc-number">05</div><h3>Beispielhafte Anwendungen</h3><p>Von Abdomen bis Gefäßen</p></a>
+                <a href="#sicherheit" class="toc-card"><div class="toc-number">06</div><h3>Sicherheitsaspekte</h3><p>Schallleistung und Patientenschutz</p></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- KAPITEL 1 -->
+    <section id="grundlagen" class="content-section">
+        <div class="container">
+            <div class="content-header">
+                <span class="content-badge">Kapitel 1</span>
+                <h2>Grundlagen</h2>
+            </div>
+
+            <div class="content-grid">
+                <div class="content-text">
+                    <h3>Schall und Reflexion</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. In tincidunt sapien sit amet nulla bibendum, sit amet iaculis urna aliquam.</p>
+
+                    <div class="info-box">
+                        <h4>Hinweis</h4>
+                        <p>Hier könnte stehen, wie Schallwellen im Gewebe reflektiert werden und welche Faktoren das Echo beeinflussen.</p>
+                    </div>
+                    <br />
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed faucibus suscipit urna, a dictum ligula fringilla in.</p>
+                    <p>Vivamus mattis nibh sed sapien sollicitudin, sed vulputate est facilisis. Etiam tempor, tortor eget bibendum accumsan, metus ipsum luctus eros.</p>
+                </div>
+
+                <div class="content-visual">
+                    <div class="image-placeholder">
+                        <svg viewBox="0 0 400 300"><rect width="400" height="300" fill="#f0fff8" /></svg>
+                    </div>
+                    <p class="image-caption">Platzhalter für Schallwellenschema</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- KAPITEL 2 -->
+    <section id="technik" class="content-section">
+        <div class="container">
+            <div class="content-header">
+                <span class="content-badge">Kapitel 2</span>
+                <h2>Gerätetechnik</h2>
+            </div>
+
+            <div class="content-grid reverse">
+                <div class="content-visual">
+                    <div class="image-placeholder">
+                        <svg viewBox="0 0 400 300"><rect width="400" height="300" fill="#f8f0ff" /></svg>
+                    </div>
+                    <p class="image-caption">Sondenaufbau und Bedienoberfläche</p>
+                </div>
+
+                <div class="content-text">
+                    <h3>Ultraschallgeräte verstehen</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec justo non ante malesuada consequat vel at urna.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed faucibus suscipit urna, a dictum ligula fringilla in.</p>
+                    <br />
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed faucibus suscipit urna, a dictum ligula fringilla in.</p>
+<br />
+                    <div class="info-box">
+                        <h4>Merke</h4>
+                        <p>Hier könnte erklärt werden, welche Sondenarten existieren und wie sich Frequenzen auf die Bildqualität auswirken.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- KAPITEL 3 -->
+    <section id="darstellung" class="content-section">
+        <div class="container">
+            <div class="content-header">
+                <span class="content-badge">Kapitel 3</span>
+                <h2>Bilddarstellung</h2>
+            </div>
+
+            <div class="content-text-full">
+                <h3>Bildqualität und Kontrast</h3>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse a dignissim tortor. Quisque facilisis purus sed tempor bibendum.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed faucibus suscipit urna, a dictum ligula fringilla in.</p>
+                <br />
+
+                <div class="image-placeholder">
+                    <svg viewBox="0 0 800 250"><rect width="800" height="250" fill="#f3f2ff" /></svg>
+                </div>
+                <br />
+                <div class="info-box">
+                    <h4>Tipp</h4>
+                    <p>Ein Diagramm zur Graustufenverteilung oder Bilddynamik würde hier gut passen.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- KAPITEL 4 -->
+    <section id="befundung" class="content-section">
+        <div class="container">
+            <div class="content-header">
+                <span class="content-badge">Kapitel 4</span>
+                <h2>Systematische Beurteilung</h2>
+            </div>
+            <div class="content-grid">
+                <div class="content-text">
+                    <h3>Analyse und Orientierung</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec blandit justo at eros pretium, et mattis ligula faucibus.</p>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed faucibus suscipit urna, a dictum ligula fringilla in.</p>
+<br />
+                    <div class="info-box">
+                        <h4>Hinweis</h4>
+                        <p>Hier könnte eine systematische Checkliste für Ultraschallbefunde ihren Platz finden.</p>
+                    </div>
+                </div>
+
+               
+            </div>
+        </div>
+    </section>
+
+    <!-- KAPITEL 5 -->
+    <section id="anwendung" class="content-section">
+        <div class="container">
+            <div class="content-header">
+                <span class="content-badge">Kapitel 5</span>
+                <h2>Beispielhafte Anwendungen</h2>
+            </div>
+
+            <div class="content-grid reverse">
+                <div class="content-visual">
+                    <div class="image-placeholder">
+                        <svg viewBox="0 0 400 300"><rect width="400" height="300" fill="#f9fff0" /></svg>
+                    </div>
+                    <p class="image-caption">Platzhalter für Sonographiebeispiele</p>
+                </div>
+
+                <div class="content-text">
+                    <h3>Vielfältige Einsatzmöglichkeiten</h3>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc suscipit leo a tellus faucibus gravida.</p>
+                    <br />
+                    <div class="info-box">
+                        <h4>Merke</h4>
+                        <p>Hier könnten Hinweise zu typischen Untersuchungsregionen ergänzt werden.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- KAPITEL 6 -->
+    <section id="sicherheit" class="content-section">
+        <div class="container">
+            <div class="content-header">
+                <span class="content-badge">Kapitel 6</span>
+                <h2>Sicherheitsaspekte</h2>
+            </div>
+
+            <div class="content-text-full">
+                <h3>Patientenschutz und Schallleistung</h3>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed faucibus suscipit urna, a dictum ligula fringilla in.</p>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed faucibus suscipit urna, a dictum ligula fringilla in.</p>
+<br />
+                <div class="info-box">
+                    <h4>Wichtig</h4>
+                    <p>Hier könnten Vorsichtsmaßnahmen und Geräteeinstellungen thematisiert werden.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Quiz Section -->
+    <section id="quiz" class="quiz-section">
+        <div class="container">
+            <h2 class="section-title">Teste dein Wissen</h2>
+            <p class="section-subtitle">Zeit das neu erlernte Wissen zu überprüfen und zu schauen, wo noch Übungsbedarf besteht!</p>
+            <div class="quiz-container">
+                <div class="quiz-card-large">
+                    <div class="quiz-header">
+                        <h3>Ultraschall</h3>
+                        <span class="quiz-badge">7 Fragen</span>
+                    </div>
+                    <p>Grundlagen der Ultraschalltechnik, Schallausbreitung und theoretische Prinzipien der Bildgebung</p>
+                    <div class="quiz-info">
+                        <span class="info-item">⏱ 4–6 Min</span>
+                        <span class="info-item">★ Leicht</span>
+                    </div>
+                    <a href="" class="btn-quiz">Quiz starten</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Lernbereiche -->
+    <section id="lernbereiche" class="learning-areas">
+        <div class="container">
+            <h2 class="section-title">Weitere Lernbereiche</h2>
+            <p class="section-subtitle">Wähle deinen Schwerpunkt und setze deine Lernreise fort!</p>
+
+            <div class="areas-grid">
+                <a href="roentgen.html" class="area-card area-card-1">
+                    <div class="area-icon">
+                        <svg viewBox="0 0 100 100" width="60" height="60">
+                            <rect x="30" y="20" width="40" height="60" rx="5" fill="white" opacity="0.3" />
+                            <circle cx="50" cy="50" r="15" fill="white" opacity="0.5" />
+                        </svg>
+                    </div>
+                    <h3>Röntgen</h3>
+                    <p>Grundlagen der konventionellen Radiologie</p>
+                    <span class="card-arrow">→</span>
+                </a>
+
+                <a href="ct.html" class="area-card area-card-2">
+                    <div class="area-icon">
+                        <svg viewBox="0 0 100 100" width="60" height="60">
+                            <circle cx="50" cy="50" r="25" fill="none" stroke="white" stroke-width="3" opacity="0.3" />
+                            <circle cx="50" cy="50" r="15" fill="white" opacity="0.5" />
+                        </svg>
+                    </div>
+                    <h3>Computertomographie</h3>
+                    <p>CT-Anatomie, Kontrastmittel und mehr</p>
+                    <span class="card-arrow">→</span>
+                </a>
+
+                <a href="mrt.html" class="area-card area-card-3">
+                    <div class="area-icon">
+                        <svg viewBox="0 0 100 100" width="60" height="60">
+                            <path d="M 30 50 Q 50 30 70 50 Q 50 70 30 50" fill="white" opacity="0.3" />
+                            <circle cx="50" cy="50" r="8" fill="white" opacity="0.5" />
+                        </svg>
+                    </div>
+                    <h3>Magnetresonanztomographie</h3>
+                    <p>MRT-Sequenzen, Anatomie und häufige Pathologien</p>
+                    <span class="card-arrow">→</span>
+                </a>
+
+                <a href="ultraschall.html" class="area-card area-card-4">
+                    <div class="area-icon">
+                        <svg viewBox="0 0 100 100" width="60" height="60">
+                            <path d="M 50 30 L 50 70 M 35 40 Q 50 50 35 60 M 65 40 Q 50 50 65 60" stroke="white" stroke-width="3" fill="none" opacity="0.4" />
+                        </svg>
+                    </div>
+                    <h3>Ultraschall</h3>
+                    <p>Sonographie-Grundlagen und organspezifische Untersuchungstechniken</p>
+                    <span class="card-arrow">→</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- regristrierungspromotion Section -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Bereit, Radiologie zu meistern?</h2>
+            <p>Starte jetzt deine Lernreise und werde zum Radiologie-Experten</p>
+            <a href="login.html" class="btn-cta">Kostenlos Regristrieren</a>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="kontakt" class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4>RadBrain</h4>
+                    <p>Deine Online-Plattform für radiologisches Lernen</p>
+
+                </div>
+                <div class="footer-col">
+                    <h4>Lernbereiche</h4>
+                    <ul>
+                        <li><a href="roentgen.html">Röntgen</a></li>
+                        <li><a href="ct.html">CT</a></li>
+                        <li><a href="mrt.html">MRT</a></li>
+                        <li><a href="ultraschall.html">Ultraschall</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Über uns</h4>
+                    <ul>
+                        <li><a href="#kontakt">Kontakt</a></li>
+                        <li><a href="#faq">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Rechtliches</h4>
+                    <ul>
+                        <li><a href="#impressum">Impressum</a></li>
+                        <li><a href="datenschutz.html">Datenschutz</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div id="impressum" class="impressum">
+                    <h3>Impressum</h3>
+                    <div class="impressum-content">
+                        <div class="impressum-col">
+                            <p><strong>Team Dynamik</strong></p>
+                            <p>HTL Spengergasse</p>
+                            <p>1050 Wien</p>
+                            <p>Österreich</p>
+                        </div>
+                        <div class="impressum-col">
+                            <p><strong>Kontakt</strong></p>
+                            <p>E-Mail: info@radbrain.de</p>
+                            <p></p>
+                        </div>
+
+                    </div>
+                </div>
+                <p class="copyright">© 2025 RadBrain GmbH. Alle Rechte vorbehalten.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth Scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // FAQ Accordion
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const faqItem = question.parentElement;
+                const isActive = faqItem.classList.contains('active');
+
+                document.querySelectorAll('.faq-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+
+                if (!isActive) {
+                    faqItem.classList.add('active');
+                }
+            });
+        });
+
+        // Mobile Menu Toggle
+        const hamburger = document.querySelector('.hamburger');
+        const navMenu = document.querySelector('.nav-menu');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+            });
+        });
+    </script>
+</body>
+</html>

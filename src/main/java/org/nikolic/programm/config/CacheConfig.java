@@ -1,6 +1,6 @@
 package org.nikolic.programm.config;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes. caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -15,10 +15,10 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cm = new CaffeineCacheManager("registrations");
-        cm.setCaffeine(Caffeine.newBuilder()
-                .expireAfterWrite(15, TimeUnit.MINUTES) // TTL = 15 Minuten
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager("registrations");
+        cacheManager.setCaffeine(Caffeine.newBuilder()
+                .expireAfterWrite(15, TimeUnit.MINUTES) // TTL = 15 minutes
                 .maximumSize(10_000));
-        return cm;
+        return cacheManager;
     }
 }

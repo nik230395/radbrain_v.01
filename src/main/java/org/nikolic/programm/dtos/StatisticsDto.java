@@ -1,18 +1,25 @@
-package org.nikolic.programm.dtos;
+package org.nikolic.programm. dtos;
 
 public class StatisticsDto {
-
     private long totalUsers;
     private long totalQuizzes;
     private long totalAttempts;
+    private long publishedQuizzes;
+    private long activeUsers;
 
-    public StatisticsDto(long totalUsers, long totalQuizzes, long totalAttempts) {
+    // Constructors
+    public StatisticsDto() {}
+
+    public StatisticsDto(long totalUsers, long totalQuizzes, long totalAttempts,
+                         long publishedQuizzes, long activeUsers) {
         this.totalUsers = totalUsers;
         this.totalQuizzes = totalQuizzes;
-        this.totalAttempts = totalAttempts;
+        this. totalAttempts = totalAttempts;
+        this.publishedQuizzes = publishedQuizzes;
+        this.activeUsers = activeUsers;
     }
 
-    // Getters and setters
+    // Getters and Setters
     public long getTotalUsers() {
         return totalUsers;
     }
@@ -35,5 +42,21 @@ public class StatisticsDto {
 
     public void setTotalAttempts(long totalAttempts) {
         this.totalAttempts = totalAttempts;
+    }
+
+    public long getPublishedQuizzes() {
+        return publishedQuizzes;
+    }
+
+    public void setPublishedQuizzes(long publishedQuizzes) {
+        this.publishedQuizzes = publishedQuizzes;
+    }
+
+    public long getActiveUsers() {
+        return activeUsers;
+    }
+
+    public void setActiveUsers(long activeUsers) {
+        this.activeUsers = activeUsers;
     }
 }

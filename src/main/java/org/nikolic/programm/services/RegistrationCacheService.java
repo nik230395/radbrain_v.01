@@ -1,160 +1,295 @@
 package org.nikolic.programm.services;
 
-import org.nikolic.programm.dtos.RegistrationCacheEntry;
-import org.nikolic.programm.entities.User;
-import org.nikolic.programm.entities.Role;
-import org.nikolic.programm.repositories.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
-import org.springframework.mail.MailException;
+import org.nikolic. programm.entities.User;
+import org.nikolic.programm.entities.UserRole;
+import org. nikolic.programm.repositories. UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Formatter;
-import java.util.Optional;
+import java.util. HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.regex.Pattern;
 
 @Service
 public class RegistrationCacheService {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistrationCacheService.class);
 
-    private final Cache registrations; // Spring Cache
     private final EmailService emailService;
-    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final SecureRandom secureRandom = new SecureRandom();
+    private final PasswordEncoder passwordEncoder;
 
-    private static final int CODE_LENGTH = 6;
-    private static final int EXPIRATION_MINUTES = 15;
+    // ✅ Verbessertes Email-Pattern
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+            "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
+    );
 
-    public RegistrationCacheService(CacheManager cacheManager,
-                                    EmailService emailService,
-                                    PasswordEncoder passwordEncoder,
+    // Simplified cache
+    private final Map<String, RegistrationData> registrationCache = new HashMap<>();
+
+    public RegistrationCacheService(EmailService emailService,
                                     UserRepository userRepository,
-                                    RoleRepository roleRepository) {
-        this.registrations = cacheManager.getCache("registrations");
+                                    PasswordEncoder passwordEncoder) {
         this.emailService = emailService;
-        this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    private String sha256Hex(String input) {
+    // Inner class für Registration Data
+    public static class RegistrationData {
+        private String fullname;
+        private String email;
+        private String passwordHash;
+        private String verificationCode;
+        private LocalDateTime expiry;
+
+        public RegistrationData(String fullname, String email, String passwordHash, String verificationCode, LocalDateTime expiry) {
+            this.fullname = fullname;
+            this.email = email;
+            this.passwordHash = passwordHash;
+            this.verificationCode = verificationCode;
+            this.expiry = expiry;
+        }
+
+        public String getFullname() { return fullname; }
+        public String getEmail() { return email; }
+        public String getPasswordHash() { return passwordHash; }
+        public String getVerificationCode() { return verificationCode; }
+        public LocalDateTime getExpiry() { return expiry; }
+
+        public boolean isExpired() {
+            return LocalDateTime.now().isAfter(expiry);
+        }
+    }
+
+    /**
+     * ✅ Hauptmethode - Erstellt Registrierung und sendet Code
+     */
+    public void createRegistrationAndSendCode(String fullname, String email, String password) {
+        logger.info("🚀 Starting registration for: {}", email);
+
+        // ✅ Verbesserte Validation
+        if (fullname == null || fullname.trim().isEmpty()) {
+            logger.warn("❌ Validation failed: fullname empty");
+            throw new IllegalArgumentException("Name ist erforderlich");
+        }
+
+        if (email == null || email.trim().isEmpty()) {
+            logger.warn("❌ Validation failed: email empty");
+            throw new IllegalArgumentException("E-Mail-Adresse ist erforderlich");
+        }
+
+        // ✅ Verbesserte E-Mail-Validierung
+        if (!isValidEmail(email)) {
+            logger.warn("❌ Validation failed: invalid email format:  {}", email);
+            throw new IllegalArgumentException("Gültige E-Mail-Adresse ist erforderlich");
+        }
+
+        if (password == null || password.length() < 8) {
+            logger.warn("❌ Validation failed: password too short");
+            throw new IllegalArgumentException("Passwort muss mindestens 8 Zeichen haben");
+        }
+
+        String cleanEmail = email.toLowerCase().trim();
+        logger.info("📝 Registration data validated for: {}", cleanEmail);
+
+        // Check if user already exists
+        if (userRepository.existsByEmail(cleanEmail)) {
+            logger.warn("❌ Email already registered: {}", cleanEmail);
+            throw new IllegalArgumentException("E-Mail-Adresse bereits registriert");
+        }
+
+        // Generate verification code
+        String verificationCode = generateVerificationCode();
+
+        // Hash password
+        String passwordHash = passwordEncoder.encode(password);
+
+        // Store in cache
+        LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
+        RegistrationData data = new RegistrationData(
+                fullname. trim(),
+                cleanEmail,
+                passwordHash,
+                verificationCode,
+                expiry
+        );
+
+        registrationCache.put(cleanEmail, data);
+
+        logger.info("💾 Registration cached for {}: code {}", cleanEmail, verificationCode);
+
+        // ✅ Send verification email
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            byte[] digest = md.digest(input.getBytes(StandardCharsets.UTF_8));
-            try (Formatter fmt = new Formatter()) {
-                for (byte b : digest) fmt.format("%02x", b);
-                return fmt.toString();
-            }
-        } catch (Exception ex) {
-            throw new RuntimeException("hashing failed", ex);
+            emailService.sendVerificationEmail(cleanEmail, fullname. trim(), verificationCode);
+            logger.info("📧 Verification email sent successfully to: {}", cleanEmail);
+        } catch (Exception e) {
+            // Remove from cache if email sending fails
+            registrationCache.remove(cleanEmail);
+            logger. error("❌ Failed to send verification email to: {}", cleanEmail, e);
+            throw new RuntimeException("E-Mail konnte nicht gesendet werden:  " + e.getMessage());
         }
     }
 
-    private String generateNumericCode(int digits) {
-        int min = (int) Math.pow(10, digits - 1);
-        int max = (int) Math.pow(10, digits) - 1;
-        int code = secureRandom.nextInt(max - min + 1) + min;
-        return Integer.toString(code);
-    }
-
     /**
-     * Create a registration cache entry and send verification email.
-     * Throws MailException if sending fails (controller should handle).
+     * ✅ Verifiziert Code und erstellt User
      */
-    public void createRegistrationAndSendCode(String fullname, String email, String rawPassword) throws MailException {
-        // Prevent duplicate registrations if email already exists in DB
-        if (userRepository.existsByEmail(email)) {
-            throw new IllegalArgumentException("Email bereits registriert");
-        }
+    public User verifyAndCreateUser(String email, String code) {
+        String cleanEmail = email.toLowerCase().trim();
+        RegistrationData data = registrationCache.get(cleanEmail);
 
-        // Prepare entry
-        RegistrationCacheEntry entry = new RegistrationCacheEntry();
-        entry.setEmail(email);
-        entry.setFullname(fullname);
-        entry.setPasswordHash(passwordEncoder.encode(rawPassword)); // store hashed password
-        entry.setCreatedAt(LocalDateTime.now());
-        entry.setExpiresAt(LocalDateTime.now().plusMinutes(EXPIRATION_MINUTES));
-
-        // generate code and hash it
-        String code = generateNumericCode(CODE_LENGTH);
-        entry.setCodeHash(sha256Hex(code));
-
-        // store in cache using email as key
-        registrations.put(email.toLowerCase(), entry);
-
-        // send plain code by email
-        emailService.sendVerificationEmail(email, code);
-
-        // don't log code in prod
-        logger.info("Registration created for {} (expires at {})", email, entry.getExpiresAt());
-    }
-
-    /**
-     * Verify code and create User on success. Returns created User.
-     */
-    public User verifyAndCreateUser(String email, String plainCode) {
-        Cache.ValueWrapper wrapper = registrations.get(email.toLowerCase());
-        if (wrapper == null) return null;
-        RegistrationCacheEntry entry = (RegistrationCacheEntry) wrapper.get();
-
-        // expired check
-        if (entry.getExpiresAt() != null && entry.getExpiresAt().isBefore(LocalDateTime.now())) {
-            registrations.evict(email.toLowerCase());
+        if (data == null) {
+            logger.warn("No registration found for: {}", cleanEmail);
             return null;
         }
 
-        String providedHash = sha256Hex(plainCode);
-        if (!providedHash.equals(entry.getCodeHash())) {
+        if (data.isExpired()) {
+            registrationCache.remove(cleanEmail);
+            logger.warn("Expired registration attempt for: {}", cleanEmail);
             return null;
         }
 
-        // create user entity and save
-        User u = new User();
-        u.setEmail(entry.getEmail());
-        u.setPassword_hash(entry.getPasswordHash()); // hashed already
-        u.setFullname(entry.getFullname());
-        u.setIs_active(true); // verified
-        u.setCreated_at(LocalDateTime.now());
-
-        // assign role if exists
-        try {
-            Optional<Role> r = roleRepository.findByName("ROLE_USER");
-            if (r.isPresent()) u.addRole(r.get()); else u.setRole("user");
-        } catch (Exception ex) {
-            u.setRole("user");
+        if (!code.equals(data.getVerificationCode())) {
+            logger. warn("Invalid verification code for: {}", cleanEmail);
+            return null;
         }
 
-        User saved = userRepository.save(u);
+        try {
+            // Create user in database
+            User user = new User();
+            UserRole role = UserRole.USER; // Default role assignment
+            user.setEmail(data.getEmail());
+            user.setFullname(data.getFullname());
+            user.setPassword_hash(data.getPasswordHash());
+            user.setRole(role);
+            user.setIs_active(true); // Activate immediately after verification
+            user.setEmailVerified(true); // @Transient field
+            user.setCreated_at(LocalDateTime.now());
 
-        // remove from cache
-        registrations.evict(email.toLowerCase());
+            User savedUser = userRepository.save(user);
 
-        return saved;
+            // Remove from cache after successful creation
+            registrationCache.remove(cleanEmail);
+
+            logger.info("User created successfully:  {}", savedUser.getEmail());
+
+            return savedUser;
+
+        } catch (Exception e) {
+            logger.error("Failed to create user for: {}", cleanEmail, e);
+            throw new RuntimeException("Benutzer konnte nicht erstellt werden: " + e.getMessage());
+        }
     }
 
     /**
-     * Optional: allow resending — generate new code, update cache and re-send email.
+     * ✅ Sendet Code erneut
      */
-    public void resendCode(String email) throws MailException {
-        Cache.ValueWrapper wrapper = registrations.get(email.toLowerCase());
-        if (wrapper == null) {
-            throw new IllegalArgumentException("No pending registration for email");
+    public void resendCode(String email) {
+        String cleanEmail = email.toLowerCase().trim();
+        RegistrationData data = registrationCache.get(cleanEmail);
+
+        if (data == null) {
+            throw new IllegalArgumentException("Keine ausstehende Registrierung für diese E-Mail gefunden");
         }
-        RegistrationCacheEntry entry = (RegistrationCacheEntry) wrapper.get();
-        String code = generateNumericCode(CODE_LENGTH);
-        entry.setCodeHash(sha256Hex(code));
-        entry.setCreatedAt(LocalDateTime.now());
-        entry.setExpiresAt(LocalDateTime.now().plusMinutes(EXPIRATION_MINUTES));
-        registrations.put(email.toLowerCase(), entry);
-        emailService.sendVerificationEmail(email, code);
+
+        // Generate new code
+        String newCode = generateVerificationCode();
+
+        // Update cache with new code and extended expiry
+        LocalDateTime newExpiry = LocalDateTime.now().plusMinutes(10);
+        RegistrationData newData = new RegistrationData(
+                data.getFullname(),
+                data.getEmail(),
+                data.getPasswordHash(),
+                newCode,
+                newExpiry
+        );
+
+        registrationCache.put(cleanEmail, newData);
+
+        logger.info("New verification code generated for {}: {}", cleanEmail, newCode);
+
+        // Send new verification email
+        try {
+            emailService.sendVerificationEmail(cleanEmail, data.getFullname(), newCode);
+            logger.info("New verification email sent to: {}", cleanEmail);
+        } catch (Exception e) {
+            logger.error("Failed to resend verification email to: {}", cleanEmail, e);
+            throw new RuntimeException("E-Mail konnte nicht gesendet werden: " + e.getMessage());
+        }
+    }
+
+    public boolean hasVerificationPending(String email) {
+        RegistrationData data = registrationCache.get(email. toLowerCase().trim());
+        return data != null && ! data.isExpired();
+    }
+
+    // ✅ Verbesserte Email-Validierung
+    private boolean isValidEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            logger.debug("Email validation failed: null or empty");
+            return false;
+        }
+
+        String trimmedEmail = email.trim();
+
+        // Basic checks
+        if (! trimmedEmail.contains("@")) {
+            logger.debug("Email validation failed: no @ symbol");
+            return false;
+        }
+
+        if (! trimmedEmail.contains(".")) {
+            logger.debug("Email validation failed: no domain");
+            return false;
+        }
+
+        // Length check
+        if (trimmedEmail.length() < 5 || trimmedEmail. length() > 254) {
+            logger.debug("Email validation failed: invalid length");
+            return false;
+        }
+
+        // Regex pattern check
+        boolean matches = EMAIL_PATTERN.matcher(trimmedEmail).matches();
+        logger.debug("Email validation for '{}': {}", trimmedEmail, matches ?  "PASSED" : "FAILED");
+
+        return matches;
+    }
+
+    // Helper Methods
+    private String generateVerificationCode() {
+        Random random = new Random();
+        return String.format("%06d", random.nextInt(1000000));
+    }
+
+    /**
+     * Get registration statistics
+     */
+    public RegistrationStatistics getStatistics() {
+        int pendingRegistrations = registrationCache.size();
+        long expiredCount = registrationCache.values().stream()
+                .mapToLong(data -> data.isExpired() ? 1 : 0)
+                .sum();
+
+        return new RegistrationStatistics(pendingRegistrations, expiredCount);
+    }
+
+    // Statistics DTO
+    public static class RegistrationStatistics {
+        private final int pendingRegistrations;
+        private final long expiredRegistrations;
+
+        public RegistrationStatistics(int pendingRegistrations, long expiredRegistrations) {
+            this.pendingRegistrations = pendingRegistrations;
+            this.expiredRegistrations = expiredRegistrations;
+        }
+
+        public int getPendingRegistrations() { return pendingRegistrations; }
+        public long getExpiredRegistrations() { return expiredRegistrations; }
     }
 }

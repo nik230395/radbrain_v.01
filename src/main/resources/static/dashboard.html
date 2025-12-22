@@ -2,40 +2,741 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Dein Profil - RadBrain</title>
+    <title>Dashboard - RadBrain</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <script defer src="main.js"></script>
+
+    <style>
+        /* Dashboard specific styles */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .dashboard-header {
+            text-align:  center;
+            margin-bottom:  50px;
+            padding: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 20px;
+            color: white;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+
+        .content-section {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .sidebar-section {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .content-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(100,92,187,0.08);
+            border: 1px solid rgba(160,132,220,0.1);
+        }
+
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        . stat-card {
+            background:  linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align:  center;
+            box-shadow:  0 8px 25px rgba(100,92,187,0.2);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .quiz-card {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e0e0f0;
+            transition: all 0.3s;
+        }
+
+        . quiz-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(100,92,187,0.15);
+            border-color: var(--primary-light);
+        }
+
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .activity-item {
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-light);
+        }
+
+        .activity-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--primary);
+        }
+
+        .activity-meta {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-light);
+            border-radius:  50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin:  0 auto 20px;
+            font-size: 2rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            border-radius: 10px;
+            height: 8px;
+            margin:  10px 0;
+            overflow:  hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            height: 100%;
+            transition: width 0.3s;
+        }
+
+        /* Account Dropdown */
+        .nav-profile-dropdown {
+            position: relative;
+        }
+
+        . nav-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 16px;
+            border-radius:  25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+        }
+
+        .nav-profile-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-1px);
+            border-color: rgba(255,255,255,0.6);
+        }
+
+        .nav-profile-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 15px;
+            box-shadow:  0 15px 50px rgba(0,0,0,0.15);
+            min-width: 220px;
+            padding: 12px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-15px);
+            transition: all 0.3s;
+            z-index: 1000;
+            border: 1px solid rgba(100,92,187,0.1);
+        }
+
+        .nav-profile-dropdown.active .nav-profile-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(5px);
+        }
+
+        .nav-profile-menu a,
+        .nav-profile-menu button {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            text-align: left;
+            border:  none;
+            background: none;
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .nav-profile-menu a:hover,
+        .nav-profile-menu button:hover {
+            background:  linear-gradient(135deg, #f8f9ff, #e3eeff);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .nav-profile-menu . divider {
+            height: 1px;
+            background: #eee;
+            margin: 8px 0;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
+
+<!-- Navigation -->
 <nav class="navbar">
     <div class="nav-left">
-        <img src="Bilder/logo.png" alt="RadBrain Logo" style="height: 35px;" />
-        <span class="logo-text" style="font-size: 1.4rem; font-weight: bold;">RadBrain</span>
+        <img src="logo.png" alt="RadBrain Logo" style="height: 35px;" />
     </div>
     <ul class="nav-menu">
+        <li class="nav-item"><a href="user-home.html" class="nav-link">Home</a></li>
+        <li class="nav-item dropdown">
+            <a href="#" class="nav-link">Lernbereiche</a>
+            <ul class="dropdown-menu">
+                <li><a href="roentgen.html">Röntgen</a></li>
+                <li><a href="ct.html">CT</a></li>
+                <li><a href="mrt.html">MRT</a></li>
+                <li><a href="ultraschall.html">Ultraschall</a></li>
+            </ul>
+        </li>
         <li class="nav-item"><a href="quiz.html" class="nav-link">Quiz</a></li>
+        <li class="nav-item"><a href="dashboard.html" class="nav-link">Dashboard</a></li>
         <li class="nav-item" id="adminNavItem" style="display: none;"><a href="admin-dashboard.html" class="nav-link">Admin Panel</a></li>
-        <li class="nav-item"><a href="index.html" id="logoutBtn" class="nav-link">Logout</a></li>
     </ul>
-</nav>
-<section class="dashboard">
-    <div class="container">
-        <h1>Dein Profil</h1>
-        <div id="profile"></div>
-        <h2>Deine Quiz-Versuche</h2>
-        <div id="attempts"></div>
+
+    <!-- Account Dropdown -->
+    <div style="margin-left: auto;">
+        <div class="nav-profile-dropdown" id="profileDropdown">
+            <button class="nav-profile-btn" id="profileBtn">
+                <span id="userName">Mein Account</span>
+                <span style="font-size: 0.8rem;">▾</span>
+            </button>
+
+            <div class="nav-profile-menu" id="profileMenu">
+                <a href="account.html">⚙️ Mein Account</a>
+                <a href="user-home.html">🏠 Home</a>
+                <div class="divider"></div>
+                <button id="logoutBtn">🚪 Abmelden</button>
+            </div>
+        </div>
     </div>
-</section>
-<footer class="footer"></footer>
+</nav>
+
+<!-- Dashboard Content -->
+<div class="dashboard-container">
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+        <h1 id="dashboardTitle" style="margin:  0 0 10px; font-size: 2.5rem;">Dashboard</h1>
+        <p id="welcomeMessage" style="margin: 0; font-size: 1.2rem; opacity: 0.9;">Laden... </p>
+    </div>
+
+    <!-- Statistics Overview -->
+    <div class="stats-overview">
+        <div class="stat-card">
+            <div class="stat-value" id="quizzesCompleted">-</div>
+            <div class="stat-label">Abgeschlossene Quizzes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="averageScore">-</div>
+            <div class="stat-label">Durchschnittsscore</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="learningStreak">-</div>
+            <div class="stat-label">Lernstreak</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" id="totalTime">-</div>
+            <div class="stat-label">Lernzeit gesamt</div>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Main Content -->
+        <div class="content-section">
+
+            <!-- Available Quizzes -->
+            <div class="content-card">
+                <h2 style="margin-top: 0; color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                    🎯 Verfügbare Quizzes
+                </h2>
+                <div id="availableQuizzes" class="quiz-grid">
+                    <p style="text-align: center; color: #666;">Quizzes werden geladen...</p>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="content-card">
+                <h2 style="margin-top: 0; color: var(--primary); display: flex; align-items: center; gap: 10px;">
+                    📈 Letzte Aktivitäten
+                </h2>
+                <div id="recentActivity" class="activity-list">
+                    <p style="text-align: center; color: #666;">Aktivitäten werden geladen...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar-section">
+
+            <!-- Profile Summary -->
+            <div class="content-card">
+                <h3 style="margin-top: 0; color: var(--primary);">👤 Mein Profil</h3>
+                <div id="profileSummary" style="text-align: center;">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Learning Progress -->
+            <div class="content-card">
+                <h3 style="margin-top: 0; color: var(--primary);">📊 Lernfortschritt</h3>
+                <div id="learningProgress">
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-weight: 600;">Wöchentliches Ziel</span>
+                            <span style="color: var(--primary);" id="weeklyProgress">0/5 Quizzes</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="weeklyProgressBar" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-weight: 600;">Monatliches Ziel</span>
+                            <span style="color: var(--primary);" id="monthlyProgress">0/20 Quizzes</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="monthlyProgressBar" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" style="width: 100%;" onclick="setLearningGoals()">
+                        Ziele anpassen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="content-card">
+                <h3 style="margin-top:  0; color: var(--primary);">⚡ Schnellzugriff</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn-primary" style="width: 100%;" onclick="startRandomQuiz()">
+                        🎲 Zufälliges Quiz
+                    </button>
+                    <button class="btn-secondary" style="width: 100%; background: #f0edff; color: var(--primary); border: 1px solid var(--primary-light);" onclick="window.location.href='quiz.html'">
+                        📚 Alle Quizzes
+                    </button>
+                    <button class="btn-secondary" style="width: 100%; background: #f0edff; color: var(--primary); border: 1px solid var(--primary-light);" onclick="viewAchievements()">
+                        🏆 Erfolge ansehen
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <div style="text-align: center; padding: 30px 0;">
+            <p style="color:  #999;">© 2025 RadBrain.  Ihre Lernreise geht weiter! </p>
+        </div>
+    </div>
+</footer>
+
+<script src="auth.js"></script>
 <script>
-    // Check if user is admin and show admin panel link
-    if (window.auth && window.auth.isLoggedIn()) {
-        const user = window.auth.getUser();
-        if (window.auth.hasRole('ADMIN')) {
-            document.getElementById('adminNavItem').style.display = 'block';
+    (function() {
+        console.log('📊 Dashboard loaded');
+
+        // Check authentication
+        if (! window.auth || !window.auth.isLoggedIn()) {
+            alert('Bitte melden Sie sich an.');
+            window.location.href = 'login.html';
+            return;
         }
-    }
+
+        initializeDashboard();
+
+        async function initializeDashboard() {
+            try {
+                const user = window.auth.getUser();
+
+                // Show admin nav if admin
+                if (window.auth.hasRole('ADMIN')) {
+                    document.getElementById('adminNavItem').style.display = 'block';
+                }
+
+                // Setup account dropdown
+                setupAccountDropdown(user);
+
+                // Personalize header
+                personalizeHeader(user);
+
+                // Load all dashboard data
+                await Promise.all([
+                    loadUserStats(),
+                    loadAvailableQuizzes(),
+                    loadRecentActivity(),
+                    loadProfileSummary(user),
+                    loadLearningProgress()
+                ]);
+
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+            }
+        }
+
+        function setupAccountDropdown(user) {
+            const firstName = getFirstName(user.fullname || user.email);
+            document.getElementById('userName').textContent = firstName;
+
+            const dropdown = document.getElementById('profileDropdown');
+            const btn = document.getElementById('profileBtn');
+            const menu = document.getElementById('profileMenu');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            // Dropdown functionality
+            btn.addEventListener('click', (e) => {
+                e. stopPropagation();
+                dropdown.classList.toggle('active');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!dropdown. contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
+
+            // Logout functionality
+            logoutBtn.addEventListener('click', () => {
+                console.log('🚪 User logging out from dashboard');
+                window.auth. logout('/');
+            });
+
+            // Hover effects for menu items
+            const menuItems = menu.querySelectorAll('a, button');
+            menuItems.forEach(item => {
+                if (item.id !== 'logoutBtn') {
+                    item.addEventListener('mouseenter', () => {
+                        item.style.background = 'linear-gradient(135deg, #f8f9ff, #e3eeff)';
+                        item.style.color = 'var(--primary)';
+                        item.style. transform = 'translateX(5px)';
+                    });
+                    item.addEventListener('mouseleave', () => {
+                        item. style.background = 'none';
+                        item.style.color = '#333';
+                        item.style.transform = 'translateX(0)';
+                    });
+                }
+            });
+        }
+
+        function personalizeHeader(user) {
+            const timeGreeting = getTimeOfDayGreeting();
+            const firstName = getFirstName(user.fullname || user. email);
+
+            document. getElementById('dashboardTitle').textContent = `${timeGreeting}, ${firstName}! `;
+            document.getElementById('welcomeMessage').textContent = 'Hier ist Ihr persönlicher Lernfortschritt';
+        }
+
+        async function loadUserStats() {
+            try {
+                const response = await window.auth.authFetch('/api/attempts/my-stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    updateStatsDisplay(stats);
+                } else {
+                    setDefaultStats();
+                }
+            } catch (error) {
+                console.error('Error loading user stats:', error);
+                setDefaultStats();
+            }
+        }
+
+        function updateStatsDisplay(stats) {
+            animateStatValue('quizzesCompleted', stats. totalAttempts || 0);
+            animateStatValue('averageScore', stats.averageScore ? Math.round(stats.averageScore) : 0, '%');
+            animateStatValue('learningStreak', stats.currentStreak || 0);
+            animateStatValue('totalTime', stats.totalTime ?  Math.round(stats.totalTime / 60) : 0, 'h');
+        }
+
+        function setDefaultStats() {
+            document. getElementById('quizzesCompleted').textContent = '0';
+            document.getElementById('averageScore').textContent = '0%';
+            document.getElementById('learningStreak').textContent = '0';
+            document. getElementById('totalTime').textContent = '0h';
+        }
+
+        function animateStatValue(elementId, targetValue, suffix = '') {
+            const element = document.getElementById(elementId);
+            if (! element) return;
+
+            let currentValue = 0;
+            const increment = targetValue / 50;
+            const timer = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= targetValue) {
+                    currentValue = targetValue;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.floor(currentValue) + suffix;
+            }, 30);
+        }
+
+        async function loadAvailableQuizzes() {
+            try {
+                const response = await fetch('/api/quizzes/published');
+                if (response.ok) {
+                    const quizzes = await response. json();
+                    displayAvailableQuizzes(quizzes);
+                } else {
+                    document.getElementById('availableQuizzes').innerHTML =
+                        '<p style="text-align: center; color: #666;">Keine Quizzes verfügbar. </p>';
+                }
+            } catch (error) {
+                console.error('Error loading quizzes:', error);
+                document.getElementById('availableQuizzes').innerHTML =
+                    '<p style="text-align: center; color: #666;">Quizzes werden bald verfügbar sein! </p>';
+            }
+        }
+
+        function displayAvailableQuizzes(quizzes) {
+            const container = document.getElementById('availableQuizzes');
+
+            if (! quizzes || quizzes.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">Noch keine Quizzes verfügbar.</p>';
+                return;
+            }
+
+            container. innerHTML = quizzes.slice(0, 6).map(quiz => `
+            <div class="quiz-card">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <div style="width: 40px; height: 40px; background: var(--primary-light); border-radius: 50%; display: flex; align-items:  center; justify-content: center; color: white; font-weight:  bold;">
+                        ${quiz.title. charAt(0)}
+                    </div>
+                    <div>
+                        <h4 style="margin: 0; color:  var(--primary); font-size: 1.1rem;">${quiz.title}</h4>
+                        <div style="font-size: 0.8rem; color: #666;">${quiz.questions?. length || 0} Fragen</div>
+                    </div>
+                </div>
+                <p style="margin: 0 0 15px; font-size: 0.9rem; color: #666; line-height: 1.4;">
+                    ${quiz.description || 'Testen Sie Ihr Wissen in diesem Bereich.'}
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 0.8rem; color: #888;">
+                    <span>⏱ ~${Math.ceil((quiz.questions?.length || 5) * 1.5)} Min</span>
+                    <span>🎯 ${quiz.difficulty || 'Mittel'}</span>
+                </div>
+                <button class="btn-primary" style="width: 100%; padding: 10px;" onclick="startQuiz(${quiz.id})">
+                    Quiz starten
+                </button>
+            </div>
+        `).join('');
+        }
+
+        async function loadRecentActivity() {
+            try {
+                const response = await window.auth.authFetch('/api/attempts/recent');
+                if (response.ok) {
+                    const activities = await response.json();
+                    displayRecentActivity(activities);
+                } else {
+                    document.getElementById('recentActivity').innerHTML =
+                        '<p style="text-align: center; color: #666;"><i>Noch keine Aktivitäten vorhanden.</i></p>';
+                }
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                document.getElementById('recentActivity').innerHTML =
+                    '<p style="text-align: center; color: #666;"><i>Starten Sie Ihr erstes Quiz!</i></p>';
+            }
+        }
+
+        function displayRecentActivity(activities) {
+            const container = document.getElementById('recentActivity');
+
+            if (!activities || activities.length === 0) {
+                container.innerHTML =
+                    '<p style="text-align: center; color: #666;"><i>Noch keine Aktivitäten vorhanden.  Starten Sie Ihr erstes Quiz!</i></p>';
+                return;
+            }
+
+            container.innerHTML = activities.slice(0, 5).map(activity => {
+                const date = new Date(activity.completedAt || activity.createdAt);
+                const timeAgo = getTimeAgo(date);
+
+                return `
+                <div class="activity-item">
+                    <div class="activity-title">
+                        ${activity.quiz?.title || 'Quiz'} ${activity.completed ? 'abgeschlossen' : 'gestartet'}
+                    </div>
+                    <div class="activity-meta">
+                        ${activity.scorePct ? `Score: ${activity.scorePct}% • ` : ''}${timeAgo}
+                    </div>
+                </div>
+            `;
+            }).join('');
+        }
+
+        function loadProfileSummary(user) {
+            const container = document.getElementById('profileSummary');
+            const firstLetter = (user.fullname || user.email || 'U').charAt(0).toUpperCase();
+
+            container.innerHTML = `
+            <div class="profile-avatar">${firstLetter}</div>
+            <h4 style="margin: 0 0 5px; color: var(--primary);">${user.fullname || 'Unbekannt'}</h4>
+            <p style="margin: 0 0 20px; color: #666; font-size: 0.9rem;">${user.email}</p>
+            <div style="text-align: center;">
+                <button class="btn-primary" onclick="window.location.href='account.html'">
+                    Profil bearbeiten
+                </button>
+            </div>
+        `;
+        }
+
+        async function loadLearningProgress() {
+            try {
+                const response = await window.auth.authFetch('/api/attempts/progress');
+                if (response.ok) {
+                    const progress = await response.json();
+                    updateProgressDisplay(progress);
+                } else {
+                    setDefaultProgress();
+                }
+            } catch (error) {
+                console.error('Error loading progress:', error);
+                setDefaultProgress();
+            }
+        }
+
+        function updateProgressDisplay(progress) {
+            const weeklyCompleted = progress.weeklyCompleted || 0;
+            const monthlyCompleted = progress.monthlyCompleted || 0;
+            const weeklyGoal = progress.weeklyGoal || 5;
+            const monthlyGoal = progress.monthlyGoal || 20;
+
+            document.getElementById('weeklyProgress').textContent = `${weeklyCompleted}/${weeklyGoal} Quizzes`;
+            document.getElementById('monthlyProgress').textContent = `${monthlyCompleted}/${monthlyGoal} Quizzes`;
+
+            const weeklyPercent = Math.min((weeklyCompleted / weeklyGoal) * 100, 100);
+            const monthlyPercent = Math.min((monthlyCompleted / monthlyGoal) * 100, 100);
+
+            document.getElementById('weeklyProgressBar').style.width = weeklyPercent + '%';
+            document.getElementById('monthlyProgressBar').style.width = monthlyPercent + '%';
+        }
+
+        function setDefaultProgress() {
+            document.getElementById('weeklyProgress').textContent = '0/5 Quizzes';
+            document.getElementById('monthlyProgress').textContent = '0/20 Quizzes';
+            document.getElementById('weeklyProgressBar').style.width = '0%';
+            document.getElementById('monthlyProgressBar').style.width = '0%';
+        }
+
+        // Helper functions
+        function getTimeOfDayGreeting() {
+            const hour = new Date().getHours();
+            if (hour < 12) return 'Guten Morgen';
+            if (hour < 18) return 'Guten Tag';
+            return 'Guten Abend';
+        }
+
+        function getFirstName(fullNameOrEmail) {
+            if (!fullNameOrEmail) return 'User';
+            if (fullNameOrEmail.includes('@')) {
+                return fullNameOrEmail.split('@')[0];
+            }
+            return fullNameOrEmail.split(' ')[0];
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / (1000 * 60));
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+            if (days > 0) return `vor ${days} Tag${days > 1 ? 'en' : ''}`;
+            if (hours > 0) return `vor ${hours} Stunde${hours > 1 ? 'n' : ''}`;
+            if (minutes > 0) return `vor ${minutes} Minute${minutes > 1 ? 'n' : ''}`;
+            return 'gerade eben';
+        }
+
+        // Global functions
+        window.startQuiz = function(quizId) {
+            window.location.href = `quiz.html?id=${quizId}`;
+        };
+
+        window. startRandomQuiz = function() {
+            window.location.href = 'quiz.html?random=true';
+        };
+
+        window. setLearningGoals = function() {
+            alert('Lernziele-Feature wird bald verfügbar sein! ');
+        };
+
+        window.viewAchievements = function() {
+            alert('Erfolge-Feature wird bald verfügbar sein! ');
+        };
+    })();
 </script>
+
 </body>
 </html>

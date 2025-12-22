@@ -1,16 +1,42 @@
 package org.nikolic.programm.dtos;
 
-import lombok.Data;
-import org.nikolic.programm.entities.QuizCategory;
-
-@Data
 public class CreateQuizRequest {
 
     private String title;
-
     private String description;
+    private Long categoryId;
 
-    private QuizCategory category; // New field for category
+    // Constructors
+    public CreateQuizRequest() {}
 
-    private Long createdBy; // ID of the user creating the quiz
+    public CreateQuizRequest(String title, String description, Long categoryId) {
+        this.title = title;
+        this.description = description;
+        this.categoryId = categoryId;
+    }
+
+    // Getters and Setters
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
 }

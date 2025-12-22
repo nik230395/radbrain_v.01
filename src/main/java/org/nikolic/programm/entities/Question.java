@@ -1,44 +1,103 @@
 package org.nikolic.programm.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
-
 import java.util.List;
 
-@Data
-@NoArgsConstructor
 @Entity
 @Table(name = "questions")
 public class Question {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // Frage-ID
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "quiz_id", nullable = false)
-    @ToString.Exclude
-    private Quiz quiz; // Zugehöriges Quiz
+    private Quiz quiz;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private QuestionType qtype; // Fragetyp (SINGLE, MULTIPLE, ...)
+    private QuestionType qtype;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    private String text; // Text der Frage
+    private String text;
 
     @Column(name = "aux_text", columnDefinition = "TEXT")
-    private String auxText; // Optionaler Erklär- oder Hilfetext
+    private String auxText;
 
-    private Integer position; // Position/Sortierreihenfolge im Quiz
+    private Integer position;
 
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
-    @ToString.Exclude
-    private List<Choice> choices; // Antwortmöglichkeiten (Multiple Choice, etc.)
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Choice> choices;
 
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
-    @ToString.Exclude
-    private List<AcceptableAnswer> acceptableAnswers; // Akzeptierte Lösungen (Freitext/Lückentext)
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<AcceptableAnswer> acceptableAnswers;
+
+    // Constructors
+    public Question() {
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Quiz getQuiz() {
+        return quiz;
+    }
+
+    public void setQuiz(Quiz quiz) {
+        this.quiz = quiz;
+    }
+
+    public QuestionType getQtype() {
+        return qtype;
+    }
+
+    public void setQtype(QuestionType qtype) {
+        this.qtype = qtype;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    public String getAuxText() {
+        return auxText;
+    }
+
+    public void setAuxText(String auxText) {
+        this.auxText = auxText;
+    }
+
+    public Integer getPosition() {
+        return position;
+    }
+
+    public void setPosition(Integer position) {
+        this.position = position;
+    }
+
+    public List<Choice> getChoices() {
+        return choices;
+    }
+
+    public void setChoices(List<Choice> choices) {
+        this.choices = choices;
+    }
+
+    public List<AcceptableAnswer> getAcceptableAnswers() {
+        return acceptableAnswers;
+    }
+
+    public void setAcceptableAnswers(List<AcceptableAnswer> acceptableAnswers) {
+        this.acceptableAnswers = acceptableAnswers;
+    }
 }

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - RadBrain</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="nav-left">
+            <img src="logo.png" alt="RadBrain Logo" class="nav-logo">
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/user-home.html" class="nav-link">Home</a></li>
+            <li class="nav-item dropdown">
+                <a href="#" class="nav-link">Lernbereiche</a>
+                <ul class="dropdown-menu">
+                    <li><a href="/roentgen.html">Röntgen</a></li>
+                    <li><a href="/ct.html">CT</a></li>
+                    <li><a href="/mrt.html">MRT</a></li>
+                    <li><a href="/ultraschall.html">Ultraschall</a></li>
+                </ul>
+            </li>
+            <li class="nav-item"><a href="/quiz.html" class="nav-link">Quiz</a></li>
+            <li class="nav-item"><a href="/dashboard.html" class="nav-link">Dashboard</a></li>
+            <li class="nav-item" id="adminNavItem" style="display: none;">
+                <a href="/admin-dashboard.html" class="nav-link">Admin Panel</a>
+            </li>
+        </ul>
+
+        <div class="nav-profile-dropdown" id="profileDropdown" style="margin-left: auto;">
+            <button class="nav-profile-btn" id="profileBtn">
+                <span id="userName">Mein Account</span>
+                <span style="font-size: 0.8rem;">▾</span>
+            </button>
+
+            <div class="nav-profile-menu" id="profileMenu">
+                <a href="/account.html">⚙️ Mein Account</a>
+                <a href="/dashboard.html">📊 Dashboard</a>
+                <div class="divider"></div>
+                <button id="logoutBtn" style="color: var(--error);">🚪 Abmelden</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero" style="padding: 6rem 2rem 4rem;">
+    <div class="hero-content">
+        <h1 class="hero-title" id="welcomeTitle" style="font-size: 3rem;">Willkommen zurück!</h1>
+        <p class="hero-subtitle" id="welcomeSubtitle">Bereit für Ihre nächste Lerneinheit?</p>
+
+        <div class="stats-grid" style="margin-top: 2rem;">
+            <div class="stat-item">
+                <h3 id="userQuizCount">0</h3>
+                <p>Abgeschlossene Quizzes</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="userAvgScore">0%</h3>
+                <p>Durchschnittsscore</p>
+            </div>
+            <div class="stat-item">
+                <h3 id="userStreak">0</h3>
+                <p>Lernstreak</p>
+            </div>
+        </div>
+    </div>
+    <div class="hero-wave">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="height: 80px;">
+            <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="white"/>
+        </svg>
+    </div>
+</section>
+
+<!-- Quick Actions -->
+<section class="section" style="background: white;">
+    <div class="container">
+        <h2 class="section-title">Was möchten Sie heute tun?</h2>
+
+        <div class="grid grid-2">
+            <div class="feature-card" onclick="startRandomQuiz()" style="cursor: pointer;">
+                <div class="feature-number">🎯</div>
+                <h3>Quiz starten</h3>
+                <p>Testen Sie Ihr Wissen mit einem unserer spannenden Radiologie-Quizzes.</p>
+            </div>
+
+            <div class="feature-card" onclick="window.location.href='/dashboard.html'" style="cursor: pointer; background: linear-gradient(135deg, var(--secondary), var(--secondary-light));">
+                <div class="feature-number">📊</div>
+                <h3>Dashboard ansehen</h3>
+                <p>Detaillierter Überblick über Ihren Lernfortschritt und Statistiken.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Learning Areas -->
+<section class="section" style="background: var(--gray-50);">
+    <div class="container">
+        <h2 class="section-title">Ihre Lernbereiche</h2>
+        <p class="section-subtitle">Setzen Sie Ihre Lernreise fort</p>
+
+        <div class="areas-grid">
+            <a href="/roentgen.html" class="area-card">
+                <div class="area-icon">
+                    <svg viewBox="0 0 100 100" width="50" height="50">
+                        <rect x="30" y="20" width="40" height="60" rx="5" fill="white" opacity="0.9"/>
+                        <circle cx="50" cy="50" r="15" fill="white" opacity="0.7"/>
+                    </svg>
+                </div>
+                <h3>Röntgen</h3>
+                <p>Grundlagen der konventionellen Radiologie</p>
+                <span class="card-arrow">→</span>
+            </a>
+
+            <a href="/ct.html" class="area-card" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
+                <div class="area-icon">
+                    <svg viewBox="0 0 100 100" width="50" height="50">
+                        <circle cx="50" cy="50" r="25" fill="none" stroke="white" stroke-width="4" opacity="0.9"/>
+                        <circle cx="50" cy="50" r="15" fill="white" opacity="0.7"/>
+                    </svg>
+                </div>
+                <h3>Computertomographie</h3>
+                <p>CT-Anatomie, Kontrastmittel und mehr</p>
+                <span class="card-arrow">→</span>
+            </a>
+
+            <a href="/mrt.html" class="area-card" style="background: linear-gradient(135deg, #A084DC, #BFACE2);">
+                <div class="area-icon">
+                    <svg viewBox="0 0 100 100" width="50" height="50">
+                        <path d="M 30 50 Q 50 30 70 50 Q 50 70 30 50" fill="white" opacity="0.9"/>
+                        <circle cx="50" cy="50" r="8" fill="white" opacity="0.7"/>
+                    </svg>
+                </div>
+                <h3>Magnetresonanztomographie</h3>
+                <p>MRT-Sequenzen, Anatomie und Pathologien</p>
+                <span class="card-arrow">→</span>
+            </a>
+
+            <a href="/ultraschall.html" class="area-card" style="background: linear-gradient(135deg, #8b5cf6, #c084fc);">
+                <div class="area-icon">
+                    <svg viewBox="0 0 100 100" width="50" height="50">
+                        <path d="M 50 30 L 50 70 M 35 40 Q 50 50 35 60 M 65 40 Q 50 50 65 60" stroke="white" stroke-width="4" fill="none" opacity="0.9"/>
+                    </svg>
+                </div>
+                <h3>Ultraschall</h3>
+                <p>Sonographie-Grundlagen und Untersuchungstechniken</p>
+                <span class="card-arrow">→</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div style="text-align: center; padding: 30px 0;">
+            <p style="color: var(--gray-400);">© 2025 RadBrain. Ihre Lernreise geht weiter!</p>
+        </div>
+    </div>
+</footer>
+
+<script src="auth.js"></script>
+<script>
+    (function() {
+        'use strict';
+
+        console.log('🏠 User home page loaded');
+
+        // Check authentication
+        if (!window.auth || !window.auth.isLoggedIn()) {
+            console.log('⚠️ Not logged in, redirecting...');
+            window.location.href = '/login.html';
+            return;
+        }
+
+        initializeUserHome();
+
+        function initializeUserHome() {
+            const user = window.auth.getUser();
+            console.log('👤 User:', user.email);
+
+            // Show admin nav if admin
+            if (window.auth.hasRole('ADMIN')) {
+                document.getElementById('adminNavItem').style.display = 'block';
+            }
+
+            personalizeWelcome(user);
+            setupAccountDropdown(user);
+            loadUserStats();
+        }
+
+        function personalizeWelcome(user) {
+            const timeGreeting = getTimeOfDayGreeting();
+            const firstName = getFirstName(user.fullname || user.email);
+
+            document.getElementById('welcomeTitle').textContent = `${timeGreeting}, ${firstName}!`;
+
+            const messages = [
+                "Bereit für Ihre nächste Lerneinheit?",
+                "Zeit, Ihr Wissen zu erweitern!",
+                "Lassen Sie uns heute etwas Neues lernen!"
+            ];
+
+            document.getElementById('welcomeSubtitle').textContent =
+                messages[Math.floor(Math.random() * messages.length)];
+        }
+
+        function setupAccountDropdown(user) {
+            const userName = getFirstName(user.fullname || user.email);
+            document.getElementById('userName').textContent = userName;
+
+            const dropdown = document.getElementById('profileDropdown');
+            const btn = document.getElementById('profileBtn');
+            const menu = document.getElementById('profileMenu');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('active');
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                console.log('🚪 Logging out...');
+                window.auth.logout('/index.html');
+            });
+        }
+
+        async function loadUserStats() {
+            try {
+                const response = await window.auth.authFetch('/api/attempts/my-stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    updateStats(stats);
+                }
+            } catch (error) {
+                console.log('Stats will be loaded when available');
+            }
+        }
+
+        function updateStats(stats) {
+            document.getElementById('userQuizCount').textContent = stats.totalAttempts || 0;
+            document.getElementById('userAvgScore').textContent =
+                stats.averageScore ? Math.round(stats.averageScore) + '%' : '0%';
+            document.getElementById('userStreak').textContent = stats.currentStreak || 0;
+        }
+
+        function getTimeOfDayGreeting() {
+            const hour = new Date().getHours();
+            if (hour < 12) return 'Guten Morgen';
+            if (hour < 17) return 'Guten Tag';
+            return 'Guten Abend';
+        }
+
+        function getFirstName(fullNameOrEmail) {
+            if (!fullNameOrEmail) return 'Lernender';
+            if (fullNameOrEmail.includes('@')) {
+                return fullNameOrEmail.split('@')[0];
+            }
+            return fullNameOrEmail.split(' ')[0];
+        }
+
+        window.startRandomQuiz = function() {
+            window.location.href = '/quiz.html?random=true';
+        };
+    })();
+</script>
+
+</body>
+</html>

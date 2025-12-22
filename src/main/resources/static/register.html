@@ -1,103 +1,322 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Registrieren - RadBrain</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrierung - RadBrain</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .auth-card { max-width:520px; margin:48px auto; background:#fff; padding:22px; border-radius:12px; box-shadow:0 12px 40px rgba(64,48,120,0.08); }
-        .input-row { margin-bottom:12px; }
-        label { display:block; font-weight:600; margin-bottom:6px; color:#444; }
-        input[type="text"], input[type="email"], input[type="password"] {
-            width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6e6f2;
-            font-size:1rem;
+        .register-container {
+            min-height: 100vh;
+            background:  linear-gradient(135deg, #645CBB 0%, #A084DC 50%, #BFACE2 100%);
         }
-        .helper { color:#666; margin-top:10px; }
-        .btn { display:inline-block; padding:10px 16px; border-radius:10px; border:none; cursor:pointer; font-weight:700; }
-        .btn-primary { background:linear-gradient(135deg,#645CBB,#A084DC); color:#fff; }
-        .btn-link { background:transparent; color:#645CBB; border:1px solid rgba(100,92,187,0.08); }
-        .message { margin-top:12px; padding:10px; border-radius:8px; display:none; }
-        .message.error { background:#ffecec; color:#8a1f1f; display:block; }
-        .message.success { background:#e8ffef; color:#0a5f2b; display:block; }
+        .register-card {
+            border-radius: 15px;
+            border: none;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #645CBB, #A084DC);
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .btn-primary-custom:hover {
+            background:  linear-gradient(135deg, #5a52a5, #8f73c7);
+        }
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        . form-control:focus {
+            border-color: #645CBB;
+            box-shadow: 0 0 0 0.2rem rgba(100, 92, 187, 0.25);
+        }
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top:  20px;
+            font-family: monospace;
+            font-size: 0.8rem;
+        }
     </style>
 </head>
 <body>
-<main class="container">
-    <div class="auth-card">
-        <h1 style="margin:0 0 8px;">Registrieren</h1>
-        <p class="helper">Erstelle ein Konto, um Fortschritte zu speichern und alle Funktionen zu nutzen.</p>
+<div class="register-container d-flex align-items-center justify-content-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card register-card shadow-lg">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <h1 class="h3 mb-3 fw-bold text-primary" style="color: #645CBB ! important;">🎯 RadBrain</h1>
+                            <h2 class="h5 text-muted">Neue Registrierung</h2>
+                        </div>
 
-        <form id="registerForm" novalidate>
-            <div class="input-row">
-                <label for="fullname">Vor- und Nachname</label>
-                <input id="fullname" name="fullname" type="text" required placeholder="Max Mustermann">
+                        <form id="registerForm" onsubmit="handleRegister(event)">
+                            <div class="mb-3">
+                                <label for="fullname" class="form-label fw-semibold">Vollständiger Name</label>
+                                <input type="text" class="form-control" id="fullname" name="fullname" required
+                                       placeholder="Max Mustermann">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label fw-semibold">E-Mail-Adresse</label>
+                                <input type="email" class="form-control" id="email" name="email" required
+                                       placeholder="max@spengergasse.at">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label fw-semibold">Passwort</label>
+                                <input type="password" class="form-control" id="password" name="password" required
+                                       placeholder="Mindestens 8 Zeichen" minlength="8">
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="confirmPassword" class="form-label fw-semibold">Passwort bestätigen</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required
+                                       placeholder="Passwort wiederholen">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary-custom w-100 fw-semibold" id="registerBtn">
+                                <span class="btn-text">Registrieren</span>
+                                <span class="btn-loading d-none">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        Wird verarbeitet...
+                                    </span>
+                            </button>
+                        </form>
+
+                        <div id="alertContainer" class="mt-3"></div>
+
+                        <!-- ✅ Debug-Info Container -->
+                        <div id="debugContainer" class="debug-info" style="display: none;">
+                            <strong>🔍 Debug-Info:</strong><br>
+                            <div id="debugContent"></div>
+                        </div>
+
+                        <!-- ✅ Test-Buttons -->
+                        <div class="text-center mt-3">
+                            <button type="button" class="btn btn-sm btn-outline-info me-2" onclick="testConnection()">
+                                🔗 Verbindung testen
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleDebug()">
+                                🐛 Debug anzeigen
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <p class="mb-0">
+                                Bereits ein Konto?
+                                <a href="login.html" class="text-decoration-none fw-semibold" style="color: #645CBB;">
+                                    Jetzt anmelden
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div class="input-row">
-                <label for="email">Email</label>
-                <input id="email" name="email" type="email" required placeholder="name@beispiel.de">
-            </div>
-
-            <div class="input-row">
-                <label for="password">Passwort</label>
-                <input id="password" name="password" type="password" required minlength="6" placeholder="Mind. 6 Zeichen">
-            </div>
-
-            <div class="input-row">
-                <label for="password2">Passwort wiederholen</label>
-                <input id="password2" name="password2" type="password" required minlength="6" placeholder="">
-            </div>
-
-            <div style="display:flex; gap:10px; align-items:center;">
-                <button id="submitBtn" class="btn btn-primary" type="submit">Registrieren</button>
-                <a href="/login.html" class="btn btn-link" style="text-decoration:none;">Ich habe bereits ein Konto</a>
-            </div>
-
-            <div id="msg" class="message" role="status" aria-live="polite"></div>
-        </form>
+        </div>
     </div>
-</main>
+</div>
 
-<script src="auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle. min.js"></script>
+
 <script>
-    (function(){
-        const form = document.getElementById('registerForm');
-        const fullnameEl = document.getElementById('fullname');
-        const emailEl = document.getElementById('email');
-        const pwEl = document.getElementById('password');
-        const pw2El = document.getElementById('password2');
-        const msg = document.getElementById('msg');
+    // ✅ Debug-Funktionen
+    function debugLog(message) {
+        console.log('🐛 DEBUG:', message);
+        const debugContent = document.getElementById('debugContent');
+        if (debugContent) {
+            debugContent.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+        }
+    }
 
-        function showMessage(text, type) {
-            msg.textContent = text;
-            msg.className = 'message ' + (type === 'error' ? 'error' : (type === 'success' ? 'success' : ''));
+    function toggleDebug() {
+        const debugContainer = document.getElementById('debugContainer');
+        debugContainer.style. display = debugContainer.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function showAlert(message, type = 'danger') {
+        const alertContainer = document.getElementById('alertContainer');
+        alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+    }
+
+    function setLoading(loading) {
+        const btn = document.getElementById('registerBtn');
+        const btnText = btn.querySelector('.btn-text');
+        const btnLoading = btn.querySelector('.btn-loading');
+
+        if (loading) {
+            btnText.classList.add('d-none');
+            btnLoading.classList.remove('d-none');
+            btn.disabled = true;
+        } else {
+            btnText.classList.remove('d-none');
+            btnLoading.classList.add('d-none');
+            btn.disabled = false;
+        }
+    }
+
+    // ✅ Verbindungstest
+    async function testConnection() {
+        debugLog('🔗 Teste Verbindung...');
+        showAlert('Teste Verbindung...', 'info');
+
+        try {
+            // Test 1: Server erreichbar?
+            const serverResponse = await fetch(window.location.origin + '/');
+            debugLog(`Server-Status: ${serverResponse.status}`);
+
+            // Test 2: API erreichbar?
+            const apiResponse = await fetch('/api/auth/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: 'test' })
+            });
+            debugLog(`API-Status: ${apiResponse.status}`);
+
+            showAlert(`✅ Verbindung OK! Server: ${serverResponse.status}, API: ${apiResponse.status}`, 'success');
+
+        } catch (error) {
+            debugLog(`❌ Verbindungsfehler: ${error.message}`);
+            showAlert(`❌ Verbindungsfehler: ${error.message}`, 'danger');
+        }
+    }
+
+    // ✅ Erweiterte Registrierungsfunktion mit Debug
+    async function handleRegister(event) {
+        event.preventDefault();
+
+        debugLog('🚀 Registrierung gestartet');
+
+        // Form-Daten sammeln
+        const fullname = document.getElementById('fullname').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document. getElementById('password').value;
+        const confirmPassword = document. getElementById('confirmPassword').value;
+
+        debugLog(`📝 Form-Daten: Name="${fullname}", Email="${email}", PassLength=${password.length}`);
+
+        // Validation
+        if (! fullname || !email || !password || !confirmPassword) {
+            debugLog('❌ Validation:  Felder fehlen');
+            showAlert('Bitte füllen Sie alle Felder aus.', 'warning');
+            return;
         }
 
-        form.addEventListener('submit', async function(e){
-            e.preventDefault();
-            showMessage('', '');
+        if (password !== confirmPassword) {
+            debugLog('❌ Validation:  Passwörter unterschiedlich');
+            showAlert('Passwörter stimmen nicht überein.', 'warning');
+            return;
+        }
 
-            const fullname = (fullnameEl.value || '').trim();
-            const email = (emailEl.value || '').trim();
-            const password = pwEl.value || '';
-            const password2 = pw2El.value || '';
+        if (password.length < 8) {
+            debugLog('❌ Validation: Passwort zu kurz');
+            showAlert('Passwort muss mindestens 8 Zeichen haben.', 'warning');
+            return;
+        }
 
-            if (!fullname) { showMessage('Bitte deinen Namen eingeben.', 'error'); return; }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showMessage('Bitte eine gültige Email angeben.', 'error'); return; }
-            if (password.length < 6) { showMessage('Passwort muss mindestens 6 Zeichen haben.', 'error'); return; }
-            if (password !== password2) { showMessage('Passwörter stimmen nicht überein.', 'error'); return; }
+        const requestData = {
+            fullname: fullname,
+            email: email,
+            password: password
+        };
 
-            showMessage('Registriere...', '');
-            // use helper from /static/auth.js
-            try {
-                await window.auth.doRegister(fullname, email, password);
-                // doRegister redirects to /verify.html on success, so normally we won't reach here
-            } catch (err) {
-                showMessage('Fehler: ' + (err.message || err), 'error');
+        debugLog('📡 API-Request wird gesendet.. .');
+        debugLog(`URL: ${window.location.origin}/api/users/register`);
+        debugLog(`Daten: ${JSON.stringify(requestData, null, 2)}`);
+
+        try {
+            setLoading(true);
+
+            const response = await fetch('/api/users/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body:  JSON.stringify(requestData)
+            });
+
+            debugLog(`📨 Response-Status: ${response.status} ${response.statusText}`);
+            debugLog(`📨 Response-Headers: ${JSON.stringify([...response.headers. entries()])}`);
+
+            let data;
+            const contentType = response.headers.get('content-type');
+
+            if (contentType && contentType.includes('application/json')) {
+                data = await response. json();
+                debugLog(`📨 Response-Data: ${JSON.stringify(data, null, 2)}`);
+            } else {
+                const text = await response.text();
+                debugLog(`📨 Response-Text: ${text. substring(0, 500)}...`);
+                data = { error: 'Server returned non-JSON response' };
             }
-        });
-    })();
+
+            if (response.ok) {
+                debugLog('✅ Registrierung erfolgreich');
+
+                localStorage.setItem('registrationEmail', email);
+                localStorage.setItem('registrationName', fullname);
+
+                showAlert('Registrierung erfolgreich! Sie werden zur Verifikation weitergeleitet... ', 'success');
+
+                setTimeout(() => {
+                    window.location.href = 'verify.html';
+                }, 2000);
+
+            } else {
+                debugLog(`❌ Registrierung fehlgeschlagen: ${response.status}`);
+                showAlert(data.error || `Server-Fehler (${response.status})`, 'danger');
+            }
+        } catch (error) {
+            debugLog(`💥 Fetch-Error: ${error.name} - ${error.message}`);
+            debugLog(`💥 Error-Stack: ${error.stack}`);
+
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                showAlert('❌ Server nicht erreichbar. Läuft der Server auf Port 8080?', 'danger');
+            } else {
+                showAlert(`Verbindungsfehler: ${error.message}`, 'danger');
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    // Page initialization
+    window.addEventListener('DOMContentLoaded', function() {
+        debugLog('📄 Seite geladen');
+        debugLog(`🌐 Current URL: ${window.location.href}`);
+        debugLog(`🌐 Origin: ${window.location.origin}`);
+
+        // URL-Parameter auslesen
+        const urlParams = new URLSearchParams(window.location.search);
+        const fullnameParam = urlParams.get('fullname');
+        const emailParam = urlParams.get('email');
+
+        if (fullnameParam) {
+            document.getElementById('fullname').value = decodeURIComponent(fullnameParam);
+            debugLog(`📝 Fullname aus URL gesetzt: ${fullnameParam}`);
+        }
+        if (emailParam) {
+            document.getElementById('email').value = decodeURIComponent(emailParam);
+            debugLog(`📝 Email aus URL gesetzt:  ${emailParam}`);
+        }
+
+        if (fullnameParam || emailParam) {
+            window.history.replaceState({}, document.title, window.location.pathname);
+            debugLog('🧹 URL bereinigt');
+        }
+    });
 </script>
 </body>
 </html>

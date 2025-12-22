@@ -1,70 +1,313 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anmelden - RadBrain</title>
-    <link rel="stylesheet" href="style.css"/>
+    <link rel="stylesheet" href="style.css">
     <style>
-        .auth-card { max-width:420px; margin:80px auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 12px 40px rgba(14,10,36,0.06); }
-        input { width:100%; padding:10px; border-radius:8px; border:1px solid #eef; margin-bottom:10px; }
-        .btn { padding:10px 14px; border-radius:10px; border:0; cursor:pointer; background:linear-gradient(135deg,#645CBB,#A084DC); color:#fff; }
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, var(--primary-600) 50%, var(--secondary) 100%);
+            padding: var(--space-xl);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1), transparent 50%);
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.05) rotate(1deg); }
+        }
+
+        .auth-card {
+            background: var(--white);
+            max-width: 440px;
+            width: 100%;
+            padding: var(--space-3xl);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-2xl);
+            position: relative;
+            z-index: 2;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: var(--space-2xl);
+        }
+
+        .auth-logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--primary-600), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto var(--space-lg);
+            font-size: 2rem;
+        }
+
+        .auth-title {
+            font-size: 1.875rem;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: var(--space-sm);
+        }
+
+        .auth-subtitle {
+            color: var(--gray-600);
+            font-size: 0.9375rem;
+        }
+
+        .back-link {
+            position: absolute;
+            top: var(--space-xl);
+            left: var(--space-xl);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-lg);
+            background: rgba(255,255,255,0.9);
+            border-radius: var(--radius-full);
+            color: var(--gray-700);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition-base);
+            z-index: 3;
+        }
+
+        .back-link:hover {
+            background: var(--white);
+            box-shadow: var(--shadow-md);
+            transform: translateX(-4px);
+        }
+
+        .message {
+            padding: var(--space-md) var(--space-lg);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-lg);
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.error {
+            background: var(--error-light);
+            color: var(--error);
+            border: 2px solid var(--error);
+        }
+
+        .message.success {
+            background: var(--success-light);
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .forgot-password {
+            text-align: center;
+            margin: var(--space-lg) 0;
+        }
+
+        .forgot-link {
+            color: var(--primary-600);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            transition: var(--transition-fast);
+        }
+
+        .forgot-link:hover {
+            color: var(--primary-700);
+            text-decoration: underline;
+        }
+
+        .auth-divider {
+            text-align: center;
+            margin: var(--space-xl) 0;
+            padding-top: var(--space-xl);
+            border-top: 1px solid var(--gray-200);
+            color: var(--gray-600);
+        }
+
+        .auth-link {
+            color: var(--primary-600);
+            text-decoration: none;
+            font-weight: 700;
+            transition: var(--transition-fast);
+        }
+
+        .auth-link:hover {
+            color: var(--primary-700);
+            text-decoration: underline;
+        }
+
+        @media (max-width: 640px) {
+            .auth-card {
+                padding: var(--space-xl);
+            }
+
+            .back-link {
+                top: var(--space-md);
+                left: var(--space-md);
+                padding: var(--space-sm) var(--space-md);
+                font-size: 0.875rem;
+            }
+        }
     </style>
 </head>
 <body>
-<main class="container">
-    <div class="auth-card">
-        <h1>Anmelden</h1>
-        <form id="loginForm">
-            <input id="email" type="email" placeholder="E-Mail" required />
-            <input id="password" type="password" placeholder="Passwort" required />
-            <div style="display:flex;gap:8px;align-items:center">
-                <button class="btn" type="submit">Anmelden</button>
-                <a href="/register.html" style="margin-left:8px;">Registrieren</a>
-            </div>
-            <div id="msg" style="margin-top:10px;color:#e04e4e"></div>
-        </form>
-    </div>
-</main>
 
-<script src="/auth.js"></script>
+<div class="auth-container">
+    <a href="/index.html" class="back-link">
+        ← Zurück zur Startseite
+    </a>
+
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">🎯</div>
+            <h1 class="auth-title">Willkommen zurück!</h1>
+            <p class="auth-subtitle">
+                Melden Sie sich an und setzen Sie Ihre Lernreise fort
+            </p>
+        </div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label class="form-label" for="email">E-Mail-Adresse</label>
+                <input
+                        id="email"
+                        name="email"
+                        type="email"
+                        class="form-input"
+                        placeholder="name@beispiel.de"
+                        required
+                        autocomplete="email"
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Passwort</label>
+                <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        class="form-input"
+                        placeholder="Ihr Passwort"
+                        required
+                        autocomplete="current-password"
+                >
+            </div>
+
+            <div class="forgot-password">
+                <a href="forgot-password.html" class="forgot-link">Passwort vergessen?</a>
+            </div>
+
+            <div id="loginMessage" class="message"></div>
+
+            <button type="submit" class="btn btn-primary" id="loginBtn" style="width: 100%; justify-content: center; padding: 1rem;">
+                Anmelden
+            </button>
+        </form>
+
+        <div class="auth-divider">
+            <p>Noch kein Konto? <a href="register.html" class="auth-link">Jetzt registrieren</a></p>
+        </div>
+    </div>
+</div>
+
+<script src="auth.js"></script>
 <script>
-    document.getElementById('loginForm').addEventListener('submit', async function(e){
-        e.preventDefault();
-        const email = document.getElementById('email').value.trim();
-        const password = document.getElementById('password').value;
-        const msg = document.getElementById('msg');
-        msg.textContent = '';
-        try {
-            const res = await fetch('/api/auth/login', {
-                method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, password })
-            });
-            const body = await res.json().catch(()=> ({}));
-            if (!res.ok) { msg.textContent = body.error || body.message || 'Login fehlgeschlagen'; return; }
-            // save login info via auth helper
-            if (window.auth && typeof window.auth.saveLogin === 'function') {
-                // adjust keys if backend returns different names (e.g. accessToken)
-                const payload = {
-                    token: body.token || body.accessToken || body.jwt,
-                    email: body.email || email,
-                    fullname: body.fullname || body.name || '',
-                    roles: body.roles || body.authorities || []
-                };
-                window.auth.saveLogin(payload);
-                // update nav immediately if available
-                if (typeof window.auth._renderNavAccount === 'function') window.auth._renderNavAccount();
-                // redirect to account or homepage
-                window.location.href = '/';
-            } else {
-                // fallback
-                localStorage.setItem('authToken', body.token || '');
-                localStorage.setItem('userEmail', body.email || email);
-                window.location.href = '/';
+    (function() {
+        'use strict';
+
+        console.log('🔐 Login page loaded');
+
+        const form = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                showMessage('Bitte füllen Sie alle Felder aus.', 'error');
+                return;
             }
-        } catch (err) {
-            msg.textContent = 'Netzwerkfehler';
+
+            const originalText = loginBtn.textContent;
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Anmeldung läuft...';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+                console.log('📡 Login response:', response.status);
+
+                if (response.ok) {
+                    if (result.requiresVerification) {
+                        showMessage('Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse.', 'error');
+                        setTimeout(() => {
+                            window.location.href = `/verify.html?email=${encodeURIComponent(email)}`;
+                        }, 2000);
+                        return;
+                    }
+
+                    if (window.auth && window.auth.saveLogin(result)) {
+                        showMessage('✅ Anmeldung erfolgreich! Sie werden weitergeleitet...', 'success');
+                        setTimeout(() => {
+                            window.location.href = '/dashboard.html';
+                        }, 1000);
+                    } else {
+                        throw new Error('Login-Daten konnten nicht gespeichert werden');
+                    }
+                } else {
+                    showMessage(result.error || 'Anmeldung fehlgeschlagen', 'error');
+                }
+            } catch (error) {
+                console.error('❌ Login error:', error);
+                showMessage('Netzwerkfehler. Bitte versuchen Sie es erneut.', 'error');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = originalText;
+            }
+        });
+
+        function showMessage(message, type) {
+            const container = document.getElementById('loginMessage');
+            container.className = `message ${type}`;
+            container.textContent = message;
+            container.style.display = 'block';
+
+            if (type === 'success') {
+                setTimeout(() => {
+                    container.style.display = 'none';
+                }, 5000);
+            }
         }
-    });
+
+        // Auto-focus email field
+        emailInput.focus();
+    })();
 </script>
+
 </body>
 </html>

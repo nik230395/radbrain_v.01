@@ -1,32 +1,28 @@
 package org.nikolic.programm.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
-
 import java.time.LocalDateTime;
 
-@Data
 @Entity
 @Table(name = "email_codes")
 public class EmailCode {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Verknüpfung zum User
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Zweck (VERIFY / RESET)
     @Enumerated(EnumType.STRING)
-    @Column(name = "purpose", nullable = false)
+    @Column(nullable = false)
     private CodePurpose purpose;
 
-    // SHA256-Hash des Codes (hex)
-    @Column(name = "code_hash", length = 64, nullable = false)
+    @Column(name = "code_hash", nullable = false)
     private String codeHash;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
@@ -34,11 +30,36 @@ public class EmailCode {
     @Column(name = "consumed_at")
     private LocalDateTime consumedAt;
 
-    @Column(name = "attempts")
-    private Integer attempts = 0;
+    private Integer attempts;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    // Constructors, getters, setters...
+    public EmailCode() {
+        this.createdAt = LocalDateTime.now();
+        this.attempts = 0;
+    }
 
-    public EmailCode() {}
+    // Add all getters and setters following your naming convention...
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+
+    public CodePurpose getPurpose() { return purpose; }
+    public void setPurpose(CodePurpose purpose) { this.purpose = purpose; }
+
+    public String getCodeHash() { return codeHash; }
+    public void setCodeHash(String codeHash) { this.codeHash = codeHash; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }
+
+    public LocalDateTime getConsumedAt() { return consumedAt; }
+    public void setConsumedAt(LocalDateTime consumedAt) { this.consumedAt = consumedAt; }
+
+    public Integer getAttempts() { return attempts; }
+    public void setAttempts(Integer attempts) { this.attempts = attempts; }
 }

@@ -1,192 +1,264 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <title>Email verifizieren - RadBrain</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail Verifizierung - RadBrain</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    .card { max-width:520px; margin:48px auto; background:#fff; padding:20px; border-radius:12px; box-shadow:0 14px 40px rgba(14,10,36,0.06); }
-    .input-row { margin-bottom:12px; }
-    label { display:block; font-weight:600; margin-bottom:6px; color:#444; }
-    input[type="text"], input[type="email"], input[type="password"], input[type="tel"] {
-      width:100%; padding:10px 12px; border-radius:8px; border:1px solid #e6e6f2; font-size:1rem;
+    .verify-container {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #645CBB 0%, #A084DC 50%, #BFACE2 100%);
     }
-    .buttons { display:flex; gap:10px; align-items:center; margin-top:8px; }
-    .btn { padding:10px 14px; border-radius:10px; border:0; cursor:pointer; font-weight:700; }
-    .btn-primary { background:linear-gradient(135deg,#645CBB,#A084DC); color:#fff; }
-    .btn-secondary { background:#f3f3f6; color:#333; border:1px solid #ececf6; }
-    .helper { color:#666; margin-bottom:12px; }
-    .message { margin-top:12px; padding:10px; border-radius:8px; display:none; }
-    .message.error { background:#ffecec; color:#8a1f1f; display:block; }
-    .message.success { background:#e8ffef; color:#0a5f2b; display:block; }
+    .verify-card {
+      border-radius: 15px;
+      border: none;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+    .btn-primary-custom {
+      background: linear-gradient(135deg, #645CBB, #A084DC);
+      border: none;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .btn-primary-custom:hover {
+      background:  linear-gradient(135deg, #5a52a5, #8f73c7);
+    }
+    .verification-code-input {
+      font-size: 2rem;
+      text-align: center;
+      letter-spacing: 0.5rem;
+      border-radius: 8px;
+      border: 2px solid #ddd;
+    }
+    .verification-code-input:focus {
+      border-color: #645CBB;
+      box-shadow: 0 0 0 0.2rem rgba(100, 92, 187, 0.25);
+    }
   </style>
 </head>
 <body>
-<main class="container">
-  <div class="card" role="region" aria-labelledby="verifyTitle">
-    <h1 id="verifyTitle">Email verifizieren</h1>
-    <p class="helper">Gib den Verifizierungscode ein, den wir an deine Email gesendet haben. Falls du keinen Code erhalten hast, benutze "Code erneut senden".</p>
+<div class="verify-container d-flex align-items-center justify-content-center">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card verify-card shadow-lg">
+          <div class="card-body p-5 text-center">
+            <div class="mb-4">
+              <div class="text-primary mb-3" style="font-size: 3rem;">📧</div>
+              <h1 class="h3 mb-3 fw-bold text-primary" style="color: #645CBB !important;">E-Mail bestätigen</h1>
+              <p class="text-muted mb-0">
+                Wir haben einen Bestätigungscode an<br>
+                <strong id="userEmail">Ihre E-Mail-Adresse</strong> gesendet.
+              </p>
+            </div>
 
-    <form id="verifyForm" novalidate>
-      <div id="emailRow" class="input-row">
-        <label for="emailInput">Email</label>
-        <input id="emailInput" name="email" type="email" required placeholder="deine@email.de" autocomplete="email">
+            <form id="verifyForm" onsubmit="handleVerify(event)">
+              <div class="mb-4">
+                <label for="verificationCode" class="form-label fw-semibold">Verifikationscode</label>
+                <input type="text"
+                       class="form-control verification-code-input"
+                       id="verificationCode"
+                       name="verificationCode"
+                       maxlength="6"
+                       required
+                       placeholder="000000"
+                       autocomplete="one-time-code">
+                <small class="form-text text-muted">6-stelliger Code</small>
+              </div>
+
+              <button type="submit" class="btn btn-primary-custom w-100 fw-semibold mb-3" id="verifyBtn">
+                <span class="btn-text">E-Mail bestätigen</span>
+                <span class="btn-loading d-none">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                        Wird geprüft...
+                                    </span>
+              </button>
+            </form>
+
+            <div id="alertContainer" class="mb-3"></div>
+
+            <div class="text-center">
+              <p class="text-muted mb-2">Code nicht erhalten?</p>
+              <button type="button" class="btn btn-outline-secondary" id="resendBtn" onclick="resendCode()">
+                Code erneut senden
+              </button>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="text-center">
+              <p class="mb-0">
+                <a href="login.html" class="text-decoration-none fw-semibold" style="color:  #645CBB;">
+                  ← Zurück zur Anmeldung
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div class="input-row">
-        <label for="codeInput">Verifikationscode</label>
-        <input id="codeInput" name="code" type="text" required pattern="[0-9]{6}" inputmode="numeric" maxlength="6" placeholder="6-stelliger Code" autocomplete="one-time-code">
-      </div>
-
-      <div class="buttons">
-        <button id="submitBtn" type="submit" class="btn btn-primary">Verifizieren</button>
-        <button id="resendBtn" type="button" class="btn btn-secondary">Code erneut senden</button>
-      </div>
-
-      <div id="message" class="message" role="status" aria-live="polite"></div>
-    </form>
+    </div>
   </div>
-</main>
+</div>
 
-<!-- Load auth helper (ensure path is /auth.js, file should be in src/main/resources/static/auth.js) -->
-<script src="/auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-  (function(){
-    const form = document.getElementById('verifyForm');
-    const emailInput = document.getElementById('emailInput');
-    const emailRow = document.getElementById('emailRow');
-    const codeInput = document.getElementById('codeInput');
-    const resendBtn = document.getElementById('resendBtn');
-    const msg = document.getElementById('message');
+  let currentEmail = '';
 
-    function showMessage(text, type) {
-      msg.textContent = text || '';
-      msg.className = type ? 'message ' + type : 'message';
-    }
+  function showAlert(message, type = 'danger') {
+    const alertContainer = document.getElementById('alertContainer');
+    alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+  }
 
-    // If verificationEmail exists from registration, auto-fill and hide the input
-    const storedEmail = (localStorage.getItem('verificationEmail') || '').trim();
-    if (storedEmail) {
-      emailInput.value = storedEmail;
-      // hide visible input but keep value for submission
-      emailRow.style.display = 'none';
-      const info = document.createElement('div');
-      info.className = 'helper';
-      info.textContent = 'Verifizierungscode gesendet an: ' + storedEmail;
-      form.insertBefore(info, codeInput.parentElement);
+  function setLoading(loading, buttonId = 'verifyBtn') {
+    const btn = document.getElementById(buttonId);
+    const btnText = btn.querySelector('.btn-text');
+    const btnLoading = btn.querySelector('.btn-loading');
+
+    if (loading) {
+      if (btnText) btnText.classList.add('d-none');
+      if (btnLoading) btnLoading.classList. remove('d-none');
+      btn.disabled = true;
     } else {
-      emailRow.style.display = 'block';
+      if (btnText) btnText.classList.remove('d-none');
+      if (btnLoading) btnLoading.classList.add('d-none');
+      btn.disabled = false;
+    }
+  }
+
+  async function handleVerify(event) {
+    event.preventDefault();
+
+    const code = document.getElementById('verificationCode').value.trim();
+
+    if (!code || code.length !== 6) {
+      showAlert('Bitte geben Sie einen 6-stelligen Code ein.', 'warning');
+      return;
     }
 
-    function validateInput(email, code) {
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        return {ok:false, msg:'Bitte gültige Email angeben.'};
+    try {
+      setLoading(true);
+
+      const response = await fetch('/api/users/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+        },
+        body: JSON.stringify({
+          email: currentEmail,
+          code: code
+        })
+      });
+
+      const data = await response.json();
+      console.log('📡 Verify response:', data);
+
+      if (response.ok) {
+        // ✅ Erfolgreich verifiziert
+        showAlert('✅ E-Mail erfolgreich bestätigt! Sie werden angemeldet... ', 'success');
+
+        // Token speichern
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
+          localStorage.setItem('userInfo', JSON.stringify({
+            id: data.id,
+            email: data. email,
+            fullname: data.fullname
+          }));
+        }
+
+        // Cleanup
+        localStorage.removeItem('registrationEmail');
+        localStorage.removeItem('registrationName');
+
+        // Weiterleitung nach Dashboard
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 2000);
+
+      } else {
+        console.error('❌ Verification failed:', data);
+        showAlert(data.error || 'Ungültiger oder abgelaufener Code.', 'danger');
       }
-      if (!/^[0-9]{6}$/.test(code)) {
-        return {ok:false, msg:'Der Code muss genau 6 Ziffern enthalten.'};
-      }
-      return {ok:true};
+    } catch (error) {
+      console.error('💥 Verification error:', error);
+      showAlert('Verbindungsfehler. Bitte versuchen Sie es erneut.', 'danger');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function resendCode() {
+    if (!currentEmail) {
+      showAlert('E-Mail-Adresse nicht gefunden.', 'danger');
+      return;
     }
 
-    form.addEventListener('submit', async function(e){
-      e.preventDefault();
-      showMessage('', null);
+    try {
+      setLoading(true, 'resendBtn');
 
-      const email = (emailInput.value || '').trim();
-      const code = (codeInput.value || '').trim();
+      const response = await fetch('/api/users/resend', {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+        },
+        body: JSON.stringify({
+          email: currentEmail
+        })
+      });
 
-      const v = validateInput(email, code);
-      if (!v.ok) {
-        showMessage(v.msg, 'error');
-        return;
+      const data = await response.json();
+
+      if (response.ok) {
+        showAlert('📧 Neuer Code wurde gesendet! ', 'success');
+      } else {
+        showAlert(data.error || 'Code konnte nicht erneut gesendet werden.', 'danger');
       }
+    } catch (error) {
+      console.error('💥 Resend error:', error);
+      showAlert('Verbindungsfehler. ', 'danger');
+    } finally {
+      setLoading(false, 'resendBtn');
+    }
+  }
 
-      showMessage('Überprüfe Code...', null);
-      try {
-        const res = await fetch('/api/users/verify', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ email, code })
-        });
-        const body = await res.json().catch(()=> ({}));
-        if (!res.ok) {
-          showMessage('Fehler: ' + (body.error || body.message || res.statusText), 'error');
-          return;
-        }
+  // Page initialization
+  window.addEventListener('DOMContentLoaded', function() {
+    // E-Mail aus localStorage laden
+    const storedEmail = localStorage.getItem('registrationEmail');
+    const storedName = localStorage.getItem('registrationName');
 
-        // Expect token + user info on success
-        if (body.token) {
-          // store token + basic user info (auth.js uses authToken)
-          localStorage.setItem('authToken', body.token);
-          if (body.email) localStorage.setItem('userEmail', body.email);
-          if (body.fullname) localStorage.setItem('userFullname', body.fullname);
-          if (body.id) localStorage.setItem('userId', body.id);
+    if (storedEmail) {
+      currentEmail = storedEmail;
+      document.getElementById('userEmail').textContent = storedEmail;
+    } else {
+      // Fallback - zurück zur Registrierung
+      showAlert('Keine E-Mail-Adresse gefunden. Sie werden zur Registrierung weitergeleitet.', 'warning');
+      setTimeout(() => {
+        window.location.href = 'register.html';
+      }, 3000);
+    }
+  });
 
-          // remove verificationEmail now it's used
-          localStorage.removeItem('verificationEmail');
+  // Auto-focus und nur Zahlen erlauben
+  document.getElementById('verificationCode').addEventListener('input', function(e) {
+    // Nur Zahlen erlauben
+    this.value = this. value.replace(/[^0-9]/g, '');
 
-          showMessage('E-Mail erfolgreich verifiziert. Du wirst weitergeleitet...', 'success');
-
-          setTimeout(() => {
-            // go to home as logged-in user
-            window.location.href = '/';
-          }, 900);
-          return;
-        }
-
-        // fallback: if service returns message verified but no token
-        if (body.message === 'verified') {
-          showMessage('E-Mail verifiziert. Bitte melde dich an.', 'success');
-          setTimeout(()=> window.location.href = '/login.html', 900);
-          return;
-        }
-
-        showMessage('Unerwartete Antwort vom Server.', 'error');
-
-      } catch (err) {
-        showMessage('Netzwerkfehler: ' + (err.message || err), 'error');
-      }
-    });
-
-    resendBtn.addEventListener('click', async function(){
-      showMessage('', null);
-
-      // prefer storedEmail, else ask user
-      let email = (emailInput.value || '').trim();
-      if (!email) {
-        const promptEmail = (prompt('Bitte gib deine Email ein, um den Code erneut zu senden:') || '').trim();
-        if (!promptEmail) return;
-        email = promptEmail;
-      }
-
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        showMessage('Ungültige Email.', 'error');
-        return;
-      }
-
-      showMessage('Sende neuen Code...', null);
-      try {
-        const res = await fetch('/api/users/resend', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ email })
-        });
-        const body = await res.json().catch(()=> ({}));
-        if (!res.ok) {
-          showMessage('Fehler: ' + (body.error || body.message || res.statusText), 'error');
-          return;
-        }
-        // store for convenience
-        localStorage.setItem('verificationEmail', email);
-        showMessage('Neuer Code wurde gesendet. Bitte prüfe deine Email.', 'success');
-      } catch (err) {
-        showMessage('Netzwerkfehler: ' + (err.message || err), 'error');
-      }
-    });
-
-  })();
+    // Auto-submit bei 6 Zeichen
+    if (this.value.length === 6) {
+      setTimeout(() => {
+        document. getElementById('verifyForm').dispatchEvent(new Event('submit'));
+      }, 500);
+    }
+  });
 </script>
 </body>
 </html>
