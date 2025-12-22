@@ -2,8 +2,7 @@ package org.nikolic.programm.services;
 
 import org.nikolic.programm.dtos.RegistrationCacheEntry;
 import org.nikolic.programm.entities.User;
-import org.nikolic.programm.entities.Role;
-import org.nikolic.programm.repositories.RoleRepository;
+import org.nikolic.programm.entities.UserRole;
 import org.nikolic.programm.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Formatter;
-import java.util.Optional;
 
 @Service
 public class RegistrationCacheService {
@@ -29,7 +27,6 @@ public class RegistrationCacheService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final SecureRandom secureRandom = new SecureRandom();
 
     private static final int CODE_LENGTH = 6;
@@ -38,13 +35,11 @@ public class RegistrationCacheService {
     public RegistrationCacheService(CacheManager cacheManager,
                                     EmailService emailService,
                                     PasswordEncoder passwordEncoder,
-                                    UserRepository userRepository,
-                                    RoleRepository roleRepository) {
+                                    UserRepository userRepository) {
         this.registrations = cacheManager.getCache("registrations");
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
     }
 
     private String sha256Hex(String input) {
@@ -125,14 +120,9 @@ public class RegistrationCacheService {
         u.setFullname(entry.getFullname());
         u.setIs_active(true); // verified
         u.setCreated_at(LocalDateTime.now());
-
-        // assign role if exists
-        try {
-            Optional<Role> r = roleRepository.findByName("ROLE_USER");
-            if (r.isPresent()) u.addRole(r.get()); else u.setRole("user");
-        } catch (Exception ex) {
-            u.setRole("user");
-        }
+        
+        // assign default USER role
+        u.setUserRole(UserRole.USER);
 
         User saved = userRepository.save(u);
 

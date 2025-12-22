@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @Entity
@@ -35,28 +33,34 @@ public class User {
     @OneToMany(mappedBy = "createdBy")
     private List<Quiz> createdQuizzes; // Vom User erstelle Quizzes
 
-    // explizites Mapping zum role-Feld in der users-Tabelle
-    @Column(name = "role")
-    private String role; // Rolle des Benutzers (z.B. ADMIN, USER)
-
-    @ManyToMany(fetch = FetchType.EAGER) // kein Cascade: rollen separat verwalten
-    @JoinTable(
-            name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles = new HashSet<>();
+    // User role using enum
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private UserRole userRole = UserRole.USER; // Default role is USER
 
     public User() {}
 
-    // Hilfsmethoden zum Verwalten der Rollen
-    public void addRole(Role role) {
-        if (role == null) return;
-        this.roles.add(role);
+    // Getter and setter for userRole
+    public UserRole getUserRole() {
+        return this.userRole;
     }
 
-    public void removeRole(Role role) {
-        if (role == null) return;
-        this.roles.remove(role);
+    public void setUserRole(UserRole userRole) {
+        this.userRole = userRole;
+    }
+
+    // Helper method to check if user is admin
+    public boolean isAdmin() {
+        return this.userRole == UserRole.ADMIN;
+    }
+
+    // Helper method to get role name as String (for backward compatibility)
+    public String getRole() {
+        return this.userRole != null ? this.userRole.getRoleName() : UserRole.USER.getRoleName();
+    }
+
+    // Helper method to set role from String (for backward compatibility)
+    public void setRole(String roleName) {
+        this.userRole = UserRole.fromString(roleName);
     }
 }
