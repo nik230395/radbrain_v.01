@@ -14,8 +14,7 @@ import java.util.Optional;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
-    // Find all questions for a quiz (ordered by position)
-    List<Question> findByQuizIdOrderByPositionAsc(Long questionId);
+    List<Question> findByQuizIdOrderByPositionAsc(Long quizId);
 
     // Find questions by type
     List<Question> findByQtypeOrderByIdDesc(QuestionType qtype);

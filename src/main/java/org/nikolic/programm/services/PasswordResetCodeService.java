@@ -64,7 +64,7 @@ public class PasswordResetCodeService {
         resetCodeRepo.save(resetCode);
 
         // Passwort neu setzen!
-        user.setPassword_hash(newPasswordHash);
+        user.setPasswordHash(newPasswordHash);
         userRepo.save(user);
     }
 }

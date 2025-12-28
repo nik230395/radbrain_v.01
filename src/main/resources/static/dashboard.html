@@ -379,13 +379,13 @@
                 <h3 style="margin-top:  0; color: var(--primary);">⚡ Schnellzugriff</h3>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <button class="btn-primary" style="width: 100%;" onclick="startRandomQuiz()">
-                        🎲 Zufälliges Quiz
+                        Zufälliges Quiz
                     </button>
                     <button class="btn-secondary" style="width: 100%; background: #f0edff; color: var(--primary); border: 1px solid var(--primary-light);" onclick="window.location.href='quiz.html'">
-                        📚 Alle Quizzes
+                        Alle Quizzes
                     </button>
                     <button class="btn-secondary" style="width: 100%; background: #f0edff; color: var(--primary); border: 1px solid var(--primary-light);" onclick="viewAchievements()">
-                        🏆 Erfolge ansehen
+                        Erfolge ansehen
                     </button>
                 </div>
             </div>
@@ -456,12 +456,12 @@
 
             // Dropdown functionality
             btn.addEventListener('click', (e) => {
-                e. stopPropagation();
+                e.stopPropagation();
                 dropdown.classList.toggle('active');
             });
 
             document.addEventListener('click', (e) => {
-                if (!dropdown. contains(e.target)) {
+                if (!dropdown.contains(e.target)) {
                     dropdown.classList.remove('active');
                 }
             });
@@ -469,7 +469,7 @@
             // Logout functionality
             logoutBtn.addEventListener('click', () => {
                 console.log('🚪 User logging out from dashboard');
-                window.auth. logout('/');
+                window.auth.logout('/');
             });
 
             // Hover effects for menu items
@@ -479,10 +479,10 @@
                     item.addEventListener('mouseenter', () => {
                         item.style.background = 'linear-gradient(135deg, #f8f9ff, #e3eeff)';
                         item.style.color = 'var(--primary)';
-                        item.style. transform = 'translateX(5px)';
+                        item.style.transform = 'translateX(5px)';
                     });
                     item.addEventListener('mouseleave', () => {
-                        item. style.background = 'none';
+                        item.style.background = 'none';
                         item.style.color = '#333';
                         item.style.transform = 'translateX(0)';
                     });
@@ -492,9 +492,9 @@
 
         function personalizeHeader(user) {
             const timeGreeting = getTimeOfDayGreeting();
-            const firstName = getFirstName(user.fullname || user. email);
+            const firstName = getFirstName(user.fullname || user.email);
 
-            document. getElementById('dashboardTitle').textContent = `${timeGreeting}, ${firstName}! `;
+            document.getElementById('dashboardTitle').textContent = `${timeGreeting}, ${firstName}! `;
             document.getElementById('welcomeMessage').textContent = 'Hier ist Ihr persönlicher Lernfortschritt';
         }
 
@@ -514,17 +514,17 @@
         }
 
         function updateStatsDisplay(stats) {
-            animateStatValue('quizzesCompleted', stats. totalAttempts || 0);
+            animateStatValue('quizzesCompleted', stats.totalAttempts || 0);
             animateStatValue('averageScore', stats.averageScore ? Math.round(stats.averageScore) : 0, '%');
             animateStatValue('learningStreak', stats.currentStreak || 0);
             animateStatValue('totalTime', stats.totalTime ?  Math.round(stats.totalTime / 60) : 0, 'h');
         }
 
         function setDefaultStats() {
-            document. getElementById('quizzesCompleted').textContent = '0';
+            document.getElementById('quizzesCompleted').textContent = '0';
             document.getElementById('averageScore').textContent = '0%';
             document.getElementById('learningStreak').textContent = '0';
-            document. getElementById('totalTime').textContent = '0h';
+            document.getElementById('totalTime').textContent = '0h';
         }
 
         function animateStatValue(elementId, targetValue, suffix = '') {
@@ -547,7 +547,7 @@
             try {
                 const response = await fetch('/api/quizzes/published');
                 if (response.ok) {
-                    const quizzes = await response. json();
+                    const quizzes = await response.json();
                     displayAvailableQuizzes(quizzes);
                 } else {
                     document.getElementById('availableQuizzes').innerHTML =
@@ -568,15 +568,15 @@
                 return;
             }
 
-            container. innerHTML = quizzes.slice(0, 6).map(quiz => `
+            container.innerHTML = quizzes.slice(0, 6).map(quiz => `
             <div class="quiz-card">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
                     <div style="width: 40px; height: 40px; background: var(--primary-light); border-radius: 50%; display: flex; align-items:  center; justify-content: center; color: white; font-weight:  bold;">
-                        ${quiz.title. charAt(0)}
+                        ${quiz.title.charAt(0)}
                     </div>
                     <div>
                         <h4 style="margin: 0; color:  var(--primary); font-size: 1.1rem;">${quiz.title}</h4>
-                        <div style="font-size: 0.8rem; color: #666;">${quiz.questions?. length || 0} Fragen</div>
+                        <div style="font-size: 0.8rem; color: #666;">${quiz.questions?.length || 0} Fragen</div>
                     </div>
                 </div>
                 <p style="margin: 0 0 15px; font-size: 0.9rem; color: #666; line-height: 1.4;">
@@ -724,11 +724,11 @@
             window.location.href = `quiz.html?id=${quizId}`;
         };
 
-        window. startRandomQuiz = function() {
+        window.startRandomQuiz = function() {
             window.location.href = 'quiz.html?random=true';
         };
 
-        window. setLearningGoals = function() {
+        window.setLearningGoals = function() {
             alert('Lernziele-Feature wird bald verfügbar sein! ');
         };
 

@@ -2,23 +2,30 @@ package org.nikolic.programm.entities;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Quiz Entity - Ohne Lombok
+ *
+ * Alle Getters/Setters manuell implementiert
+ */
 @Entity
 @Table(name = "quizzes")
 public class Quiz {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String title;
 
     @Column(length = 500)
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name = "quiz_category_id")
-    private QuizCategory category;
+    @Column(name = "category")
+    private String category;
 
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
@@ -31,10 +38,18 @@ public class Quiz {
     private Boolean isPublished;
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Question> questions;
+    private List<Question> questions = new ArrayList<>();
 
     // Constructors
     public Quiz() {
+        this.createdAt = LocalDateTime.now();
+        this.isPublished = false;
+    }
+
+    public Quiz(String title, String description) {
+        this();
+        this.title = title;
+        this.description = description;
     }
 
     // Getters and Setters
@@ -62,11 +77,11 @@ public class Quiz {
         this.description = description;
     }
 
-    public QuizCategory getCategory() {
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(QuizCategory category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 
@@ -100,5 +115,57 @@ public class Quiz {
 
     public void setQuestions(List<Question> questions) {
         this.questions = questions;
+    }
+
+    // Helper Methods
+    public boolean isPublished() {
+        return Boolean.TRUE.equals(isPublished);
+    }
+
+    public void publish() {
+        this.isPublished = true;
+    }
+
+    public void unpublish() {
+        this.isPublished = false;
+    }
+
+    public void addQuestion(Question question) {
+        questions.add(question);
+        question.setQuiz(this);
+    }
+
+    public void removeQuestion(Question question) {
+        questions.remove(question);
+        question.setQuiz(null);
+    }
+
+    public int getQuestionCount() {
+        return questions != null ? questions.size() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return "Quiz{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", category='" + category + '\'' +
+                ", isPublished=" + isPublished +
+                ", questionCount=" + getQuestionCount() +
+                ", createdAt=" + createdAt +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Quiz)) return false;
+        Quiz quiz = (Quiz) o;
+        return id != null && id.equals(quiz.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

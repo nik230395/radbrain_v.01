@@ -1,8 +1,14 @@
 package org.nikolic.programm.dtos;
 
 import java.time.LocalDateTime;
-import java. util.List;
+import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * QuizDto - Ohne Lombok
+ *
+ * Alle Getters/Setters manuell implementiert
+ */
 public class QuizDto {
     private Long id;
     private String title;
@@ -11,7 +17,7 @@ public class QuizDto {
     private Boolean isPublished;
     private String createdByEmail;
     private LocalDateTime createdAt;
-    private List<QuestionDto> questions;
+    private List<QuestionDto> questions = new ArrayList<>();
     private Integer questionCount;
 
     // Constructors
@@ -103,5 +109,102 @@ public class QuizDto {
 
     public void setQuestionCount(Integer questionCount) {
         this.questionCount = questionCount;
+    }
+
+    // Inner class QuestionDto
+    public static class QuestionDto {
+        private Long id;
+        private String qtype;
+        private String text;
+        private String auxText;
+        private Integer position;
+        private List<ChoiceDto> choices = new ArrayList<>();
+
+        // Constructors
+        public QuestionDto() {}
+
+        // Getters and Setters
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getQtype() {
+            return qtype;
+        }
+
+        public void setQtype(String qtype) {
+            this.qtype = qtype;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+
+        public String getAuxText() {
+            return auxText;
+        }
+
+        public void setAuxText(String auxText) {
+            this.auxText = auxText;
+        }
+
+        public Integer getPosition() {
+            return position;
+        }
+
+        public void setPosition(Integer position) {
+            this.position = position;
+        }
+
+        public List<ChoiceDto> getChoices() {
+            return choices;
+        }
+
+        public void setChoices(List<ChoiceDto> choices) {
+            this.choices = choices;
+        }
+    }
+
+    // Inner class ChoiceDto
+    public static class ChoiceDto {
+        private Long id;
+        private String text;
+        private Integer position;
+
+        // Constructors
+        public ChoiceDto() {}
+
+        // Getters and Setters
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public void setText(String text) {
+            this.text = text;
+        }
+
+        public Integer getPosition() {
+            return position;
+        }
+
+        public void setPosition(Integer position) {
+            this.position = position;
+        }
     }
 }

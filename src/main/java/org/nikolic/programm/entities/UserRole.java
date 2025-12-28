@@ -1,15 +1,21 @@
 package org.nikolic.programm.entities;
 
-import org.springframework.security.core. GrantedAuthority;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 
+/**
+ * UserRole Enum - Bereinigt ohne Duplikate
+ *
+ * Änderungen:
+ * - Duplikate entfernt (user/admin lowercase)
+ * - Robuste fromString() Methode
+ * - Bessere Authority-Handling
+ */
 public enum UserRole {
     USER("Benutzer"),
-    ADMIN("Administrator"),
-    user("Benutzer"),      // ✅ Lowercase für Kompatibilität
-    admin("Administrator"); // ✅ Lowercase für Kompatibilität
+    ADMIN("Administrator");
 
     private final String displayName;
 
@@ -22,10 +28,10 @@ public enum UserRole {
     }
 
     /**
-     * Konvertiert UserRole zu GrantedAuthority
+     * Konvertiert UserRole zu Spring Security GrantedAuthority
      */
     public GrantedAuthority toAuthority() {
-        return new SimpleGrantedAuthority("ROLE_" + this.name().toUpperCase());
+        return new SimpleGrantedAuthority("ROLE_" + this.name());
     }
 
     /**
@@ -39,40 +45,52 @@ public enum UserRole {
      * Prüft ob diese Rolle Admin-Rechte hat
      */
     public boolean hasAdminRights() {
-        return this == ADMIN || this == admin;
+        return this == ADMIN;
     }
 
     /**
-     * Konvertiert String zu UserRole (case-insensitive)
+     * Konvertiert String zu UserRole (case-insensitive, robust)
+     *
+     * Akzeptiert:
+     * - "USER", "user", "User"
+     * - "ADMIN", "admin", "Admin"
+     * - "ROLE_USER", "ROLE_ADMIN"
      */
     public static UserRole fromString(String roleString) {
-        if (roleString == null) return USER;
-
-        String cleanRole = roleString.trim();
-
-        // Versuche exakte Matches
-        for (UserRole role : UserRole. values()) {
-            if (role.name().equalsIgnoreCase(cleanRole)) {
-                return role;
-            }
+        if (roleString == null || roleString.trim().isEmpty()) {
+            return USER; // Default
         }
 
-        // Fallback
-        if ("admin".equalsIgnoreCase(cleanRole)) return ADMIN;
-        if ("user".equalsIgnoreCase(cleanRole)) return USER;
+        // Normalisierung: Trim, Uppercase, remove "ROLE_" prefix
+        String normalized = roleString.trim().toUpperCase().replace("ROLE_", "");
 
-        return USER; // Default fallback
+        try {
+            return UserRole.valueOf(normalized);
+        } catch (IllegalArgumentException e) {
+            // Fallback bei ungültigen Werten
+            return USER;
+        }
     }
 
     /**
-     * Erstellt Authority-String
+     * Erstellt Authority-String für Spring Security
      */
     public String getAuthorityString() {
-        return "ROLE_" + this.name().toUpperCase();
+        return "ROLE_" + this.name();
+    }
+
+    /**
+     * Prüft ob ein String dieser Rolle entspricht
+     */
+    public boolean matches(String roleString) {
+        if (roleString == null) return false;
+
+        String normalized = roleString.trim().toUpperCase().replace("ROLE_", "");
+        return this.name().equals(normalized);
     }
 
     @Override
     public String toString() {
-        return this.name().toUpperCase(); // Immer uppercase für Konsistenz
+        return this.name(); // Immer uppercase: "USER" oder "ADMIN"
     }
 }

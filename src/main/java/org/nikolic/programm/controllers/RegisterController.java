@@ -1,29 +1,41 @@
 package org.nikolic.programm.controllers;
 
-import org.nikolic. programm. dtos.RegisterRequest;
+import org.nikolic.programm.dtos.RegisterRequest;
+import org.nikolic.programm.entities.EmailVerification;
 import org.nikolic.programm.entities.User;
 import org.nikolic.programm.entities.UserRole;
-import org.nikolic. programm.repositories.UserRepository;
-import org. nikolic.programm.services.EmailService;
-import org. nikolic.programm.services. JwtService;
+import org.nikolic.programm.repositories.UserRepository;
+import org.nikolic.programm.services.EmailService;
+import org.nikolic.programm.services.JwtService;
 import org.springframework.http.HttpStatus;
-import org.springframework. http.ResponseEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
-import java. util.Map;
-import java. util.Random;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 
+/**
+ * RegisterController - Angepasst an neue User/EmailVerification Entities
+ *
+ * Änderungen:
+ * - setPassword_hash() → setPasswordHash()
+ * - setIs_active() → setActive()
+ * - EmailVerification Entity statt Transient
+ * - Bean Validation Support
+ */
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
+@Validated
 public class RegisterController {
 
-    private static final Logger logger = LoggerFactory. getLogger(RegisterController.class);
+    private static final Logger logger = LoggerFactory.getLogger(RegisterController.class);
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -40,46 +52,53 @@ public class RegisterController {
         this.jwtService = jwtService;
     }
 
+    /**
+     * User-Registrierung mit Email-Verification
+     */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Validated @RequestBody RegisterRequest request) {
         try {
-            // Enhanced Validation
-            if (request.getEmail() == null || request.getPassword() == null || request.getFullname() == null) {
-                return ResponseEntity. badRequest().body(Map.of("error", "Alle Felder sind erforderlich"));
-            }
+            logger.info("Registration attempt for email: {}", request.getEmail());
 
-            if (request.getFullname().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Name darf nicht leer sein"));
+            // Validation
+            if (!isValidEmail(request.getEmail())) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Ungültige E-Mail-Adresse"));
             }
 
             if (request.getPassword().length() < 8) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Passwort muss mindestens 8 Zeichen haben"));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Passwort muss mindestens 8 Zeichen haben"));
             }
 
-            if (! isValidEmail(request.getEmail())) {
-                return ResponseEntity. badRequest().body(Map.of("error", "Ungültige E-Mail-Adresse"));
-            }
+            String cleanEmail = request.getEmail().toLowerCase().trim();
 
             // Check if user already exists
-            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-                return ResponseEntity. badRequest().body(Map.of("error", "E-Mail-Adresse bereits registriert"));
+            if (userRepository.existsByEmail(cleanEmail)) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "E-Mail-Adresse bereits registriert"));
             }
 
             // Generate verification code
             String verificationCode = generateVerificationCode();
-            logger.info("Generated verification code for {}: {}", request.getEmail(), verificationCode);
+            logger.info("Generated verification code for {}: {}", cleanEmail, verificationCode);
 
-            // Create new user (inactive until verified)
+            // ✅ ANGEPASST: Neue Methodennamen
             User user = new User();
-            user.setEmail(request.getEmail().toLowerCase().trim());
+            user.setEmail(cleanEmail);
             user.setFullname(request.getFullname().trim());
-            user.setPassword_hash(passwordEncoder.encode(request.getPassword()));
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword())); // ✅ NEU
             user.setRole(UserRole.USER);
-            user.setIs_active(false); // Not active until email verified
-            user.setEmailVerified(false);
-            user.setVerificationCode(verificationCode);
-            user.setVerificationCodeExpiry(LocalDateTime.now().plusMinutes(10)); // 10 minutes validity
-            user.setCreated_at(LocalDateTime.now());
+            user.setActive(false); // ✅ NEU - Nicht aktiv bis Email verifiziert
+            user.setCreatedAt(LocalDateTime.now());
+
+            // ✅ NEU: EmailVerification Entity erstellen
+            EmailVerification emailVerification = new EmailVerification(
+                    user,
+                    verificationCode,
+                    10 // 10 Minuten gültig
+            );
+            user.setEmailVerification(emailVerification);
 
             User savedUser = userRepository.save(user);
             logger.info("Created inactive user with ID: {}", savedUser.getId());
@@ -95,7 +114,7 @@ public class RegisterController {
                 logger.info("Verification email sent successfully to: {}", savedUser.getEmail());
 
                 return ResponseEntity.ok(Map.of(
-                        "message", "Registrierung erfolgreich.  Bestätigungscode wurde per E-Mail gesendet.",
+                        "message", "Registrierung erfolgreich. Bestätigungscode wurde per E-Mail gesendet.",
                         "requiresVerification", true,
                         "email", savedUser.getEmail()
                 ));
@@ -103,60 +122,78 @@ public class RegisterController {
             } catch (Exception emailError) {
                 // If email sending fails, delete the user to keep database clean
                 userRepository.delete(savedUser);
-                logger.error("Failed to send verification email to:  {}, user deleted", savedUser.getEmail(), emailError);
+                logger.error("Failed to send verification email to: {}", savedUser.getEmail(), emailError);
 
                 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                        .body(Map.of("error", "E-Mail konnte nicht gesendet werden.  Bitte versuchen Sie es später erneut."));
+                        .body(Map.of("error", "E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es später erneut."));
             }
 
         } catch (Exception ex) {
             logger.error("Registration failed for email: {}", request.getEmail(), ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Registrierung fehlgeschlagen:  " + ex.getMessage()));
+                    .body(Map.of("error", "Registrierung fehlgeschlagen: " + ex.getMessage()));
         }
     }
 
+    /**
+     * Email-Verification mit Code
+     */
     @PostMapping("/verify-email")
-    public ResponseEntity<? > verifyEmail(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> request) {
         try {
-            String email = request. get("email");
+            String email = request.get("email");
             String code = request.get("code");
 
             if (email == null || code == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "E-Mail und Code sind erforderlich"));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "E-Mail und Code sind erforderlich"));
             }
 
-            Optional<User> userOpt = userRepository.findByEmail(email. toLowerCase().trim());
+            Optional<User> userOpt = userRepository.findByEmail(email.toLowerCase().trim());
             if (userOpt.isEmpty()) {
                 logger.warn("Verification attempt for non-existent user: {}", email);
-                return ResponseEntity.badRequest().body(Map.of("error", "Benutzer nicht gefunden"));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Benutzer nicht gefunden"));
             }
 
             User user = userOpt.get();
 
+            // ✅ ANGEPASST: Verwende neue EmailVerification Entity
+            EmailVerification verification = user.getEmailVerification();
+
+            if (verification == null) {
+                logger.warn("No verification data for user: {}", email);
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Keine Verifizierung ausstehend"));
+            }
+
             // Check if already verified
-            if (user.isEmailVerified()) {
+            if (verification.isVerified()) {
                 logger.warn("Verification attempt for already verified user: {}", email);
-                return ResponseEntity.badRequest().body(Map.of("error", "E-Mail bereits verifiziert"));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "E-Mail bereits verifiziert"));
             }
 
             // Check verification code
-            if (!code.equals(user.getVerificationCode())) {
-                logger. warn("Invalid verification code for user: {}", email);
-                return ResponseEntity.badRequest().body(Map.of("error", "Ungültiger Verifizierungscode"));
+            if (!code.equals(verification.getVerificationCode())) {
+                verification.incrementAttempts();
+                userRepository.save(user);
+
+                logger.warn("Invalid verification code for user: {}", email);
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Ungültiger Verifizierungscode"));
             }
 
             // Check if code is expired
-            if (user.getVerificationCodeExpiry().isBefore(LocalDateTime.now())) {
+            if (verification.isExpired()) {
                 logger.warn("Expired verification code for user: {}", email);
-                return ResponseEntity.badRequest().body(Map.of("error", "Verifizierungscode ist abgelaufen"));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Verifizierungscode ist abgelaufen"));
             }
 
-            // Activate user
-            user.setEmailVerified(true);
-            user.setIs_active(true);
-            user.setVerificationCode(null);
-            user.setVerificationCodeExpiry(null);
+            // ✅ ANGEPASST: Aktiviere User mit neuer Methode
+            verification.markAsVerified();
+            user.setActive(true); // ✅ NEU
             userRepository.save(user);
 
             logger.info("User successfully verified and activated: {}", user.getEmail());
@@ -165,8 +202,7 @@ public class RegisterController {
             try {
                 emailService.sendWelcomeEmail(user.getEmail(), user.getFullname());
             } catch (Exception e) {
-                logger.warn("Failed to send welcome email to:  {}", user.getEmail(), e);
-                // Don't fail the verification process if welcome email fails
+                logger.warn("Failed to send welcome email to: {}", user.getEmail(), e);
             }
 
             // Generate JWT Token
@@ -177,39 +213,52 @@ public class RegisterController {
                     "token", token,
                     "email", user.getEmail(),
                     "fullname", user.getFullname(),
-                    "roles", new String[]{"USER"}
+                    "role", user.getRoleString()
             ));
 
         } catch (Exception ex) {
             logger.error("Email verification failed", ex);
-            return ResponseEntity. status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    . body(Map.of("error", "Verifizierung fehlgeschlagen:  " + ex.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Verifizierung fehlgeschlagen: " + ex.getMessage()));
         }
     }
 
+    /**
+     * Resend Verification Code
+     */
     @PostMapping("/resend-verification")
     public ResponseEntity<?> resendVerification(@RequestBody Map<String, String> request) {
         try {
             String email = request.get("email");
             if (email == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "E-Mail ist erforderlich"));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "E-Mail ist erforderlich"));
             }
 
-            Optional<User> userOpt = userRepository. findByEmail(email.toLowerCase().trim());
+            Optional<User> userOpt = userRepository.findByEmail(email.toLowerCase().trim());
             if (userOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Benutzer nicht gefunden"));
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Benutzer nicht gefunden"));
             }
 
             User user = userOpt.get();
 
-            if (user.isEmailVerified()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "E-Mail bereits verifiziert"));
+            // ✅ ANGEPASST: Verwende EmailVerification Entity
+            EmailVerification verification = user.getEmailVerification();
+
+            if (verification == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Keine Verifizierung ausstehend"));
+            }
+
+            if (verification.isVerified()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "E-Mail bereits verifiziert"));
             }
 
             // Generate new verification code
             String newCode = generateVerificationCode();
-            user.setVerificationCode(newCode);
-            user.setVerificationCodeExpiry(LocalDateTime.now().plusMinutes(10));
+            verification.regenerateCode(newCode, 10);
             userRepository.save(user);
 
             logger.info("Generated new verification code for {}: {}", email, newCode);
@@ -222,19 +271,22 @@ public class RegisterController {
             return ResponseEntity.ok(Map.of("message", "Neuer Verifizierungscode wurde gesendet"));
 
         } catch (Exception ex) {
-            logger. error("Failed to resend verification email", ex);
+            logger.error("Failed to resend verification email", ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Fehler beim Senden des Codes:  " + ex.getMessage()));
+                    .body(Map.of("error", "Fehler beim Senden des Codes: " + ex.getMessage()));
         }
     }
 
     // Helper Methods
+
     private String generateVerificationCode() {
         Random random = new Random();
         return String.format("%06d", random.nextInt(1000000));
     }
 
     private boolean isValidEmail(String email) {
-        return email != null && email.matches("^[A-Za-z0-9+_.-]+@(. +)$") && email.contains(".");
+        return email != null &&
+                email.matches("^[A-Za-z0-9+_.-]+@(.+)$") &&
+                email.contains(".");
     }
 }

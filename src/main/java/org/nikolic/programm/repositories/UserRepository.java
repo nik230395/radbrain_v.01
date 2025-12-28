@@ -23,24 +23,24 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByRole(UserRole role);
 
     // ✅ Active/Inactive mit @Query (wegen is_active Underscore)
-    @Query("SELECT u FROM User u WHERE u.  is_active = true")
+    @Query("SELECT u FROM User u WHERE u.  isActive = true")
     List<User> findActiveUsers();
 
-    @Query("SELECT u FROM User u WHERE u. is_active = false")
+    @Query("SELECT u FROM User u WHERE u. isActive = false")
     List<User> findInactiveUsers();
 
     // ✅ Count queries - nur die wichtigsten
-    @Query("SELECT COUNT(u) FROM User u WHERE u.is_active = true")
+    @Query("SELECT COUNT(u) FROM User u WHERE u.isActive = true")
     long countActiveUsers();
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.role = :role")
     long countByRole(@Param("role") UserRole role);
 
     // ✅ Admin check
-    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.role = 'ADMIN' AND u.is_active = true")
+    @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.role = 'ADMIN' AND u.isActive = true")
     boolean hasActiveAdmin();
 
-    @Query("SELECT u FROM User u WHERE u.role = 'ADMIN' AND u.  is_active = true ORDER BY u.created_at ASC")
+    @Query("SELECT u FROM User u WHERE u.role = 'ADMIN' AND u.  isActive = true ORDER BY u.createdAt ASC")
     Optional<User> findFirstAdmin();
 
     // ✅ Search functionality

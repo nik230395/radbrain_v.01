@@ -1,12 +1,12 @@
-package org. nikolic.programm.controllers;
+package org.nikolic.programm.controllers;
 
-import org.nikolic.programm. dtos.RegisterRequest;
-import org.nikolic. programm.entities.User;
+import org.nikolic.programm.dtos.RegisterRequest;
+import org.nikolic.programm.entities.User;
 import org.nikolic.programm.security.JwtUtil;
-import org.nikolic. programm.services. RegistrationCacheService;
+import org.nikolic.programm.services.RegistrationCacheService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail. MailException;
+import org.springframework.mail.MailException;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +14,11 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * UserApiController - Angepasst an RegistrationCacheService
+ *
+ * Verwendet RegistrationCacheService für Registrierung mit Cache
+ */
 @RestController
 @RequestMapping("/api/users")
 @CrossOrigin(origins = "*")
@@ -29,39 +34,42 @@ public class UserApiController {
         this.jwtUtil = jwtUtil;
     }
 
+    /**
+     * Registrierung mit Cache
+     */
     @PostMapping("/register")
-    public ResponseEntity<? > register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
             logger.info("Registration attempt for email: {}", request.getEmail());
 
-            // ✅ Korrigierter Methodenaufruf
             registrationCacheService.createRegistrationAndSendCode(
                     request.getFullname(),
                     request.getEmail(),
                     request.getPassword()
             );
 
-            logger.info("Registration successful for email: {}", request. getEmail());
+            logger.info("Registration successful for email: {}", request.getEmail());
             return ResponseEntity.ok(Map.of("message", "verification_sent"));
 
         } catch (IllegalArgumentException iae) {
-            logger.warn("Registration validation failed:  {}", iae.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", iae.getMessage()));
+            logger.warn("Registration validation failed: {}", iae.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", iae.getMessage()));
 
         } catch (MailException mex) {
             logger.error("Email sending failed", mex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map. of("error", "E-Mail konnte nicht gesendet werden.  Bitte versuchen Sie es später erneut."));
+                    .body(Map.of("error", "E-Mail konnte nicht gesendet werden. Bitte versuchen Sie es später erneut."));
 
         } catch (Exception ex) {
             logger.error("Registration failed", ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Registrierung fehlgeschlagen:  " + ex.getMessage()));
+                    .body(Map.of("error", "Registrierung fehlgeschlagen: " + ex.getMessage()));
         }
     }
 
     /**
-     * Verify endpoint:  prüft Code, erzeugt den User und liefert JWT zurück
+     * Verify endpoint: prüft Code, erzeugt den User und liefert JWT zurück
      */
     @PostMapping("/verify")
     public ResponseEntity<?> verify(@RequestBody Map<String, String> body) {
@@ -69,18 +77,20 @@ public class UserApiController {
         String code = body.get("code");
 
         if (email == null || code == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "E-Mail und Code sind erforderlich"));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "E-Mail und Code sind erforderlich"));
         }
 
         try {
             logger.info("Verification attempt for email: {}", email);
 
-            // ✅ User wird erstellt und verifiziert
+            // User wird erstellt und verifiziert
             User created = registrationCacheService.verifyAndCreateUser(email, code);
 
             if (created == null) {
-                logger. warn("Verification failed for email: {}", email);
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", "Ungültiger oder abgelaufener Code"));
+                logger.warn("Verification failed for email: {}", email);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Ungültiger oder abgelaufener Code"));
             }
 
             // Create JWT token for the newly created user
@@ -97,18 +107,22 @@ public class UserApiController {
             return ResponseEntity.ok(resp);
 
         } catch (Exception ex) {
-            logger. error("Verification error for email: {}", email, ex);
+            logger.error("Verification error for email: {}", email, ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Verifizierung fehlgeschlagen:  " + ex.getMessage()));
+                    .body(Map.of("error", "Verifizierung fehlgeschlagen: " + ex.getMessage()));
         }
     }
 
+    /**
+     * Resend verification code
+     */
     @PostMapping("/resend")
     public ResponseEntity<?> resend(@RequestBody Map<String, String> body) {
         String email = body.get("email");
 
         if (email == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "E-Mail ist erforderlich"));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "E-Mail ist erforderlich"));
         }
 
         try {
@@ -117,29 +131,30 @@ public class UserApiController {
             registrationCacheService.resendCode(email);
 
             logger.info("Resend successful for email: {}", email);
-            return ResponseEntity. ok(Map.of("message", "verification_sent"));
+            return ResponseEntity.ok(Map.of("message", "verification_sent"));
 
         } catch (IllegalArgumentException iae) {
-            logger.warn("Resend failed - no pending registration:  {}", email);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Keine ausstehende Registrierung gefunden"));
+            logger.warn("Resend failed - no pending registration: {}", email);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Keine ausstehende Registrierung gefunden"));
 
         } catch (MailException mex) {
             logger.error("Email resend failed", mex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map. of("error", "E-Mail konnte nicht gesendet werden"));
+                    .body(Map.of("error", "E-Mail konnte nicht gesendet werden"));
 
         } catch (Exception ex) {
             logger.error("Resend error for email: {}", email, ex);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Fehler beim Senden:  " + ex.getMessage()));
+                    .body(Map.of("error", "Fehler beim Senden: " + ex.getMessage()));
         }
     }
 
     /**
-     * Optional: Status-Endpoint um pending registrations zu prüfen
+     * Status-Endpoint um pending registrations zu prüfen
      */
     @GetMapping("/registration-status/{email}")
-    public ResponseEntity<? > getRegistrationStatus(@PathVariable String email) {
+    public ResponseEntity<?> getRegistrationStatus(@PathVariable String email) {
         try {
             boolean hasPending = registrationCacheService.hasVerificationPending(email);
             return ResponseEntity.ok(Map.of(
@@ -153,17 +168,23 @@ public class UserApiController {
     }
 
     /**
-     * Optional: Admin-Endpoint für Registrierungs-Statistiken
+     * Admin-Endpoint für Registrierungs-Statistiken
      */
     @GetMapping("/admin/registration-stats")
     public ResponseEntity<?> getRegistrationStats() {
         try {
             RegistrationCacheService.RegistrationStatistics stats =
                     registrationCacheService.getStatistics();
-            return ResponseEntity.ok(stats);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("totalRegistrations", stats.getTotalRegistrations());
+            response.put("activeRegistrations", stats.getActiveRegistrations());
+            response.put("expiredRegistrations", stats.getExpiredRegistrations());
+
+            return ResponseEntity.ok(response);
         } catch (Exception ex) {
-            return ResponseEntity. status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    . body(Map.of("error", "Statistiken konnten nicht abgerufen werden"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Statistiken konnten nicht abgerufen werden"));
         }
     }
 }

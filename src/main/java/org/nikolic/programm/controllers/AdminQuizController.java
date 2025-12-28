@@ -50,7 +50,7 @@ public class AdminQuizController {
         }
 
         try {
-            List<Quiz> all = quizService.getAllQuizzes();
+            List<Quiz> all = quizService.findAllPublished();
             List<QuizDto> dtos = all.stream()
                     .map(QuizMapper:: toDto)
                     .collect(Collectors.toList());
@@ -100,7 +100,7 @@ public class AdminQuizController {
         }
 
         try {
-            Quiz publishedQuiz = quizService. setPublished(id, true);
+            Quiz publishedQuiz = quizService.setPublished(id, true); // error
             return ResponseEntity. ok(QuizMapper.toDto(publishedQuiz));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
@@ -114,7 +114,7 @@ public class AdminQuizController {
         }
 
         try {
-            Quiz unpublishedQuiz = quizService. setPublished(id, false);
+            Quiz unpublishedQuiz = quizService.setPublished(id, false); // error
             return ResponseEntity.ok(QuizMapper.toDto(unpublishedQuiz));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));

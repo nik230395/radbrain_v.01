@@ -14,6 +14,9 @@ import java.util.Optional;
 @Repository
 public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> {
 
+    List<QuizAttempt> findByUserId(Long userId);
+    List<QuizAttempt> findByQuizId(Long quizId);
+    List<QuizAttempt> findByUserIdOrderByCompletedAtDesc(Long userId);
     // Find all attempts by a user (most recent first)
     List<QuizAttempt> findByUserIdOrderByStartedAtDesc(Long userId);
 

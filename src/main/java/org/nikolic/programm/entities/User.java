@@ -1,109 +1,169 @@
 package org.nikolic.programm.entities;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java. util.List;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * User Entity - Verbesserte Version
+ *
+ * Änderungen:
+ * - Email Verification in eigene Entity ausgelagert
+ * - Audit Trail hinzugefügt
+ * - Konsistente Naming Convention
+ * - Bessere Validierung
+ */
 @Entity
-@Table(name = "users")
+@Table(name = "users", indexes = {
+        @Index(name = "idx_user_email", columnList = "email"),
+        @Index(name = "idx_user_role", columnList = "role"),
+        @Index(name = "idx_user_active", columnList = "is_active")
+})
+@EntityListeners(AuditingEntityListener.class)
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = 255)
     private String email;
 
+    @Column(nullable = false, length = 255)
     private String fullname;
 
-    private String password_hash;
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
-    private UserRole role;
+    @Column(nullable = false, length = 20)
+    private UserRole role = UserRole.USER;
 
-    private boolean is_active;
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive = true;
 
-    private LocalDateTime created_at;
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    // ✅ TEMPORÄR: Email-Verification-Felder als Transient (nicht in DB)
-    @Transient
-    private boolean emailVerified = true; // Default true für bestehende Users
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
-    @Transient
-    private String verificationCode;
+    // Relationship zu EmailVerification (One-to-One)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private EmailVerification emailVerification;
 
-    @Transient
-    private LocalDateTime verificationCodeExpiry;
-
-    @Transient
-    private String passwordResetCode;
-
-    @Transient
-    private LocalDateTime passwordResetExpiry;
-
-    @Transient
-    private String passwordResetToken;
-
-    @Transient
-    private LocalDateTime passwordResetTokenExpiry;
+    // Relationship zu PasswordResets (One-to-Many)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PasswordReset> passwordResets;
 
     // Constructors
-    public User() {}
-
-    // Standard Getters and Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getFullname() { return fullname; }
-    public void setFullname(String fullname) { this.fullname = fullname; }
-
-    public String getPassword_hash() { return password_hash; }
-    public void setPassword_hash(String password_hash) { this.password_hash = password_hash; }
-
-    public UserRole getRole() { return role; }
-    public void setRole(UserRole role) { this.role = role; }
-
-    public boolean isActive() { return is_active; }
-    public boolean getIs_active() { return is_active; }
-    public void setIs_active(boolean is_active) { this.is_active = is_active; }
-
-    public LocalDateTime getCreated_at() { return created_at; }
-    public void setCreated_at(LocalDateTime created_at) { this.created_at = created_at; }
-
-    // Email Verification (Transient)
-    public boolean isEmailVerified() { return emailVerified; }
-    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
-
-    public String getVerificationCode() { return verificationCode; }
-    public void setVerificationCode(String verificationCode) { this.verificationCode = verificationCode; }
-
-    public LocalDateTime getVerificationCodeExpiry() { return verificationCodeExpiry; }
-    public void setVerificationCodeExpiry(LocalDateTime verificationCodeExpiry) {
-        this.verificationCodeExpiry = verificationCodeExpiry;
+    public User() {
+        this.createdAt = LocalDateTime.now();
     }
 
-    // Password Reset (Transient)
-    public String getPasswordResetCode() { return passwordResetCode; }
-    public void setPasswordResetCode(String passwordResetCode) { this.passwordResetCode = passwordResetCode; }
-
-    public LocalDateTime getPasswordResetExpiry() { return passwordResetExpiry; }
-    public void setPasswordResetExpiry(LocalDateTime passwordResetExpiry) {
-        this.passwordResetExpiry = passwordResetExpiry;
+    public User(String email, String fullname, String passwordHash) {
+        this();
+        this.email = email.toLowerCase().trim();
+        this.fullname = fullname.trim();
+        this.passwordHash = passwordHash;
     }
 
-    public String getPasswordResetToken() { return passwordResetToken; }
-    public void setPasswordResetToken(String passwordResetToken) { this.passwordResetToken = passwordResetToken; }
-
-    public LocalDateTime getPasswordResetTokenExpiry() { return passwordResetTokenExpiry; }
-    public void setPasswordResetTokenExpiry(LocalDateTime passwordResetTokenExpiry) {
-        this.passwordResetTokenExpiry = passwordResetTokenExpiry;
+    // Getters and Setters mit konsistenter Naming
+    public Long getId() {
+        return id;
     }
 
-    // Admin-Related Methods
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email != null ? email.toLowerCase().trim() : null;
+    }
+
+    public String getFullname() {
+        return fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname != null ? fullname.trim() : null;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
+    public UserRole getRole() {
+        return role;
+    }
+
+    public void setRole(UserRole role) {
+        this.role = role != null ? role : UserRole.USER;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        this.isActive = active;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public EmailVerification getEmailVerification() {
+        return emailVerification;
+    }
+
+    public void setEmailVerification(EmailVerification emailVerification) {
+        this.emailVerification = emailVerification;
+        if (emailVerification != null) {
+            emailVerification.setUser(this);
+        }
+    }
+
+    public List<PasswordReset> getPasswordResets() {
+        return passwordResets;
+    }
+
+    public void setPasswordResets(List<PasswordReset> passwordResets) {
+        this.passwordResets = passwordResets;
+    }
+
+    // Helper Methods - Vereinfacht
+    public boolean isEmailVerified() {
+        return emailVerification != null && emailVerification.isVerified();
+    }
+
     public boolean isAdmin() {
         return this.role == UserRole.ADMIN;
     }
@@ -124,12 +184,34 @@ public class User {
         if (this.role == null || roleName == null) {
             return false;
         }
-        return this.role.toString().equalsIgnoreCase(roleName) ||
-                this.role. toString().equalsIgnoreCase("ROLE_" + roleName);
+        String normalizedRole = roleName.toUpperCase().replace("ROLE_", "");
+        return this.role.toString().equals(normalizedRole);
     }
 
     public List<String> getRoles() {
-        return this.role != null ? List.of(this.role.toString()) : List.of();
+        return this.role != null ? List.of(this.role.toString()) : List.of("USER");
+    }
+
+    // Business Logic
+    public void activate() {
+        this.isActive = true;
+    }
+
+    public void deactivate() {
+        this.isActive = false;
+    }
+
+    public void changePassword(String newPasswordHash) {
+        this.passwordHash = newPasswordHash;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void promoteToAdmin() {
+        this.role = UserRole.ADMIN;
+    }
+
+    public void demoteToUser() {
+        this.role = UserRole.USER;
     }
 
     @Override
@@ -139,9 +221,22 @@ public class User {
                 ", email='" + email + '\'' +
                 ", fullname='" + fullname + '\'' +
                 ", role=" + role +
-                ", is_active=" + is_active +
-                ", emailVerified=" + emailVerified +
-                ", created_at=" + created_at +
+                ", isActive=" + isActive +
+                ", emailVerified=" + isEmailVerified() +
+                ", createdAt=" + createdAt +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User user = (User) o;
+        return id != null && id.equals(user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

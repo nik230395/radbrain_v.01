@@ -5,36 +5,96 @@
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <title>Quiz - RadBrain</title>
     <link rel="stylesheet" href="style.css"/>
+    <style>
+        .question {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .question.correct {
+            border-left-color: #28a745;
+            background: #e8f5e9;
+        }
+        .question.incorrect {
+            border-left-color: #dc3545;
+            background: #ffebee;
+        }
+        .choice-label {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .choice-label:hover {
+            background: rgba(0,123,255,0.1);
+        }
+        .choice-label.correct-answer {
+            background: #d4edda;
+            border: 2px solid #28a745;
+        }
+        .choice-label.wrong-answer {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+        }
+        .result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .result-box h2 {
+            margin: 0 0 10px 0;
+            font-size: 2.5em;
+        }
+        .result-box p {
+            margin: 5px 0;
+            font-size: 1.2em;
+        }
+        .btn-primary {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-primary:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .feedback-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
-<nav class="navbar" style="margin-bottom: 20px;">
-    <div class="nav-left">
-        <span class="logo-text" style="font-size: 1.4rem; font-weight: bold;">RadBrain Quiz</span>
-    </div>
-
-    <ul class="nav-menu">
-        <li class="nav-item"><a href="/user-home.html" class="nav-link">Home</a></li>
-        <li class="nav-item"><a href="/quiz.html" class="nav-link">Quizzes</a></li>
-        <li class="nav-item"><a href="/dashboard.html" class="nav-link">Dashboard</a></li>
-    </ul>
-</nav>
 <main class="container" style="max-width:900px;margin:28px auto;">
     <h1 id="qTitle">Quiz</h1>
     <p id="qDesc"></p>
     <div id="questions"></div>
-    <div style="margin-top:20px;">
-        <button id="submitBtn" style="padding:12px 30px;background:var(--primary);color:white;border:none;border-radius:8px;font-size:1.1rem;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='var(--primary-700)'" onmouseout="this.style.background='var(--primary)'">Abgeben</button>
+    <div style="margin-top:12px;">
+        <button id="submitBtn" class="btn-primary">Abgeben</button>
     </div>
     <div id="result" style="margin-top:12px;"></div>
 </main>
 
 <script src="/auth.js"></script>
 <script>
-    // Check if user is admin and show admin panel link
-    if (window.auth && window.auth.isLoggedIn() && window.auth.hasRole('ADMIN')) {
-        document.getElementById('adminNavItem').style.display = 'block';
-    }
-    
     (async function() {
         const params = new URLSearchParams(location.search);
         const id = params.get('id');
@@ -49,107 +109,142 @@
         const res = await fetch('/api/quizzes/' + id);
         if (!res.ok) { alert('Quiz nicht gefunden'); location.href='/'; return; }
         const quiz = await res.json();
+
         titleEl.textContent = quiz.title;
         descEl.textContent = quiz.description || '';
 
         const answers = {};
+        const questionElements = {};
 
         quiz.questions.forEach((q, idx) => {
-            const div = document.createElement('div'); 
-            div.className='question-card';
-            div.style.cssText = 'background:var(--card);padding:20px;margin:15px 0;border-radius:12px;border:1px solid #e0e0e0;';
-            
-            const questionHeader = document.createElement('div');
-            questionHeader.style.cssText = 'margin-bottom:15px;';
-            questionHeader.innerHTML = `<strong style="font-size:1.1rem;color:var(--primary);">${idx+1}. ${q.text}</strong>`;
-            div.appendChild(questionHeader);
-            
+            const div = document.createElement('div');
+            div.className = 'question';
+            div.id = 'question-' + q.id;
+            questionElements[q.id] = div;
+
+            const questionText = document.createElement('div');
+            questionText.innerHTML = `<strong>${idx+1}. ${q.text}</strong>`;
+            div.appendChild(questionText);
+
             const choicesDiv = document.createElement('div');
-            choicesDiv.style.cssText = 'margin-top:12px;';
-            
+            choicesDiv.style.marginTop = '15px';
+
             if (q.qtype === 'SHORT_TEXT') {
-                const ta = document.createElement('textarea'); 
-                ta.style.cssText = 'width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:1rem;';
-                ta.rows = 4;
-                ta.placeholder = 'Geben Sie Ihre Antwort hier ein...';
-                ta.addEventListener('input', ()=> { answers[q.id] = ta.value; });
+                const ta = document.createElement('textarea');
+                ta.style.width = '100%';
+                ta.rows = 3;
+                ta.style.padding = '10px';
+                ta.style.borderRadius = '4px';
+                ta.style.border = '1px solid #ced4da';
+                ta.addEventListener('input', () => { answers[q.id] = ta.value; });
                 choicesDiv.appendChild(ta);
             } else {
                 q.choices.forEach(c => {
                     const wrapper = document.createElement('label');
-                    wrapper.style.cssText = 'display:flex;gap:12px;align-items:center;padding:12px;margin:8px 0;background:white;border-radius:8px;cursor:pointer;transition:all 0.2s;border:2px solid transparent;';
-                    wrapper.onmouseenter = () => wrapper.style.borderColor = 'var(--primary-light)';
-                    wrapper.onmouseleave = () => {
-                        if (!wrapper.querySelector('input').checked) wrapper.style.borderColor = 'transparent';
-                    };
-                    
+                    wrapper.className = 'choice-label';
+                    wrapper.dataset.choiceId = c.id;
+
                     const inp = document.createElement('input');
-                    inp.type = (q.qtype === 'SINGLE') ? 'radio' : 'checkbox';
+                    inp.type = (q.qtype === 'SINGLE' || q.qtype === 'TRUE_FALSE') ? 'radio' : 'checkbox';
                     inp.name = 'q_' + q.id;
                     inp.value = c.id;
-                    inp.style.cssText = 'width:18px;height:18px;cursor:pointer;';
-                    inp.addEventListener('change', ()=> {
-                        // Update border colors
-                        document.querySelectorAll(`input[name="q_${q.id}"]`).forEach(i => {
-                            i.parentElement.style.borderColor = i.checked ? 'var(--primary)' : 'transparent';
-                            i.parentElement.style.background = i.checked ? '#f0edff' : 'white';
-                        });
-                        
-                        if (q.qtype === 'SINGLE') {
+
+                    inp.addEventListener('change', () => {
+                        if (q.qtype === 'SINGLE' || q.qtype === 'TRUE_FALSE') {
                             answers[q.id] = [Number(inp.value)];
                         } else {
                             const boxes = Array.from(document.querySelectorAll('input[name="q_' + q.id + '"]'));
-                            const sel = boxes.filter(b=>b.checked).map(b=>Number(b.value));
+                            const sel = boxes.filter(b => b.checked).map(b => Number(b.value));
                             answers[q.id] = sel;
                         }
                     });
+
                     wrapper.appendChild(inp);
-                    const span = document.createElement('span'); 
+                    const span = document.createElement('span');
                     span.textContent = c.text;
-                    span.style.cssText = 'flex:1;font-size:1rem;';
                     wrapper.appendChild(span);
                     choicesDiv.appendChild(wrapper);
                 });
             }
+
             div.appendChild(choicesDiv);
             questionsEl.appendChild(div);
         });
 
         submitBtn.addEventListener('click', async () => {
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Wird gesendet...';
-            
+            submitBtn.textContent = 'Wird ausgewertet...';
+
             const payload = { answers };
-            const submitRes = await window.auth.authFetch('/api/quizzes/' + id + '/submit', { 
-                method:'POST', 
-                headers:{'Content-Type':'application/json'}, 
-                body: JSON.stringify(payload) 
+            const submitRes = await window.auth.authFetch('/api/quizzes/' + id + '/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
-            const body = await submitRes.json().catch(()=> ({}));
-            
+
+            const body = await submitRes.json().catch(() => ({}));
+
             if (!submitRes.ok) {
-                resultEl.innerHTML = `
-                    <div style="background:#fee;padding:20px;border-radius:12px;border-left:4px solid var(--danger);margin-top:20px;">
-                        <strong style="color:var(--danger);">Fehler:</strong> ${body.error || body.message || submitRes.statusText}
-                    </div>`;
+                resultEl.innerHTML = '<div style="color:#e04e4e;padding:12px;background:#ffebee;border-radius:8px">Fehler: ' + (body.error || body.message || submitRes.statusText) + '</div>';
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Abgeben';
                 return;
             }
-            
-            const score = body.scorePct?.toString() || body.score || 0;
+
+            // Ergebnis anzeigen
+            const score = body.scorePct || 0;
+            const passed = body.passed || false;
+            const correctCount = body.correctCount || 0;
+            const totalQuestions = body.totalQuestions || 0;
+
             resultEl.innerHTML = `
-                <div style="background:#e8ffef;padding:25px;border-radius:12px;border-left:4px solid var(--success);margin-top:20px;">
-                    <h3 style="margin:0 0 15px 0;color:var(--success);">Quiz abgeschlossen! 🎉</h3>
-                    <p style="font-size:1.2rem;margin:0;">Dein Ergebnis: <strong style="font-size:1.8rem;color:var(--primary);">${score}%</strong></p>
-                    <div style="margin-top:20px;display:flex;gap:12px;">
-                        <button onclick="location.reload()" style="padding:10px 20px;background:var(--primary);color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">Nochmal versuchen</button>
-                        <button onclick="location.href='dashboard.html'" style="padding:10px 20px;background:var(--primary-light);color:white;border:none;border-radius:8px;cursor:pointer;font-size:1rem;">Zurück zum Dashboard</button>
-                    </div>
-                </div>`;
-            
-            // Hide submit button after successful submission
-            submitBtn.style.display = 'none';
+                <div class="result-box">
+                    <div class="feedback-icon">${passed ? '🎉' : '📚'}</div>
+                    <h2>${score}%</h2>
+                    <p>${correctCount} von ${totalQuestions} Fragen richtig</p>
+                    <p>${passed ? 'Bestanden! Gut gemacht!' : 'Nicht bestanden. Versuch es nochmal!'}</p>
+                </div>
+            `;
+
+            // Fragen markieren und richtige Antworten zeigen
+            if (body.detailedResults) {
+                Object.entries(body.detailedResults).forEach(([questionId, result]) => {
+                    const questionDiv = questionElements[questionId];
+                    if (!questionDiv) return;
+
+                    if (result.isCorrect) {
+                        questionDiv.classList.add('correct');
+                    } else {
+                        questionDiv.classList.add('incorrect');
+                    }
+
+                    // Bei Multiple Choice: Richtige Antworten markieren
+                    if (result.correctChoiceIds && result.correctChoiceIds.length > 0) {
+                        result.correctChoiceIds.forEach(correctId => {
+                            const label = questionDiv.querySelector(`label[data-choice-id="${correctId}"]`);
+                            if (label) {
+                                label.classList.add('correct-answer');
+                            }
+                        });
+
+                        // Falsche User-Antworten markieren
+                        if (result.userAnswer && Array.isArray(result.userAnswer)) {
+                            result.userAnswer.forEach(userChoiceId => {
+                                if (!result.correctChoiceIds.includes(userChoiceId)) {
+                                    const label = questionDiv.querySelector(`label[data-choice-id="${userChoiceId}"]`);
+                                    if (label) {
+                                        label.classList.add('wrong-answer');
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            submitBtn.textContent = 'Nochmal versuchen';
+            submitBtn.disabled = false;
+            submitBtn.onclick = () => location.reload();
         });
 
     })();
