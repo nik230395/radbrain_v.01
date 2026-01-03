@@ -110721,3 +110721,271 @@ Caused by: java.net.ConnectException: Connection refused
 2026-01-03T19:17:01.429+01:00 TRACE 1966 --- [http-nio-8080-exec-3] o.s.s.w.header.writers.HstsHeaderWriter  : Not injecting HSTS header since it did not match request to [Is Secure]
 2026-01-03T19:17:01.430+01:00 TRACE 1966 --- [http-nio-8080-exec-7] o.s.s.w.header.writers.HstsHeaderWriter  : Not injecting HSTS header since it did not match request to [Is Secure]
 2026-01-03T19:17:01.430+01:00 TRACE 1966 --- [http-nio-8080-exec-4] o.s.s.w.header.writers.HstsHeaderWriter  : Not injecting HSTS header since it did not match request to [Is Secure]
+2026-01-03T19:30:18.745+01:00  INFO 1966 --- [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 1 class path change (0 additions, 1 deletion, 0 modifications)
+2026-01-03T19:30:18.984+01:00  INFO 1966 --- [Thread-5] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-03T19:30:21.179+01:00  INFO 1966 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-01-03T19:30:21.376+01:00 ERROR 1966 --- [http-nio-8080-Acceptor] org.apache.tomcat.util.net.Acceptor      : Socket accept failed
+
+java.nio.channels.AsynchronousCloseException: null
+	at java.base/java.nio.channels.spi.AbstractInterruptibleChannel.end(AbstractInterruptibleChannel.java:218) ~[na:na]
+	at java.base/sun.nio.ch.ServerSocketChannelImpl.end(ServerSocketChannelImpl.java:374) ~[na:na]
+	at java.base/sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:399) ~[na:na]
+	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:535) ~[tomcat-embed-core-10.1.48.jar:10.1.48]
+	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:70) ~[tomcat-embed-core-10.1.48.jar:10.1.48]
+	at org.apache.tomcat.util.net.Acceptor.run(Acceptor.java:127) ~[tomcat-embed-core-10.1.48.jar:10.1.48]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[na:na]
+
+2026-01-03T19:30:21.884+01:00  INFO 1966 --- [Thread-5] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-03T19:30:22.066+01:00  INFO 1966 --- [Thread-5] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-01-03T19:30:22.118+01:00  INFO 1966 --- [Thread-5] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-01-03T19:30:22.650+01:00  INFO 1966 --- [restartedMain] o.nikolic.programm.ProgrammApplication   : Starting ProgrammApplication using Java 25 with PID 1966 (/Users/aleksandarnikolic/Documents/schule/3AHBGM/MGIN_P/radbrain_v.01/target/classes started by aleksandarnikolic in /Users/aleksandarnikolic/Documents/schule/3AHBGM/MGIN_P/radbrain_v.01)
+2026-01-03T19:30:22.650+01:00 DEBUG 1966 --- [restartedMain] o.nikolic.programm.ProgrammApplication   : Running with Spring Boot v3.5.7, Spring v6.2.12
+2026-01-03T19:30:22.651+01:00  INFO 1966 --- [restartedMain] o.nikolic.programm.ProgrammApplication   : The following 1 profile is active: "dev"
+2026-01-03T19:30:23.112+01:00  INFO 1966 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-03T19:30:23.149+01:00  INFO 1966 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 35 ms. Found 11 JPA repository interfaces.
+2026-01-03T19:30:23.395+01:00  INFO 1966 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-03T19:30:23.396+01:00  INFO 1966 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-03T19:30:23.396+01:00  INFO 1966 --- [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.48]
+2026-01-03T19:30:23.405+01:00  INFO 1966 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-03T19:30:23.405+01:00  INFO 1966 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 751 ms
+2026-01-03T19:30:23.448+01:00  INFO 1966 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-03T19:30:23.451+01:00  INFO 1966 --- [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-03T19:30:23.478+01:00  INFO 1966 --- [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-03T19:30:23.479+01:00  INFO 1966 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-01-03T19:30:23.530+01:00  INFO 1966 --- [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection com.mysql.cj.jdbc.ConnectionImpl@be2a660
+2026-01-03T19:30:23.530+01:00  INFO 1966 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-01-03T19:30:23.533+01:00  WARN 1966 --- [restartedMain] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-01-03T19:30:23.533+01:00  WARN 1966 --- [restartedMain] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+2026-01-03T19:30:23.534+01:00  INFO 1966 --- [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-2)']
+	Database driver: undefined/unknown
+	Database version: 8.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-03T19:30:24.228+01:00  INFO 1966 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-03T19:30:24.320+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    alter table users 
+       modify column role enum ('ADMIN','USER') not null
+2026-01-03T19:30:24.383+01:00  INFO 1966 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-03T19:30:24.566+01:00 DEBUG 1966 --- [restartedMain] o.nikolic.programm.security.JwtFilter    : Filter 'jwtFilter' configured for use
+2026-01-03T19:30:24.857+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : 🔐 SecurityConfig initialized
+2026-01-03T19:30:24.866+01:00 DEBUG 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : 🔒 Creating BCrypt Password Encoder
+2026-01-03T19:30:24.979+01:00 DEBUG 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : 🔑 Creating Authentication Manager
+2026-01-03T19:30:25.003+01:00  INFO 1966 --- [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userService
+2026-01-03T19:30:25.311+01:00  INFO 1966 --- [restartedMain] org.nikolic.programm.config.MailConfig   : JavaMailSenderImpl konfiguriert mit host=smtp.gmail.com
+2026-01-03T19:30:25.406+01:00  WARN 1966 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-01-03T19:30:25.422+01:00  INFO 1966 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-03T19:30:25.494+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : 🔧 Configuring Security Filter Chain...
+2026-01-03T19:30:25.494+01:00 DEBUG 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : 🌐 Configuring CORS...
+2026-01-03T19:30:25.494+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : ✅ CORS configured with allowedOriginPatterns
+2026-01-03T19:30:25.529+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : ✅ Security Filter Chain configured successfully
+2026-01-03T19:30:25.545+01:00 DEBUG 1966 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, CorsFilter, LogoutFilter, JwtFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, SessionManagementFilter, ExceptionTranslationFilter, AuthorizationFilter
+2026-01-03T19:30:25.686+01:00  INFO 1966 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-03T19:30:25.694+01:00  INFO 1966 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-03T19:30:25.696+01:00  INFO 1966 --- [restartedMain] o.nikolic.programm.ProgrammApplication   : Started ProgrammApplication in 3.107 seconds (process running for 1764.777)
+2026-01-03T19:30:25.696+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : 🚀 Starting data initialization...
+2026-01-03T19:30:25.709+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        u1_0.id 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+    limit
+        ?
+2026-01-03T19:30:25.721+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : 👤 Admin user already exists: admin@radbrain.de
+2026-01-03T19:30:25.721+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : 🔧 Test user creation skipped (not in dev profile)
+2026-01-03T19:30:25.722+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        count(*) 
+    from
+        users u1_0
+2026-01-03T19:30:25.725+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        count(u1_0.id) 
+    from
+        users u1_0 
+    where
+        u1_0.is_active=1
+2026-01-03T19:30:25.728+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        count(u1_0.id) 
+    from
+        users u1_0 
+    where
+        u1_0.role=?
+2026-01-03T19:30:25.729+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : 📊 System Status:
+2026-01-03T19:30:25.729+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    👥 Total Users: 6
+2026-01-03T19:30:25.729+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    ✅ Active Users: 6
+2026-01-03T19:30:25.729+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    👑 Admin Users: 4
+2026-01-03T19:30:25.729+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    ⚠️ Inactive Users: 0
+2026-01-03T19:30:25.729+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : 🔐 Admin Login:
+2026-01-03T19:30:25.729+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    📧 Email: admin@radbrain.de
+2026-01-03T19:30:25.729+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    🔐 Password: Admin123!
+2026-01-03T19:30:25.729+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    🌐 URL: http://localhost:8080/login.html
+2026-01-03T19:30:25.729+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : ✅ Data initialization completed
+2026-01-03T19:30:25.729+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.fullname,
+        u1_0.is_active,
+        u1_0.password_hash,
+        u1_0.role,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=?
+2026-01-03T19:30:25.733+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        ev1_0.id,
+        ev1_0.attempts,
+        ev1_0.created_at,
+        ev1_0.expires_at,
+        ev1_0.user_id,
+        ev1_0.verification_code,
+        ev1_0.verified,
+        ev1_0.verified_at 
+    from
+        email_verifications ev1_0 
+    where
+        ev1_0.user_id=?
+2026-01-03T19:30:25.735+01:00  INFO 1966 --- [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged
+2026-01-03T19:30:27.112+01:00  INFO 1966 --- [File Watcher] rtingClassPathChangeChangedEventListener : Restarting due to 1 class path change (1 addition, 0 deletions, 0 modifications)
+2026-01-03T19:30:27.115+01:00  INFO 1966 --- [Thread-7] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-01-03T19:30:29.138+01:00  INFO 1966 --- [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-01-03T19:30:29.138+01:00 ERROR 1966 --- [http-nio-8080-Acceptor] org.apache.tomcat.util.net.Acceptor      : Socket accept failed
+
+java.nio.channels.AsynchronousCloseException: null
+	at java.base/java.nio.channels.spi.AbstractInterruptibleChannel.end(AbstractInterruptibleChannel.java:218) ~[na:na]
+	at java.base/sun.nio.ch.ServerSocketChannelImpl.end(ServerSocketChannelImpl.java:374) ~[na:na]
+	at java.base/sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:399) ~[na:na]
+	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:535) ~[tomcat-embed-core-10.1.48.jar:10.1.48]
+	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:70) ~[tomcat-embed-core-10.1.48.jar:10.1.48]
+	at org.apache.tomcat.util.net.Acceptor.run(Acceptor.java:127) ~[tomcat-embed-core-10.1.48.jar:10.1.48]
+	at java.base/java.lang.Thread.run(Thread.java:1474) ~[na:na]
+
+2026-01-03T19:30:29.191+01:00  INFO 1966 --- [Thread-7] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-03T19:30:29.205+01:00  INFO 1966 --- [Thread-7] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-01-03T19:30:29.213+01:00  INFO 1966 --- [Thread-7] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2026-01-03T19:30:29.479+01:00  INFO 1966 --- [restartedMain] o.nikolic.programm.ProgrammApplication   : Starting ProgrammApplication using Java 25 with PID 1966 (/Users/aleksandarnikolic/Documents/schule/3AHBGM/MGIN_P/radbrain_v.01/target/classes started by aleksandarnikolic in /Users/aleksandarnikolic/Documents/schule/3AHBGM/MGIN_P/radbrain_v.01)
+2026-01-03T19:30:29.480+01:00 DEBUG 1966 --- [restartedMain] o.nikolic.programm.ProgrammApplication   : Running with Spring Boot v3.5.7, Spring v6.2.12
+2026-01-03T19:30:29.480+01:00  INFO 1966 --- [restartedMain] o.nikolic.programm.ProgrammApplication   : The following 1 profile is active: "dev"
+2026-01-03T19:30:30.320+01:00  INFO 1966 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-03T19:30:30.370+01:00  INFO 1966 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 44 ms. Found 11 JPA repository interfaces.
+2026-01-03T19:30:30.963+01:00  INFO 1966 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-03T19:30:30.979+01:00  INFO 1966 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-03T19:30:30.979+01:00  INFO 1966 --- [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.48]
+2026-01-03T19:30:31.015+01:00  INFO 1966 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-03T19:30:31.018+01:00  INFO 1966 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1532 ms
+2026-01-03T19:30:31.182+01:00  INFO 1966 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-03T19:30:31.195+01:00  INFO 1966 --- [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-03T19:30:31.229+01:00  INFO 1966 --- [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-03T19:30:31.230+01:00  INFO 1966 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-01-03T19:30:31.254+01:00  INFO 1966 --- [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4f2c6220
+2026-01-03T19:30:31.255+01:00  INFO 1966 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-01-03T19:30:31.262+01:00  WARN 1966 --- [restartedMain] org.hibernate.orm.deprecation            : HHH90000025: MySQL8Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-01-03T19:30:31.262+01:00  WARN 1966 --- [restartedMain] org.hibernate.orm.deprecation            : HHH90000026: MySQL8Dialect has been deprecated; use org.hibernate.dialect.MySQLDialect instead
+2026-01-03T19:30:31.262+01:00  INFO 1966 --- [restartedMain] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-3)']
+	Database driver: undefined/unknown
+	Database version: 8.0
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-01-03T19:30:31.694+01:00  INFO 1966 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-01-03T19:30:31.779+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    alter table users 
+       modify column role enum ('ADMIN','USER') not null
+2026-01-03T19:30:31.823+01:00  INFO 1966 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-03T19:30:31.993+01:00 DEBUG 1966 --- [restartedMain] o.nikolic.programm.security.JwtFilter    : Filter 'jwtFilter' configured for use
+2026-01-03T19:30:32.212+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : 🔐 SecurityConfig initialized
+2026-01-03T19:30:32.213+01:00 DEBUG 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : 🔒 Creating BCrypt Password Encoder
+2026-01-03T19:30:32.259+01:00 DEBUG 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : 🔑 Creating Authentication Manager
+2026-01-03T19:30:32.281+01:00  INFO 1966 --- [restartedMain] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userService
+2026-01-03T19:30:32.400+01:00  INFO 1966 --- [restartedMain] org.nikolic.programm.config.MailConfig   : JavaMailSenderImpl konfiguriert mit host=smtp.gmail.com
+2026-01-03T19:30:32.554+01:00  WARN 1966 --- [restartedMain] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-01-03T19:30:32.576+01:00  INFO 1966 --- [restartedMain] o.s.b.a.w.s.WelcomePageHandlerMapping    : Adding welcome page: class path resource [static/index.html]
+2026-01-03T19:30:32.663+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : 🔧 Configuring Security Filter Chain...
+2026-01-03T19:30:32.664+01:00 DEBUG 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : 🌐 Configuring CORS...
+2026-01-03T19:30:32.664+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : ✅ CORS configured with allowedOriginPatterns
+2026-01-03T19:30:32.697+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.SecurityConfig     : ✅ Security Filter Chain configured successfully
+2026-01-03T19:30:32.717+01:00 DEBUG 1966 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, CorsFilter, LogoutFilter, JwtFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, SessionManagementFilter, ExceptionTranslationFilter, AuthorizationFilter
+2026-01-03T19:30:32.902+01:00  INFO 1966 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-01-03T19:30:32.919+01:00  INFO 1966 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-01-03T19:30:32.923+01:00  INFO 1966 --- [restartedMain] o.nikolic.programm.ProgrammApplication   : Started ProgrammApplication in 3.493 seconds (process running for 1772.004)
+2026-01-03T19:30:32.944+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        u1_0.id,
+        u1_0.created_at,
+        u1_0.email,
+        u1_0.fullname,
+        u1_0.is_active,
+        u1_0.password_hash,
+        u1_0.role,
+        u1_0.updated_at 
+    from
+        users u1_0 
+    where
+        u1_0.email=?
+2026-01-03T19:30:32.955+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        ev1_0.id,
+        ev1_0.attempts,
+        ev1_0.created_at,
+        ev1_0.expires_at,
+        ev1_0.user_id,
+        ev1_0.verification_code,
+        ev1_0.verified,
+        ev1_0.verified_at 
+    from
+        email_verifications ev1_0 
+    where
+        ev1_0.user_id=?
+2026-01-03T19:30:32.960+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : 🚀 Starting data initialization...
+2026-01-03T19:30:32.968+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        u1_0.id 
+    from
+        users u1_0 
+    where
+        u1_0.email=? 
+    limit
+        ?
+2026-01-03T19:30:32.969+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : 👤 Admin user already exists: admin@radbrain.de
+2026-01-03T19:30:32.969+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : 🔧 Test user creation skipped (not in dev profile)
+2026-01-03T19:30:32.975+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        count(*) 
+    from
+        users u1_0
+2026-01-03T19:30:32.984+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        count(u1_0.id) 
+    from
+        users u1_0 
+    where
+        u1_0.is_active=1
+2026-01-03T19:30:32.993+01:00 DEBUG 1966 --- [restartedMain] org.hibernate.SQL                        : 
+    select
+        count(u1_0.id) 
+    from
+        users u1_0 
+    where
+        u1_0.role=?
+2026-01-03T19:30:32.993+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : 📊 System Status:
+2026-01-03T19:30:32.993+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    👥 Total Users: 6
+2026-01-03T19:30:32.993+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    ✅ Active Users: 6
+2026-01-03T19:30:32.993+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    👑 Admin Users: 4
+2026-01-03T19:30:32.993+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    ⚠️ Inactive Users: 0
+2026-01-03T19:30:32.993+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : 🔐 Admin Login:
+2026-01-03T19:30:32.993+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    📧 Email: admin@radbrain.de
+2026-01-03T19:30:32.993+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    🔐 Password: Admin123!
+2026-01-03T19:30:32.993+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    :    🌐 URL: http://localhost:8080/login.html
+2026-01-03T19:30:32.993+01:00  INFO 1966 --- [restartedMain] o.n.programm.security.DataInitializer    : ✅ Data initialization completed
+2026-01-03T19:30:32.994+01:00  INFO 1966 --- [restartedMain] .ConditionEvaluationDeltaLoggingListener : Condition evaluation unchanged

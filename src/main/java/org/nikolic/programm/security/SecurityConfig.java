@@ -51,9 +51,6 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // ============================================
-                        // STATIC RESOURCES - MUST BE FIRST!
-                        // ============================================
                         .requestMatchers(
                                 "/",
                                 "/index.html",
