@@ -86,4 +86,7 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     // Find user's best attempts across all quizzes
     @Query("SELECT qa FROM QuizAttempt qa WHERE qa.user.id = :userId AND qa.completedAt IS NOT NULL AND qa.scorePct = (SELECT MAX(qa2.scorePct) FROM QuizAttempt qa2 WHERE qa2.user.id = qa.user.id AND qa2.quiz.id = qa.quiz. id AND qa2.completedAt IS NOT NULL) ORDER BY qa.scorePct DESC")
     List<QuizAttempt> findUsersBestAttempts(@Param("userId") Long userId);
+
+    long countByStartedAtAfter(LocalDateTime date);
+    List<QuizAttempt> findTop20ByOrderByStartedAtDesc();
 }

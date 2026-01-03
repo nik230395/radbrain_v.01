@@ -1,13 +1,10 @@
 package org.nikolic.programm.dtos;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * QuizDto - Ohne Lombok
- *
- * Alle Getters/Setters manuell implementiert
+ * QuizDto with complete question and choice data
  */
 public class QuizDto {
     private Long id;
@@ -15,27 +12,9 @@ public class QuizDto {
     private String description;
     private String category;
     private Boolean isPublished;
-    private String createdByEmail;
     private LocalDateTime createdAt;
-    private List<QuestionDto> questions = new ArrayList<>();
+    private List<QuestionDto> questions;
     private Integer questionCount;
-
-    // Constructors
-    public QuizDto() {}
-
-    public QuizDto(Long id, String title, String description, String category,
-                   Boolean isPublished, String createdByEmail, LocalDateTime createdAt,
-                   List<QuestionDto> questions) {
-        this.id = id;
-        this.title = title;
-        this.description = description;
-        this.category = category;
-        this.isPublished = isPublished;
-        this.createdByEmail = createdByEmail;
-        this.createdAt = createdAt;
-        this.questions = questions;
-        this.questionCount = questions != null ? questions.size() : 0;
-    }
 
     // Getters and Setters
     public Long getId() {
@@ -78,14 +57,6 @@ public class QuizDto {
         this.isPublished = isPublished;
     }
 
-    public String getCreatedByEmail() {
-        return createdByEmail;
-    }
-
-    public void setCreatedByEmail(String createdByEmail) {
-        this.createdByEmail = createdByEmail;
-    }
-
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -100,7 +71,6 @@ public class QuizDto {
 
     public void setQuestions(List<QuestionDto> questions) {
         this.questions = questions;
-        this.questionCount = questions != null ? questions.size() : 0;
     }
 
     public Integer getQuestionCount() {
@@ -109,102 +79,5 @@ public class QuizDto {
 
     public void setQuestionCount(Integer questionCount) {
         this.questionCount = questionCount;
-    }
-
-    // Inner class QuestionDto
-    public static class QuestionDto {
-        private Long id;
-        private String qtype;
-        private String text;
-        private String auxText;
-        private Integer position;
-        private List<ChoiceDto> choices = new ArrayList<>();
-
-        // Constructors
-        public QuestionDto() {}
-
-        // Getters and Setters
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-
-        public String getQtype() {
-            return qtype;
-        }
-
-        public void setQtype(String qtype) {
-            this.qtype = qtype;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public void setText(String text) {
-            this.text = text;
-        }
-
-        public String getAuxText() {
-            return auxText;
-        }
-
-        public void setAuxText(String auxText) {
-            this.auxText = auxText;
-        }
-
-        public Integer getPosition() {
-            return position;
-        }
-
-        public void setPosition(Integer position) {
-            this.position = position;
-        }
-
-        public List<ChoiceDto> getChoices() {
-            return choices;
-        }
-
-        public void setChoices(List<ChoiceDto> choices) {
-            this.choices = choices;
-        }
-    }
-
-    // Inner class ChoiceDto
-    public static class ChoiceDto {
-        private Long id;
-        private String text;
-        private Integer position;
-
-        // Constructors
-        public ChoiceDto() {}
-
-        // Getters and Setters
-        public Long getId() {
-            return id;
-        }
-
-        public void setId(Long id) {
-            this.id = id;
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public void setText(String text) {
-            this.text = text;
-        }
-
-        public Integer getPosition() {
-            return position;
-        }
-
-        public void setPosition(Integer position) {
-            this.position = position;
-        }
     }
 }

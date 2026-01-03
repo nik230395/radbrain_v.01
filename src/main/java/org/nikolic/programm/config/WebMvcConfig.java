@@ -9,7 +9,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -20,35 +19,16 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Statische Ressourcen korrekt ausliefern
         registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/")
-                .setCachePeriod(3600);
+                .addResourceLocations("classpath:/static/");
     }
 
     @Override
     public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        // ✅ KRITISCHER FIX: API-Endpoints brauchen JSON als Default!
         configurer
-                .favorPathExtension(false)
                 .favorParameter(false)
                 .ignoreAcceptHeader(false)
-                .defaultContentType(MediaType.APPLICATION_JSON)  // ✅ JSON für /api/**
-                .mediaType("html", MediaType.TEXT_HTML)
-                .mediaType("json", MediaType.APPLICATION_JSON)
-                .mediaType("js", MediaType.valueOf("application/javascript"))
-                .mediaType("css", MediaType.valueOf("text/css"));
-    }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        // CORS für API-Endpoints
-        registry.addMapping("/api/**")
-                .allowedOrigins("*")
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(false)
-                .maxAge(3600);
+                .defaultContentType(MediaType.APPLICATION_JSON);
     }
 
     @Bean
@@ -61,9 +41,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
     }
 
     @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-        converter.setObjectMapper(objectMapper());
-        converters.add(0, converter);
+    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+        for (HttpMessageConverter<?> converter : converters) {
+            if (converter instanceof MappingJackson2HttpMessageConverter) {
+                ((MappingJackson2HttpMessageConverter) converter).setObjectMapper(objectMapper());
+            }
+        }
     }
 }

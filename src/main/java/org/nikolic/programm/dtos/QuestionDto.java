@@ -2,25 +2,16 @@ package org.nikolic.programm.dtos;
 
 import java.util.List;
 
+/**
+ * QuestionDto with choices including isCorrect
+ */
 public class QuestionDto {
     private Long id;
-    private String qtype;
     private String text;
+    private String qtype;
     private String auxText;
     private Integer position;
     private List<ChoiceDto> choices;
-
-    // Constructors
-    public QuestionDto() {}
-
-    public QuestionDto(Long id, String qtype, String text, String auxText, Integer position, List<ChoiceDto> choices) {
-        this.id = id;
-        this.qtype = qtype;
-        this.text = text;
-        this.auxText = auxText;
-        this.position = position;
-        this.choices = choices;
-    }
 
     // Getters and Setters
     public Long getId() {
@@ -31,20 +22,20 @@ public class QuestionDto {
         this.id = id;
     }
 
-    public String getQtype() {
-        return qtype;
-    }
-
-    public void setQtype(String qtype) {
-        this.qtype = qtype;
-    }
-
     public String getText() {
         return text;
     }
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public String getQtype() {
+        return qtype;
+    }
+
+    public void setQtype(String qtype) {
+        this.qtype = qtype;
     }
 
     public String getAuxText() {

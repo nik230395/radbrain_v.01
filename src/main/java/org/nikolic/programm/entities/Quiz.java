@@ -1,14 +1,15 @@
 package org.nikolic.programm.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Quiz Entity - Ohne Lombok
+ * ✅ FIXED Quiz Entity
  *
- * Alle Getters/Setters manuell implementiert
+ * Added @JsonIgnoreProperties to prevent circular reference issues
  */
 @Entity
 @Table(name = "quizzes")
@@ -29,6 +30,7 @@ public class Quiz {
 
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
+    @JsonIgnoreProperties({"passwordHash", "emailVerification", "createdQuizzes", "attempts"})
     private User createdBy;
 
     @Column(name = "created_at")
@@ -38,6 +40,7 @@ public class Quiz {
     private Boolean isPublished;
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("quiz")
     private List<Question> questions = new ArrayList<>();
 
     // Constructors

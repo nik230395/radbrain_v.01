@@ -10,12 +10,12 @@ import org.springframework.context.annotation.Configuration;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
-@EnableCaching
+// @EnableCaching
 public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("registrations");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager("registrations", "publishedQuizzes");
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(15, TimeUnit.MINUTES) // TTL = 15 minutes
                 .maximumSize(10_000));

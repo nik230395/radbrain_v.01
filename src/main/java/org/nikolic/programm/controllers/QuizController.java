@@ -52,6 +52,51 @@ public class QuizController {
         QuizDto dto = QuizMapper.toDto(q.get());
         return ResponseEntity.ok(dto);
     }
+    @PostMapping
+    public ResponseEntity<?> createQuiz(@RequestBody Map<String, Object> request, Authentication auth) {
+        try {
+            // Check if user is admin
+            User user = null;
+            if (auth != null) {
+                String email = auth.getName();
+                user = userRepository.findByEmail(email).orElse(null);
+
+                // Verify admin role
+                if (user == null || !user.getRoleString().contains("ADMIN")) {
+                    return ResponseEntity.status(403)
+                            .body(Map.of("error", "Admin-Berechtigung erforderlich"));
+                }
+            } else {
+                return ResponseEntity.status(401)
+                        .body(Map.of("error", "Authentifizierung erforderlich"));
+            }
+
+            // Extract data
+            String title = (String) request.get("title");
+            String description = (String) request.get("description");
+            String category = (String) request.get("category");
+
+            if (title == null || title.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Titel ist erforderlich"));
+            }
+
+            // Create quiz using QuizService
+            org.nikolic.programm.dtos.CreateQuizRequest req = new org.nikolic.programm.dtos.CreateQuizRequest();
+            req.setTitle(title);
+            req.setDescription(description);
+            req.setCategory(category);
+
+            Quiz createdQuiz = quizService.createFromRequest(req, user);
+            QuizDto dto = QuizMapper.toDto(createdQuiz);
+
+            return ResponseEntity.status(201).body(dto);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                    .body(Map.of("error", "Fehler beim Erstellen: " + e.getMessage()));
+        }
+    }
 
     @PostMapping("/{id}/submit")
     public ResponseEntity<?> submit(@PathVariable Long id, @RequestBody Map<String, Object> body, Authentication auth) {

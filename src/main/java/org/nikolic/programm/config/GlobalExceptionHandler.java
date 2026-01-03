@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
  * Zentrales Exception Handling für alle Controller
  * Verhindert Stack Traces in API-Responses
  */
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "org.nikolic.programm.controllers")
 public class GlobalExceptionHandler {
 
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);

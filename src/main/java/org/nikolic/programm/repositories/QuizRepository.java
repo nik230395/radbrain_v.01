@@ -34,4 +34,9 @@ public interface QuizRepository extends JpaRepository<Quiz, Long> {
 
     // Suche nach Titel (case-insensitive)
     List<Quiz> findByTitleContainingIgnoreCase(String title);
+
+    long countByIsPublished(Boolean isPublished);
+    long countByCategory(String category);
+    long countByCategoryIsNull();
+    List<Quiz> findTop10ByOrderByCreatedAtDesc();
 }

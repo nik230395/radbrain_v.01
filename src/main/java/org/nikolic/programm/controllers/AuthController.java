@@ -1,21 +1,32 @@
 package org.nikolic.programm.controllers;
 
+import org.nikolic.programm.dtos.LoginRequest;
 import org.nikolic.programm.entities.User;
+import org.nikolic.programm.services.JwtService;
 import org.nikolic.programm.services.UserService;
-import org.nikolic.programm.security.JwtUtil;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 /**
- * AuthController - Mit expliziten Content-Type Headers
+ * ✅ EMERGENCY FIX AuthController - Validation Removed Temporarily
+ *
+ * Changes:
+ * - REMOVED @Valid annotations (causing Bad Request)
+ * - REMOVED @Validated class annotation
+ * - Manual validation instead
+ * - Once spring-boot-starter-validation is added, restore @Valid
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -24,256 +35,271 @@ public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
+    private final AuthenticationManager authenticationManager;
     private final UserService userService;
-    private final JwtUtil jwtUtil;
+    private final JwtService jwtService;
 
-    public AuthController(UserService userService, JwtUtil jwtUtil) {
+    public AuthController(AuthenticationManager authenticationManager,
+                          UserService userService,
+                          JwtService jwtService) {
+        this.authenticationManager = authenticationManager;
         this.userService = userService;
-        this.jwtUtil = jwtUtil;
+        this.jwtService = jwtService;
     }
 
     /**
-     * Login - Mit explizitem JSON Content-Type
+     * User login endpoint
+     * ⚠️ TEMPORARY: No @Valid until validation dependency is added
      */
-    @PostMapping(value = "/login",
-            produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> body) {
-        logger.info("🔐 Login request received");
-
-        String email = body.get("email");
-        String password = body.get("password");
-
-        // Validation
-        if (email == null || email.trim().isEmpty()) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "E-Mail ist erforderlich");
-            error.put("timestamp", System.currentTimeMillis());
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(error);
-        }
-
-        if (password == null || password.trim().isEmpty()) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "Passwort ist erforderlich");
-            error.put("timestamp", System.currentTimeMillis());
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(error);
-        }
-
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            logger.info("📧 Attempting login for: {}", email);
+            logger.info("Login attempt for email: {}", loginRequest.getEmail());
 
-            // Verwende detaillierte Authentifizierung
-            UserService.AuthenticationResult result = userService.authenticateUserDetailed(email, password);
-
-            if (!result.isSuccess()) {
-                logger.warn("❌ Login failed for {}: {}", email, result.getMessage());
-
-                Map<String, Object> error = new HashMap<>();
-                error.put("error", result.getMessage());
-                error.put("timestamp", System.currentTimeMillis());
-
-                if (result.needsVerification()) {
-                    error.put("requiresVerification", true);
-                    error.put("email", email);
-                    return ResponseEntity
-                            .status(HttpStatus.FORBIDDEN)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .body(error);
-                }
-
-                return ResponseEntity
-                        .status(HttpStatus.UNAUTHORIZED)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(error);
+            // ✅ Manual validation (temporary)
+            if (loginRequest.getEmail() == null || loginRequest.getEmail().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse("E-Mail ist erforderlich"));
             }
 
-            User user = result.getUser();
+            if (loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(createErrorResponse("Passwort ist erforderlich"));
+            }
+
+            String email = loginRequest.getEmail().toLowerCase().trim();
+            String password = loginRequest.getPassword();
+
+            // Check if user exists
+            Optional<User> userOpt = userService.findByEmail(email);
+            if (userOpt.isEmpty()) {
+                logger.warn("Login failed: User not found for email: {}", email);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(createErrorResponse("Ungültige Anmeldedaten"));
+            }
+
+            User user = userOpt.get();
+
+            // Check if user is active
+            if (!user.isActive()) {
+                logger.warn("Login failed: User account is inactive: {}", email);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(createErrorResponse("Ihr Konto ist deaktiviert. Bitte kontaktieren Sie den Support."));
+            }
+
+            // Check if email is verified
+            if (!user.isEmailVerified()) {
+                logger.warn("Login failed: Email not verified for: {}", email);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of(
+                                "error", "E-Mail-Adresse noch nicht bestätigt",
+                                "requiresVerification", true,
+                                "email", email
+                        ));
+            }
+
+            // Authenticate user
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password)
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
             // Generate JWT token
-            String token = jwtUtil.createToken(user.getEmail(), user.getId());
+            String token = jwtService.generateToken(user);
 
-            // ✅ SUCCESS RESPONSE
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "login_success");
-            response.put("token", token);
-            response.put("id", user.getId());
-            response.put("email", user.getEmail());
-            response.put("fullname", user.getFullname());
-            response.put("roles", user.getRoleString());
-            response.put("timestamp", System.currentTimeMillis());
+            logger.info("Login successful for user: {}", email);
 
-            logger.info("✅ Login successful for: {}", email);
+            // Return success response
+            return ResponseEntity.ok(Map.of(
+                    "token", token,
+                    "email", user.getEmail(),
+                    "fullname", user.getFullname(),
+                    "id", user.getId(),
+                    "roles", user.getRoleString()
+            ));
 
-            return ResponseEntity
-                    .ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(response);
+        } catch (BadCredentialsException e) {
+            logger.warn("Login failed: Invalid credentials for email: {}", loginRequest.getEmail());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(createErrorResponse("Ungültige Anmeldedaten"));
 
-        } catch (Exception ex) {
-            logger.error("💥 Login error for {}: {}", email, ex.getMessage(), ex);
-
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "Anmeldung fehlgeschlagen");
-            error.put("timestamp", System.currentTimeMillis());
-
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(error);
+        } catch (Exception e) {
+            logger.error("Login error for email: {}", loginRequest.getEmail(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Anmeldung fehlgeschlagen: " + e.getMessage()));
         }
     }
 
     /**
-     * Token-Validierung
+     * Validate JWT token
      */
-    @PostMapping(value = "/validate",
-            produces = MediaType.APPLICATION_JSON_VALUE,
-            consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> validateToken(@RequestBody Map<String, String> body) {
-        String token = body.get("token");
-
-        if (token == null || token.trim().isEmpty()) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "Token ist erforderlich");
-            error.put("timestamp", System.currentTimeMillis());
-            return ResponseEntity
-                    .badRequest()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(error);
-        }
-
+    @PostMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestHeader("Authorization") String authHeader) {
         try {
-            if (jwtUtil.isValidToken(token)) {
-                String email = jwtUtil.getEmailFromToken(token);
-                Optional<User> userOpt = userService.findByEmail(email);
-
-                if (userOpt.isPresent()) {
-                    User user = userOpt.get();
-
-                    if (user.isActive() && user.isEmailVerified()) {
-                        Map<String, Object> response = new HashMap<>();
-                        response.put("valid", true);
-                        response.put("email", user.getEmail());
-                        response.put("fullname", user.getFullname());
-                        response.put("roles", user.getRoleString());
-                        response.put("timestamp", System.currentTimeMillis());
-
-                        return ResponseEntity
-                                .ok()
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .body(response);
-                    }
-                }
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(createErrorResponse("Ungültiges Token-Format"));
             }
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("valid", false);
-            response.put("timestamp", System.currentTimeMillis());
+            String token = authHeader.substring(7);
+            String email = jwtService.extractUsername(token);
 
-            return ResponseEntity
-                    .ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(response);
-
-        } catch (Exception ex) {
-            logger.error("Token validation error", ex);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("valid", false);
-            response.put("timestamp", System.currentTimeMillis());
-
-            return ResponseEntity
-                    .ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(response);
-        }
-    }
-
-    /**
-     * Logout
-     */
-    @PostMapping(value = "/logout",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> logout() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "logout_success");
-        response.put("timestamp", System.currentTimeMillis());
-
-        return ResponseEntity
-                .ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(response);
-    }
-
-    /**
-     * User-Info basierend auf Token
-     */
-    @GetMapping(value = "/me",
-            produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "Authorization header required");
-            error.put("timestamp", System.currentTimeMillis());
-
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(error);
-        }
-
-        String token = authHeader.substring(7);
-
-        try {
-            if (jwtUtil.isValidToken(token)) {
-                String email = jwtUtil.getEmailFromToken(token);
-                Optional<User> userOpt = userService.findByEmail(email);
-
-                if (userOpt.isPresent()) {
-                    User user = userOpt.get();
-
-                    Map<String, Object> response = new HashMap<>();
-                    response.put("id", user.getId());
-                    response.put("email", user.getEmail());
-                    response.put("fullname", user.getFullname());
-                    response.put("roles", user.getRoleString());
-                    response.put("isActive", user.isActive());
-                    response.put("isEmailVerified", user.isEmailVerified());
-                    response.put("timestamp", System.currentTimeMillis());
-
-                    return ResponseEntity
-                            .ok()
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .body(response);
-                }
+            if (email == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(createErrorResponse("Token ungültig"));
             }
 
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "Invalid token");
-            error.put("timestamp", System.currentTimeMillis());
+            Optional<User> userOpt = userService.findByEmail(email);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(createErrorResponse("Benutzer nicht gefunden"));
+            }
 
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(error);
+            User user = userOpt.get();
 
-        } catch (Exception ex) {
-            logger.error("Get current user error", ex);
+            // ✅ FIXED: isTokenValid expects User object, not String
+            if (!jwtService.isTokenValid(token, user)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(createErrorResponse("Token ungültig oder abgelaufen"));
+            }
 
-            Map<String, Object> error = new HashMap<>();
-            error.put("error", "Invalid token");
-            error.put("timestamp", System.currentTimeMillis());
+            if (!user.isActive()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(createErrorResponse("Konto ist deaktiviert"));
+            }
 
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(error);
+            return ResponseEntity.ok(Map.of(
+                    "valid", true,
+                    "email", user.getEmail(),
+                    "fullname", user.getFullname(),
+                    "role", user.getRoleString()
+            ));
+
+        } catch (Exception e) {
+            logger.error("Token validation error", e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(createErrorResponse("Token-Validierung fehlgeschlagen"));
         }
+    }
+
+    /**
+     * Logout endpoint
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(Authentication authentication) {
+        try {
+            if (authentication != null && authentication.getName() != null) {
+                logger.info("User logged out: {}", authentication.getName());
+            }
+
+            SecurityContextHolder.clearContext();
+
+            return ResponseEntity.ok(Map.of("message", "Erfolgreich abgemeldet"));
+
+        } catch (Exception e) {
+            logger.error("Logout error", e);
+            return ResponseEntity.ok(Map.of("message", "Abmeldung abgeschlossen"));
+        }
+    }
+
+    /**
+     * Get current user info
+     */
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        try {
+            if (authentication == null || authentication.getName() == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(createErrorResponse("Nicht angemeldet"));
+            }
+
+            String email = authentication.getName();
+            Optional<User> userOpt = userService.findByEmail(email);
+
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(createErrorResponse("Benutzer nicht gefunden"));
+            }
+
+            User user = userOpt.get();
+
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("id", user.getId());
+            userInfo.put("email", user.getEmail());
+            userInfo.put("fullname", user.getFullname());
+            userInfo.put("role", user.getRoleString());
+            userInfo.put("isActive", user.isActive());
+            userInfo.put("createdAt", user.getCreatedAt());
+
+            return ResponseEntity.ok(userInfo);
+
+        } catch (Exception e) {
+            logger.error("Error getting current user", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Fehler beim Abrufen der Benutzerdaten"));
+        }
+    }
+
+    /**
+     * Refresh token endpoint
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(@RequestHeader("Authorization") String authHeader) {
+        try {
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(createErrorResponse("Ungültiges Token-Format"));
+            }
+
+            String oldToken = authHeader.substring(7);
+            String email = jwtService.extractUsername(oldToken);
+
+            if (email == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(createErrorResponse("Token ungültig"));
+            }
+
+            Optional<User> userOpt = userService.findByEmail(email);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(createErrorResponse("Benutzer nicht gefunden"));
+            }
+
+            User user = userOpt.get();
+
+            if (!user.isActive()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(createErrorResponse("Konto ist deaktiviert"));
+            }
+
+            // Generate new token
+            String newToken = jwtService.generateToken(user);
+
+            logger.info("Token refreshed for user: {}", email);
+
+            return ResponseEntity.ok(Map.of(
+                    "token", newToken,
+                    "email", user.getEmail(),
+                    "fullname", user.getFullname(),
+                    "role", user.getRoleString()
+            ));
+
+        } catch (Exception e) {
+            logger.error("Token refresh error", e);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(createErrorResponse("Token-Aktualisierung fehlgeschlagen"));
+        }
+    }
+
+    // Helper Methods
+
+    /**
+     * Create standardized error response
+     */
+    private Map<String, String> createErrorResponse(String message) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", message);
+        return error;
     }
 }

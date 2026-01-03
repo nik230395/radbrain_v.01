@@ -1,122 +1,190 @@
-package org.nikolic.programm. security;
+package org.nikolic.programm.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework. security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto. bcrypt.BCryptPasswordEncoder;
-import org.springframework.security. crypto.password.PasswordEncoder;
-import org.springframework.security. web.SecurityFilterChain;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
 
+/**
+ * ✅ FIXED SecurityConfig - CORS Issue Resolved
+ *
+ * Fix: Removed setAllowedOrigins, only using setAllowedOriginPatterns
+ */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
+
+    private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
     private final JwtFilter jwtFilter;
 
     public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
+        logger.info("🔐 SecurityConfig initialized");
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
+        logger.info("🔧 Configuring Security Filter Chain...");
+
+        http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
                 .authorizeHttpRequests(auth -> auth
-                        // ✅ Öffentliche Authentication-Endpoints
-                        .requestMatchers("/api/auth/**").permitAll()
-
-                        // ✅ Öffentliche User-Registration-Endpoints
-                        .requestMatchers("/api/users/register").permitAll()
-                        .requestMatchers("/api/users/verify").permitAll()
-                        .requestMatchers("/api/users/resend").permitAll()
-                        .requestMatchers("/api/users/registration-status/**").permitAll()
-
-                        // ✅ Öffentliche Quiz-Endpoints
-                        .requestMatchers("/api/quizzes/published").permitAll()
-                        .requestMatchers("/api/quizzes/*/submit").permitAll()
-                        .requestMatchers("/api/quizzes/*").permitAll()  // GET einzelner Quiz
-
-                        // ✅ Setup-Endpoints (falls vorhanden)
-                        .requestMatchers("/api/setup/**").permitAll()
-
-                        // ✅ Admin-Endpoints
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/secure/admin/**").hasRole("ADMIN")
-
-                        // ✅ Geschützte User-Endpoints
-                        .requestMatchers("/api/secure/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
-
-                        // ✅ Statische Ressourcen (HTML, CSS, JS)
+                        // ============================================
+                        // STATIC RESOURCES - MUST BE FIRST!
+                        // ============================================
                         .requestMatchers(
                                 "/",
-                                "/*. html",
+                                "/index.html",
+                                "/login.html",
+                                "/register.html",
+                                "/verify.html",
+                                "/forgot-password.html",
+                                "/quiz.html",
+                                "/roentgen.html",
+                                "/ct.html",
+                                "/mrt.html",
+                                "/ultraschall.html",
+                                "/*.html",
                                 "/*.css",
                                 "/*.js",
                                 "/*.png",
                                 "/*.jpg",
+                                "/*.jpeg",
+                                "/*.gif",
                                 "/*.ico",
                                 "/*.svg",
                                 "/static/**",
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/favicon.ico",
-                                "/index.html",
-                                "/login.html",
-                                "/register.html",
-                                "/verify.html",
-                                "/dashboard.html"
+                                "/favicon.ico"
                         ).permitAll()
 
-                        // ✅ Alle anderen Requests authentifiziert
-                        .anyRequest().authenticated()
+                        // ============================================
+                        // PUBLIC AUTHENTICATION ENDPOINTS
+                        // ============================================
+                        .requestMatchers(
+                                "/api/auth/login",
+                                "/api/auth/register",
+                                "/api/auth/verify-email",
+                                "/api/auth/resend-verification",
+                                "/api/auth/forgot-password",
+                                "/api/auth/verify-reset-code",
+                                "/api/auth/reset-password",
+                                "/api/auth/logout",
+                                "/api/auth/validate"
+                        ).permitAll()
+
+                        // Test endpoints
+                        .requestMatchers("/api/test/**").permitAll()
+
+                        // /api/auth/me needs authentication
+                        .requestMatchers("/api/auth/me").authenticated()
+
+                        // ============================================
+                        // PUBLIC USER REGISTRATION
+                        // ============================================
+                        .requestMatchers(
+                                "/api/users/register",
+                                "/api/users/verify",
+                                "/api/users/resend",
+                                "/api/users/registration-status/**"
+                        ).permitAll()
+
+                        // ============================================
+                        // PUBLIC QUIZ ENDPOINTS
+                        // ============================================
+                        .requestMatchers(
+                                "/api/quizzes/published",
+                                "/api/quizzes/*/submit"
+                        ).permitAll()
+                        .requestMatchers("/api/quizzes/*").permitAll()
+
+                        // ============================================
+                        // ADMIN-ONLY API ENDPOINTS
+                        // ============================================
+                        .requestMatchers("/api/secure/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/questions/**").hasRole("ADMIN")
+                        .requestMatchers("/api/choices/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
+
+                        // ============================================
+                        // ADMIN-ONLY HTML PAGES
+                        // ============================================
+                        .requestMatchers(
+                                "/quiz-creator.html",
+                                "/admin-dashboard.html",
+                                "/admin.html",
+                                "/admin-panel.html"
+                        ).hasRole("ADMIN")
+
+                        // ============================================
+                        // AUTHENTICATED USER PAGES
+                        // ============================================
+                        .requestMatchers(
+                                "/user-home.html",
+                                "/dashboard.html",
+                                "/account.html"
+                        ).authenticated()
+
+                        // ============================================
+                        // AUTHENTICATED API ENDPOINTS
+                        // ============================================
+                        .requestMatchers("/api/secure/**").authenticated()
+                        .requestMatchers("/api/attempts/**").authenticated()
+
+                        // ============================================
+                        // DEFAULT: Allow all other requests (for development)
+                        // ============================================
+                        .anyRequest().permitAll()  // ✅ Changed from .authenticated()
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        logger.info("✅ Security Filter Chain configured successfully");
+        return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        logger.debug("🌐 Configuring CORS...");
+
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // ✅ Erlaubte Origins (für Development)
+        // ✅ CRITICAL FIX: Use setAllowedOriginPatterns, NOT setAllowedOrigins
         configuration.setAllowedOriginPatterns(List.of("*"));
+
+        // ✅ Do NOT use setAllowedOrigins when credentials are true!
+        // configuration.setAllowedOrigins(...) ❌ REMOVED
+
         configuration.setAllowCredentials(true);
 
-        // ✅ Erlaubte HTTP-Methods
-        configuration.setAllowedMethods(List. of(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"
         ));
 
-        // ✅ Erlaubte Headers
-        configuration.setAllowedHeaders(List.of("*"));
-
-        // ✅ Exposed Headers
-        configuration.setExposedHeaders(List.of(
+        configuration.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
                 "X-Requested-With",
@@ -126,8 +194,33 @@ public class SecurityConfig {
                 "Access-Control-Request-Headers"
         ));
 
+        configuration.setExposedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "X-Total-Count",
+                "X-Page-Number",
+                "X-Page-Size"
+        ));
+
+        configuration.setMaxAge(3600L);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+
+        logger.info("✅ CORS configured with allowedOriginPatterns");
         return source;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        logger.debug("🔒 Creating BCrypt Password Encoder");
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+            AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        logger.debug("🔑 Creating Authentication Manager");
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }

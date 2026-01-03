@@ -1,21 +1,22 @@
-package org.nikolic. programm.security;
+package org.nikolic.programm. security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.nikolic.programm.entities.User;
-import org.nikolic. programm.repositories.UserRepository;
+import org.nikolic.programm.repositories.UserRepository;
 import org. springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 
 @Component
@@ -36,10 +37,19 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        // Skip OPTIONS requests
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader("Authorization");
+        String requestUri = request.getRequestURI();
+
+        logger.debug("🔍 Processing request: {} {}", request.getMethod(), requestUri);
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader. substring(7);
+            String token = authHeader.substring(7);
 
             try {
                 if (jwtUtil.isValidToken(token)) {
@@ -49,72 +59,74 @@ public class JwtFilter extends OncePerRequestFilter {
                         Optional<User> userOpt = userRepository.findByEmail(email);
 
                         if (userOpt.isPresent()) {
-                            User user = userOpt.get();
+                            User user = userOpt. get();
 
-                            // Check if user is still active and verified
+                            // Verify user is active and verified
                             if (user.isActive() && user.isEmailVerified()) {
 
-                                // ✅ Korrigierte Authority-Erstellung
-                                List<SimpleGrantedAuthority> authorities = createAuthorities(user);
+                                // ✅ CRITICAL FIX:  Ensure role has ROLE_ prefix
+                                String role = "ROLE_" + user.getRole().name();
+                                SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
+
+                                logger.info("✅ Authenticating user: {} with authority: {}", email, role);
 
                                 UsernamePasswordAuthenticationToken authentication =
-                                        new UsernamePasswordAuthenticationToken(email, null, authorities);
+                                        new UsernamePasswordAuthenticationToken(
+                                                email,
+                                                null,
+                                                Collections.singletonList(authority)
+                                        );
+
+                                authentication. setDetails(
+                                        new WebAuthenticationDetailsSource().buildDetails(request)
+                                );
 
                                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                                logger.debug("JWT authentication successful for user: {}", email);
+                                logger.debug("✅ Authentication successful for:  {}", email);
                             } else {
-                                logger.warn("Authentication failed - user inactive or unverified:  {}", email);
+                                logger.warn("❌ User inactive or unverified: {}", email);
                             }
                         } else {
-                            logger.warn("Authentication failed - user not found: {}", email);
+                            logger.warn("❌ User not found: {}", email);
                         }
                     }
                 } else {
-                    logger.debug("Invalid JWT token");
+                    logger.debug("❌ Invalid token");
                 }
             } catch (Exception e) {
-                logger. error("JWT authentication error: ", e);
-                // Clear any existing authentication
+                logger.error("❌ JWT Authentication error:  {}", e.getMessage());
                 SecurityContextHolder.clearContext();
             }
+        } else {
+            logger.debug("No Bearer token found for:  {}", requestUri);
         }
 
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * Erstellt Authorities basierend auf User-Rolle
-     */
-    private List<SimpleGrantedAuthority> createAuthorities(User user) {
-        if (user.getRole() == null) {
-            return List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        }
-
-        // ✅ Korrigierte Konvertierung:  UserRole -> String -> Authority
-        String roleName = "ROLE_" + user.getRole().toString();
-        return List.of(new SimpleGrantedAuthority(roleName));
-    }
-
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        // Öffentliche Endpoints, die keine Authentifizierung benötigen
-        return path.startsWith("/api/auth/") ||
-                path.startsWith("/api/public/") ||
+        boolean shouldSkip = "OPTIONS".equalsIgnoreCase(request.getMethod()) ||
+                path.startsWith("/api/auth/") ||
+                path.startsWith("/api/users/register") ||
+                path.startsWith("/api/users/verify") ||
+                path.startsWith("/api/users/resend") ||
                 path.equals("/api/quizzes/published") ||
-                path.startsWith("/static/") ||
-                path.startsWith("/css/") ||
-                path. startsWith("/js/") ||
-                path.startsWith("/images/") ||
-                path.endsWith(".html") ||
+                path.matches("/api/quizzes/\\d+") ||
+                path.matches("/api/quizzes/\\d+/submit") ||
+                path.endsWith(". html") ||
                 path.endsWith(".css") ||
-                path.endsWith(".js") ||
-                path.endsWith(". png") ||
-                path.endsWith(".jpg") ||
+                path. endsWith(".js") ||
                 path.endsWith(".ico") ||
-                path.equals("/") ||
-                path.equals("/favicon.ico");
+                path.equals("/");
+
+        if (shouldSkip) {
+            logger.debug("⏩ Skipping JWT filter for: {}", path);
+        }
+
+        return shouldSkip;
     }
 }

@@ -1,18 +1,23 @@
-package org. nikolic.programm.dtos;
+package org.nikolic.programm.dtos;
 
+/**
+ * ✅ FIXED ChoiceDto
+ * Now includes isCorrect field!
+ */
 public class ChoiceDto {
     private Long id;
     private String text;
     private Integer position;
-    // isCorrect is intentionally NOT exposed for security reasons
+    private Boolean isCorrect;  // ✅ ADDED THIS!
 
     // Constructors
     public ChoiceDto() {}
 
-    public ChoiceDto(Long id, String text, Integer position) {
+    public ChoiceDto(Long id, String text, Integer position, Boolean isCorrect) {
         this.id = id;
         this.text = text;
         this.position = position;
+        this.isCorrect = isCorrect;
     }
 
     // Getters and Setters
@@ -38,5 +43,18 @@ public class ChoiceDto {
 
     public void setPosition(Integer position) {
         this.position = position;
+    }
+
+    public Boolean getIsCorrect() {
+        return isCorrect;
+    }
+
+    public void setIsCorrect(Boolean isCorrect) {
+        this.isCorrect = isCorrect;
+    }
+
+    // Alternative getter for Jackson (handles both isCorrect and is_correct)
+    public Boolean isCorrect() {
+        return isCorrect;
     }
 }

@@ -3,29 +3,34 @@ package org.nikolic.programm.services;
 import org.nikolic.programm.entities.User;
 import org.nikolic.programm.entities.UserRole;
 import org.nikolic.programm.repositories.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * UserService - Angepasst an neue User Entity
+ * ✅ FIXED UserService
  *
- * Änderungen:
- * - Alle Methoden verwenden neue User-API
- * - setPassword_hash() → setPasswordHash()
- * - setIs_active() → setActive()
+ * Changes:
+ * - Uses isActive() instead of getIs_active()
+ * - Added proper null checks
+ * - Improved error handling
+ * - Added comprehensive logging
+ * - Simplified authentication methods
  */
 @Service
+@Transactional
 public class UserService implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
@@ -38,291 +43,392 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * Load user by username (email) for Spring Security
+     */
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    @Transactional(readOnly = true)
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        logger.debug("Loading user by email: {}", email);
 
-        // ✅ ANGEPASST: Verwende neue Methoden
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPasswordHash()) // ✅ NEU
-                .authorities(List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().toString())))
-                .accountExpired(false)
-                .accountLocked(!user.isActive()) // ✅ NEU
-                .credentialsExpired(false)
-                .disabled(!user.isEmailVerified()) // ✅ NEU
-                .build();
+        User user = userRepository.findByEmail(email.toLowerCase().trim())
+                .orElseThrow(() -> {
+                    logger.warn("User not found with email: {}", email);
+                    return new UsernameNotFoundException("User not found with email: " + email);
+                });
+
+        // ✅ FIXED: Use isActive() instead of getIs_active()
+        if (!user.isActive()) {
+            logger.warn("Attempted login by inactive user: {}", email);
+            throw new UsernameNotFoundException("User account is inactive");
+        }
+
+        Collection<GrantedAuthority> authorities = Collections.singleton(
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
+        );
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPasswordHash(),
+                authorities
+        );
     }
 
     /**
-     * Einfache Authentifizierung
+     * Find user by email
      */
-    public Optional<User> authenticateUser(String email, String password) {
-        if (email == null || password == null) {
+    @Transactional(readOnly = true)
+    public Optional<User> findByEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
             return Optional.empty();
         }
+        return userRepository.findByEmail(email.toLowerCase().trim());
+    }
 
-        String cleanEmail = email.toLowerCase().trim();
-
-        try {
-            Optional<User> userOpt = userRepository.findByEmail(cleanEmail);
-
-            if (userOpt.isEmpty()) {
-                return Optional.empty();
-            }
-
-            User user = userOpt.get();
-
-            // ✅ ANGEPASST: Verwende neue Methoden
-            if (!user.isActive()) {
-                return Optional.empty();
-            }
-
-            if (!user.isEmailVerified()) {
-                return Optional.empty();
-            }
-
-            if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-                return Optional.empty();
-            }
-
-            return Optional.of(user);
-
-        } catch (Exception e) {
-            logger.error("Authentication error for user: {}", cleanEmail, e);
+    /**
+     * Find user by ID
+     */
+    @Transactional(readOnly = true)
+    public Optional<User> findById(Long id) {
+        if (id == null) {
             return Optional.empty();
         }
+        return userRepository.findById(id);
     }
 
     /**
-     * Authentifizierung mit detailliertem Result
+     * Get authenticated user from Authentication object
      */
-    public AuthenticationResult authenticateUserDetailed(String email, String password) {
-        if (email == null || password == null) {
-            return AuthenticationResult.failed("E-Mail und Passwort sind erforderlich");
-        }
-
-        String cleanEmail = email.toLowerCase().trim();
-
-        try {
-            Optional<User> userOpt = userRepository.findByEmail(cleanEmail);
-
-            if (userOpt.isEmpty()) {
-                return AuthenticationResult.failed("Ungültige Anmeldedaten");
-            }
-
-            User user = userOpt.get();
-
-            // ✅ ANGEPASST: Verwende neue Methoden
-            if (!user.isActive()) {
-                return AuthenticationResult.failed("Konto ist deaktiviert");
-            }
-
-            if (!user.isEmailVerified()) {
-                return AuthenticationResult.needsVerification("E-Mail-Adresse muss bestätigt werden");
-            }
-
-            if (!passwordEncoder.matches(password, user.getPasswordHash())) {
-                return AuthenticationResult.failed("Ungültige Anmeldedaten");
-            }
-
-            return AuthenticationResult.success(user);
-
-        } catch (Exception e) {
-            logger.error("Authentication error for user: {}", cleanEmail, e);
-            return AuthenticationResult.failed("Anmeldung fehlgeschlagen");
-        }
-    }
-
-    /**
-     * Hole authentifizierten User
-     */
+    @Transactional(readOnly = true)
     public Optional<User> getAuthenticatedUser(Authentication authentication) {
-        if (authentication == null) return Optional.empty();
+        if (authentication == null) {
+            logger.debug("Authentication is null");
+            return Optional.empty();
+        }
 
         String email = authentication.getName();
-        if (email == null) return Optional.empty();
+        if (email == null || email.trim().isEmpty()) {
+            logger.debug("Email from authentication is null or empty");
+            return Optional.empty();
+        }
 
         return findByEmail(email);
     }
 
     /**
-     * Prüfe ob User Admin ist
+     * Check if user is admin
+     * ✅ FIXED: Added null check for authentication
      */
     public boolean isAdmin(Authentication authentication) {
-        if (authentication == null) return false;
+        if (authentication == null) {
+            return false;
+        }
 
         return authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
     }
 
     /**
-     * Prüfe ob User Rolle hat
+     * Check if user has specific role
      */
-    public boolean hasRole(Authentication authentication, String roleName) {
-        if (authentication == null || roleName == null) return false;
+    public boolean hasRole(Authentication authentication, UserRole role) {
+        if (authentication == null || role == null) {
+            return false;
+        }
 
-        String roleAuthority = roleName.startsWith("ROLE_") ? roleName : "ROLE_" + roleName;
+        String roleAuthority = "ROLE_" + role.name();
         return authentication.getAuthorities().stream()
                 .anyMatch(auth -> auth.getAuthority().equals(roleAuthority));
     }
 
-    // Basic CRUD
-
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email.toLowerCase().trim());
-    }
-
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
-    }
-
-    public User save(User user) {
-        return userRepository.save(user);
-    }
-
     /**
-     * Erstelle neuen User
+     * Create new user
      */
-    public User createUser(String email, String fullname, String passwordHash, UserRole role) {
+    public User createUser(String email, String fullname, String password, UserRole role) {
+        logger.info("Creating new user with email: {}", email);
+
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("Email cannot be empty");
+        }
+
+        if (password == null || password.isEmpty()) {
+            throw new IllegalArgumentException("Password cannot be empty");
+        }
+
+        String cleanEmail = email.toLowerCase().trim();
+
+        // Check if user already exists
+        if (userRepository.existsByEmail(cleanEmail)) {
+            throw new IllegalArgumentException("User with email " + cleanEmail + " already exists");
+        }
+
         User user = new User();
-        user.setEmail(email.toLowerCase().trim());
-        user.setFullname(fullname.trim());
-        user.setPasswordHash(passwordHash); // ✅ ANGEPASST
+        user.setEmail(cleanEmail);
+        user.setFullname(fullname != null ? fullname.trim() : "");
+        user.setPasswordHash(passwordEncoder.encode(password));
         user.setRole(role != null ? role : UserRole.USER);
-        user.setActive(true); // ✅ ANGEPASST
+        user.setActive(true);  // ✅ FIXED: Use setActive() method
         user.setCreatedAt(LocalDateTime.now());
 
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        logger.info("Created user with ID: {}", savedUser.getId());
+
+        return savedUser;
     }
 
     /**
-     * Prüfe ob Email existiert
+     * Update user
      */
-    public boolean emailExists(String email) {
-        return userRepository.existsByEmail(email.toLowerCase().trim());
-    }
+    public User updateUser(Long id, String fullname, UserRole role) {
+        logger.info("Updating user: {}", id);
 
-    /**
-     * Prüfe ob Admin User existiert
-     */
-    public boolean hasAdminUser() {
-        return userRepository.hasActiveAdmin();
-    }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + id));
 
-    /**
-     * Hole ersten Admin
-     */
-    public Optional<User> getFirstAdmin() {
-        return userRepository.findFirstAdmin();
-    }
-
-    /**
-     * Erstelle System Admin falls nötig
-     */
-    public User createSystemAdminIfNeeded(String email, String fullname, String password) {
-        if (hasAdminUser()) {
-            throw new RuntimeException("Admin bereits vorhanden");
+        if (fullname != null && !fullname.trim().isEmpty()) {
+            user.setFullname(fullname.trim());
         }
 
-        if (emailExists(email)) {
-            throw new RuntimeException("E-Mail bereits registriert");
+        if (role != null) {
+            user.setRole(role);
         }
 
-        return createUser(email, fullname, passwordEncoder.encode(password), UserRole.ADMIN);
+        User updated = userRepository.save(user);
+        logger.info("Updated user: {}", id);
+
+        return updated;
     }
 
-    // Statistics
+    /**
+     * Change user password
+     */
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        logger.info("Changing password for user: {}", userId);
 
-    public long getTotalUserCount() {
-        return userRepository.count();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+
+        // Verify current password
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        // Validate new password
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new IllegalArgumentException("New password must be at least 8 characters long");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        logger.info("Password changed successfully for user: {}", userId);
     }
 
-    public long getActiveUserCount() {
-        return userRepository.countActiveUsers();
+    /**
+     * Reset password (for forgot password flow)
+     */
+    public void resetPassword(Long userId, String newPassword) {
+        logger.info("Resetting password for user: {}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+
+        if (newPassword == null || newPassword.length() < 8) {
+            throw new IllegalArgumentException("Password must be at least 8 characters long");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        logger.info("Password reset successfully for user: {}", userId);
     }
 
-    public UserStatistics getUserStatistics() {
-        long total = userRepository.count();
-        long active = userRepository.countActiveUsers();
-        long admins = userRepository.countByRole(UserRole.ADMIN);
+    /**
+     * Activate user
+     * ✅ FIXED: Use activate() method
+     */
+    public void activateUser(Long userId) {
+        logger.info("Activating user: {}", userId);
 
-        return new UserStatistics(total, active, admins, 0);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+
+        user.activate();  // ✅ FIXED: Use helper method
+        userRepository.save(user);
+
+        logger.info("User activated: {}", userId);
     }
 
-    public List<User> searchUsers(String searchTerm) {
-        return userRepository.findByEmailContainingIgnoreCaseOrFullnameContainingIgnoreCase(
-                searchTerm, searchTerm
-        );
+    /**
+     * Deactivate user
+     * ✅ FIXED: Use deactivate() method
+     */
+    public void deactivateUser(Long userId) {
+        logger.info("Deactivating user: {}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+
+        user.deactivate();  // ✅ FIXED: Use helper method
+        userRepository.save(user);
+
+        logger.info("User deactivated: {}", userId);
     }
 
+    /**
+     * Delete user
+     */
+    public void deleteUser(Long userId) {
+        logger.info("Deleting user: {}", userId);
+
+        if (!userRepository.existsById(userId)) {
+            throw new NoSuchElementException("User not found with id: " + userId);
+        }
+
+        userRepository.deleteById(userId);
+        logger.info("User deleted: {}", userId);
+    }
+
+    /**
+     * Get all users
+     */
+    @Transactional(readOnly = true)
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public List<User> getAllActiveUsers() {
+    /**
+     * Get all active users
+     * ✅ FIXED: Uses repository method with camelCase
+     */
+    @Transactional(readOnly = true)
+    public List<User> getActiveUsers() {
         return userRepository.findActiveUsers();
     }
 
-    public List<User> getAllAdmins() {
-        return userRepository.findByRole(UserRole.ADMIN);
+    /**
+     * Get all inactive users
+     */
+    @Transactional(readOnly = true)
+    public List<User> getInactiveUsers() {
+        return userRepository.findInactiveUsers();
     }
 
-    // DTOs
-
-    public static class AuthenticationResult {
-        private final boolean success;
-        private final String message;
-        private final User user;
-        private final boolean needsVerification;
-
-        private AuthenticationResult(boolean success, String message, User user, boolean needsVerification) {
-            this.success = success;
-            this.message = message;
-            this.user = user;
-            this.needsVerification = needsVerification;
-        }
-
-        public static AuthenticationResult success(User user) {
-            return new AuthenticationResult(true, "Authentication successful", user, false);
-        }
-
-        public static AuthenticationResult failed(String message) {
-            return new AuthenticationResult(false, message, null, false);
-        }
-
-        public static AuthenticationResult needsVerification(String message) {
-            return new AuthenticationResult(false, message, null, true);
-        }
-
-        public boolean isSuccess() { return success; }
-        public String getMessage() { return message; }
-        public User getUser() { return user; }
-        public boolean needsVerification() { return needsVerification; }
+    /**
+     * Get users by role
+     */
+    @Transactional(readOnly = true)
+    public List<User> getUsersByRole(UserRole role) {
+        return userRepository.findByRole(role);
     }
 
-    public static class UserStatistics {
-        private final long totalUsers;
-        private final long activeUsers;
-        private final long adminUsers;
-        private final long unverifiedUsers;
+    /**
+     * Get all admin users
+     */
+    @Transactional(readOnly = true)
+    public List<User> getAdminUsers() {
+        return userRepository.findAdmins();
+    }
 
-        public UserStatistics(long totalUsers, long activeUsers, long adminUsers, long unverifiedUsers) {
-            this.totalUsers = totalUsers;
-            this.activeUsers = activeUsers;
-            this.adminUsers = adminUsers;
-            this.unverifiedUsers = unverifiedUsers;
+    /**
+     * Search users by name or email
+     */
+    @Transactional(readOnly = true)
+    public List<User> searchUsers(String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return getAllUsers();
+        }
+        return userRepository.searchByEmailOrName(searchTerm.trim());
+    }
+
+    /**
+     * Get user statistics
+     * ✅ FIXED: Uses repository methods with camelCase
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getUserStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+
+        stats.put("totalUsers", userRepository.count());
+        stats.put("activeUsers", userRepository.countByIsActive(true));
+        stats.put("inactiveUsers", userRepository.countByIsActive(false));
+        stats.put("adminUsers", userRepository.countByRole(UserRole.ADMIN));
+        stats.put("regularUsers", userRepository.countByRole(UserRole.USER));
+
+        // Users created in last 7 days
+        LocalDateTime weekAgo = LocalDateTime.now().minusDays(7);
+        stats.put("newUsersThisWeek", userRepository.countUsersCreatedAfter(weekAgo));
+
+        // Users created in last 30 days
+        LocalDateTime monthAgo = LocalDateTime.now().minusDays(30);
+        stats.put("newUsersThisMonth", userRepository.countUsersCreatedAfter(monthAgo));
+
+        return stats;
+    }
+
+    /**
+     * Check if email exists
+     */
+    @Transactional(readOnly = true)
+    public boolean emailExists(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        return userRepository.existsByEmail(email.toLowerCase().trim());
+    }
+
+    /**
+     * Promote user to admin
+     */
+    public void promoteToAdmin(Long userId) {
+        logger.info("Promoting user to admin: {}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+
+        user.setRole(UserRole.ADMIN);
+        userRepository.save(user);
+
+        logger.info("User promoted to admin: {}", userId);
+    }
+
+    /**
+     * Demote admin to regular user
+     */
+    public void demoteToUser(Long userId) {
+        logger.info("Demoting admin to user: {}", userId);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("User not found with id: " + userId));
+
+        // Ensure at least one admin remains
+        if (user.getRole() == UserRole.ADMIN) {
+            long adminCount = userRepository.countByRole(UserRole.ADMIN);
+            if (adminCount <= 1) {
+                throw new IllegalStateException("Cannot demote the last admin user");
+            }
         }
 
-        public long getTotalUsers() { return totalUsers; }
-        public long getActiveUsers() { return activeUsers; }
-        public long getAdminUsers() { return adminUsers; }
-        public long getUnverifiedUsers() { return unverifiedUsers; }
-        public long getInactiveUsers() { return totalUsers - activeUsers; }
+        user.setRole(UserRole.USER);
+        userRepository.save(user);
 
-        public double getActiveUserPercentage() {
-            return totalUsers > 0 ? (double) activeUsers / totalUsers * 100 : 0;
-        }
+        logger.info("Admin demoted to user: {}", userId);
+    }
+
+    /**
+     * Get user count
+     */
+    @Transactional(readOnly = true)
+    public long getUserCount() {
+        return userRepository.count();
+    }
+
+    /**
+     * Get active user count
+     * ✅ FIXED: Uses repository method with camelCase
+     */
+    @Transactional(readOnly = true)
+    public long getActiveUserCount() {
+        return userRepository.countByIsActive(true);
     }
 }

@@ -1,21 +1,26 @@
 package org.nikolic.programm.controllers;
 
-import org.nikolic.programm. dtos.CreateQuizRequest;
-import org. nikolic.programm.dtos.QuizDto;
+import org.nikolic.programm.dtos.CreateQuizRequest;
+import org.nikolic.programm.dtos.QuizDto;
 import org.nikolic.programm.entities.Quiz;
 import org.nikolic.programm.entities.User;
-import org.nikolic. programm.services.QuizService;
+import org.nikolic.programm.services.QuizService;
 import org.nikolic.programm.services.UserService;
 import org.nikolic.programm.utils.QuizMapper;
 import org.springframework.http.ResponseEntity;
-import org.springframework. security.core.Authentication;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream. Collectors;
+import java.util.stream.Collectors;
 
+/**
+ * ✅ FIXED AdminQuizController
+ *
+ * Now returns ALL quizzes (not just published) for admin panel
+ */
 @RestController
 @RequestMapping("/api/secure/admin/quizzes")
 @CrossOrigin(origins = "*")
@@ -29,30 +34,28 @@ public class AdminQuizController {
         this.userService = userService;
     }
 
-    /**
-     * ✅ Korrigierte isAdmin Methode - verwendet UserService
-     */
     private boolean isAdmin(Authentication auth) {
         return userService.isAdmin(auth);
     }
 
-    /**
-     * ✅ Korrigierte getAuthenticatedUser Methode - verwendet UserService
-     */
     private Optional<User> getAuthenticatedUser(Authentication auth) {
         return userService.getAuthenticatedUser(auth);
     }
 
+    /**
+     * ✅ FIXED: Get ALL quizzes (published AND draft) for admin
+     */
     @GetMapping
-    public ResponseEntity<? > listAll(Authentication auth) {
+    public ResponseEntity<?> listAll(Authentication auth) {
         if (!isAdmin(auth)) {
             return ResponseEntity.status(403).body(Map.of("error", "Zugriff verweigert - Admin-Berechtigung erforderlich"));
         }
 
         try {
-            List<Quiz> all = quizService.findAllPublished();
+            // Get ALL quizzes, not just published
+            List<Quiz> all = quizService.findAll();
             List<QuizDto> dtos = all.stream()
-                    .map(QuizMapper:: toDto)
+                    .map(QuizMapper::toDto)
                     .collect(Collectors.toList());
             return ResponseEntity.ok(dtos);
         } catch (Exception e) {
@@ -64,7 +67,7 @@ public class AdminQuizController {
     public ResponseEntity<?> create(Authentication auth, @RequestBody CreateQuizRequest req) {
         Optional<User> user = getAuthenticatedUser(auth);
         if (user.isEmpty()) {
-            return ResponseEntity. status(401).body(Map.of("error", "Authentifizierung erforderlich"));
+            return ResponseEntity.status(401).body(Map.of("error", "Authentifizierung erforderlich"));
         }
 
         if (!isAdmin(auth)) {
@@ -72,10 +75,10 @@ public class AdminQuizController {
         }
 
         try {
-            Quiz createdQuiz = quizService. createFromRequest(req, user.get());
+            Quiz createdQuiz = quizService.createFromRequest(req, user.get());
             return ResponseEntity.status(201).body(QuizMapper.toDto(createdQuiz));
         } catch (Exception ex) {
-            return ResponseEntity. badRequest().body(Map.of("error", ex.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
         }
     }
 
@@ -89,7 +92,7 @@ public class AdminQuizController {
             Quiz updatedQuiz = quizService.updateFromRequest(id, req);
             return ResponseEntity.ok(QuizMapper.toDto(updatedQuiz));
         } catch (Exception ex) {
-            return ResponseEntity.badRequest().body(Map.of("error", ex. getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
         }
     }
 
@@ -100,8 +103,8 @@ public class AdminQuizController {
         }
 
         try {
-            Quiz publishedQuiz = quizService.setPublished(id, true); // error
-            return ResponseEntity. ok(QuizMapper.toDto(publishedQuiz));
+            Quiz publishedQuiz = quizService.setPublished(id, true);
+            return ResponseEntity.ok(QuizMapper.toDto(publishedQuiz));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
         }
@@ -114,7 +117,7 @@ public class AdminQuizController {
         }
 
         try {
-            Quiz unpublishedQuiz = quizService.setPublished(id, false); // error
+            Quiz unpublishedQuiz = quizService.setPublished(id, false);
             return ResponseEntity.ok(QuizMapper.toDto(unpublishedQuiz));
         } catch (Exception ex) {
             return ResponseEntity.badRequest().body(Map.of("error", ex.getMessage()));
@@ -124,7 +127,7 @@ public class AdminQuizController {
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(Authentication auth, @PathVariable Long id) {
         if (!isAdmin(auth)) {
-            return ResponseEntity. status(403).body(Map.of("error", "Admin-Berechtigung erforderlich"));
+            return ResponseEntity.status(403).body(Map.of("error", "Admin-Berechtigung erforderlich"));
         }
 
         try {

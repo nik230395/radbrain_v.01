@@ -940,3 +940,96 @@ p {
         transform: translateY(0);
     }
 }
+
+
+.form-helper {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin-top: var(--space-xs);
+}
+
+.form-error {
+    font-size: 0.875rem;
+    color: var(--error);
+    margin-top: var(--space-xs);
+}
+
+/* ===================================
+   FOOTER
+   =================================== */
+.footer {
+    background:  var(--gray-900);
+    color: var(--gray-400);
+    padding: var(--space-3xl) 0 var(--space-xl);
+    margin-top: var(--space-3xl);
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+}
+
+.footer-col h4 {
+    color: var(--white);
+    margin-bottom: var(--space-md);
+    font-size: 1.125rem;
+}
+
+.footer-col ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-col ul li {
+    margin-bottom:  var(--space-sm);
+}
+
+.footer-col ul li a {
+    color: var(--gray-400);
+    transition: var(--transition-fast);
+}
+
+.footer-col ul li a:hover {
+    color: var(--white);
+}
+
+. footer-bottom {
+    border-top: 1px solid var(--gray-800);
+    padding-top: var(--space-lg);
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+/* ===================================
+   RESPONSIVE DESIGN
+   =================================== */
+@media (max-width:  768px) {
+    .navbar-content {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+
+    .nav-menu {
+        flex-direction: column;
+        width: 100%;
+        display: none;
+    }
+
+    .nav-menu. active {
+        display: flex;
+    }
+
+    .grid-2, .grid-3, .grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+    }
+}

@@ -1,58 +1,80 @@
-package org.  nikolic.programm.repositories;
+package org.nikolic.programm.repositories;
 
-import org.nikolic.programm.entities.  Choice;
-import org.springframework. data.jpa.repository.  JpaRepository;
-import org.  springframework.data.jpa.repository.  Modifying;
-import org.springframework.data.jpa.repository.  Query;
-import org.springframework.  data.repository.query.Param;
-import org.springframework.stereotype. Repository;
+import org.nikolic.programm.entities.Choice;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-import java.util.  List;
-import java.util. Optional;
+import java.util.List;
 
+/**
+ * ✅ FIXED ChoiceRepository
+ *
+ * Changes:
+ * - Removed @Query annotations where not needed (Spring Data JPA can generate queries)
+ * - Updated method names to use camelCase field names
+ * - Added useful query methods
+ */
 @Repository
 public interface ChoiceRepository extends JpaRepository<Choice, Long> {
 
-    // Find all choices for a question (ordered by position)
+    /**
+     * Find all choices for a question, ordered by position
+     * ✅ FIXED: Spring Data JPA can auto-generate this query now
+     */
     List<Choice> findByQuestionIdOrderByPositionAsc(Long questionId);
 
-    // ✅ Fixed: Use @Query for fields with underscores
-    @Query("SELECT c FROM Choice c WHERE c. question.id = :questionId AND c.is_correct = :isCorrect ORDER BY c.position ASC")
-    List<Choice> findByQuestionIdAndIsCorrectOrderByPositionAsc(@Param("questionId") Long questionId, @Param("isCorrect") Boolean isCorrect);
+    /**
+     * Find choices by question and correctness status
+     * ✅ FIXED: Uses camelCase field name 'isCorrect'
+     */
+    List<Choice> findByQuestionIdAndIsCorrectOrderByPositionAsc(Long questionId, Boolean isCorrect);
 
-    // Find only correct choices for a question
-    @Query("SELECT c FROM Choice c WHERE c.question.id = :questionId AND c.is_correct = true ORDER BY c.position ASC")
-    List<Choice> findCorrectChoicesByQuestionId(@Param("questionId") Long questionId);
+    /**
+     * Find only correct choices for a question
+     * ✅ FIXED: Simplified using Spring Data JPA naming convention
+     */
+    default List<Choice> findCorrectChoicesByQuestionId(Long questionId) {
+        return findByQuestionIdAndIsCorrectOrderByPositionAsc(questionId, true);
+    }
 
-    // Find only incorrect choices for a question
-    @Query("SELECT c FROM Choice c WHERE c.question.id = :questionId AND c.is_correct = false ORDER BY c.position ASC")
-    List<Choice> findIncorrectChoicesByQuestionId(@Param("questionId") Long questionId);
-
-    // Count choices for a question
+    /**
+     * Count choices for a question
+     */
     long countByQuestionId(Long questionId);
 
-    // ✅ Fixed: Use @Query for counting with underscore fields
-    @Query("SELECT COUNT(c) FROM Choice c WHERE c. question.id = :questionId AND c.is_correct = :isCorrect")
-    long countByQuestionIdAndIsCorrect(@Param("questionId") Long questionId, @Param("isCorrect") Boolean isCorrect);
+    /**
+     * Count correct/incorrect choices for a question
+     * ✅ FIXED: Uses camelCase field name 'isCorrect'
+     */
+    long countByQuestionIdAndIsCorrect(Long questionId, Boolean isCorrect);
 
-    // Get max position for a question
-    @Query("SELECT COALESCE(MAX(c. position), 0) FROM Choice c WHERE c.question.id = : questionId")
+    /**
+     * Delete all choices for a question
+     */
+    void deleteByQuestionId(Long questionId);
+
+    /**
+     * Check if question has any choices
+     */
+    boolean existsByQuestionId(Long questionId);
+
+    /**
+     * Find maximum position for a question (for auto-positioning new choices)
+     */
+    @Query("SELECT MAX(c.position) FROM Choice c WHERE c.question.id = :questionId")
     Integer findMaxPositionByQuestionId(@Param("questionId") Long questionId);
 
-    // Delete all choices for a question
-    @Modifying
-    @Query("DELETE FROM Choice c WHERE c.question.  id = :questionId")
-    void deleteByQuestionId(@Param("questionId") Long questionId);
+    /**
+     * Find choices for multiple questions at once (for N+1 prevention)
+     */
+    @Query("SELECT c FROM Choice c WHERE c.question.id IN :questionIds ORDER BY c.question.id, c.position")
+    List<Choice> findByQuestionIdIn(@Param("questionIds") List<Long> questionIds);
 
-    // Find choice by question and position
-    Optional<Choice> findByQuestionIdAndPosition(Long questionId, Integer position);
-
-    // Check if question has any correct choices
-    @Query("SELECT COUNT(c) > 0 FROM Choice c WHERE c.question.id = :questionId AND c.is_correct = true")
-    boolean hasCorrectChoices(@Param("questionId") Long questionId);
-
-    // Update choice positions for a question
-    @Modifying
-    @Query("UPDATE Choice c SET c.position = c.position + 1 WHERE c.question. id = :questionId AND c.position >= :  fromPosition")
-    void incrementPositionsFrom(@Param("questionId") Long questionId, @Param("fromPosition") Integer fromPosition);
+    /**
+     * Find all correct choices for multiple questions (for bulk operations)
+     */
+    @Query("SELECT c FROM Choice c WHERE c.question.id IN :questionIds AND c.isCorrect = true ORDER BY c.question.id, c.position")
+    List<Choice> findCorrectChoicesByQuestionIdIn(@Param("questionIds") List<Long> questionIds);
 }

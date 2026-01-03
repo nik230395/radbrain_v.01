@@ -20,14 +20,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
- * QuizService - Verbessert mit allen Fixes
+ * ✅ FIXED QuizService
  *
- * Änderungen:
- * - setPublished() Methode hinzugefügt (KRITISCHER FIX!)
- * - N+1 Query Problem behoben
- * - Caching implementiert
- * - Besseres Error Handling
- * - Performance-Optimierungen
+ * Changes:
+ * - Updated to use new camelCase getters/setters (isCorrect, answerText, matchMode)
+ * - Added validation annotations support
+ * - Improved error handling
+ * - Fixed N+1 query issues
+ * - Added comprehensive logging
  */
 @Service
 public class QuizService {
@@ -47,43 +47,46 @@ public class QuizService {
     }
 
     /**
-     * Findet Quiz by ID
+     * Find quiz by ID
      */
+    @Transactional(readOnly = true)
     public Optional<Quiz> findById(Long id) {
         return quizRepository.findById(id);
     }
 
     /**
-     * Findet Quiz mit eager-loaded Questions (verhindert N+1)
+     * Find quiz with eager-loaded questions (prevents N+1)
      */
+    @Transactional(readOnly = true)
     public Optional<Quiz> findByIdWithQuestions(Long id) {
         return quizRepository.findByIdWithQuestions(id);
     }
 
+
     /**
-     * Alle veröffentlichten Quizzes mit Caching
+     * Get all published quizzes with caching
      */
     @Cacheable(value = "publishedQuizzes", unless = "#result.isEmpty()")
+    @Transactional(readOnly = true)
     public List<Quiz> findAllPublished() {
         logger.debug("Fetching all published quizzes from database");
         return quizRepository.findByIsPublishedTrue();
     }
 
     /**
-     * KRITISCHER FIX: Publish/Unpublish Methode
-     * Diese Methode fehlte und wurde in AdminQuizController aufgerufen!
+     * Publish/Unpublish quiz
      */
     @Transactional
     @CacheEvict(value = "publishedQuizzes", allEntries = true)
     public Quiz setPublished(Long id, boolean published) {
         logger.info("Setting quiz {} published status to: {}", id, published);
 
-        Quiz quiz = quizRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Quiz nicht gefunden mit ID: " + id));
+        Quiz quiz = quizRepository.findByIdWithQuestions(id)
+                .orElseThrow(() -> new NoSuchElementException("Quiz not found with id: " + id));
 
-        // Validierung: Quiz muss Fragen haben
-        if (published && (quiz.getQuestions() == null || quiz.getQuestions().isEmpty())) {
-            throw new IllegalStateException("Quiz kann nicht veröffentlicht werden: Keine Fragen vorhanden");
+        // Validate quiz can be published
+        if (published) {
+            validateQuizForPublishing(quiz);
         }
 
         quiz.setIsPublished(published);
@@ -94,7 +97,7 @@ public class QuizService {
     }
 
     /**
-     * Erstellt Quiz aus Request
+     * Create quiz from request
      */
     @Transactional
     @CacheEvict(value = "publishedQuizzes", allEntries = true)
@@ -104,17 +107,21 @@ public class QuizService {
         validateQuizRequest(req);
 
         Quiz quiz = new Quiz();
-        quiz.setTitle(req.getTitle());
-        quiz.setDescription(req.getDescription());
+        quiz.setTitle(req.getTitle().trim());
+        quiz.setDescription(req.getDescription() != null ? req.getDescription().trim() : null);
+        quiz.setCategory(req.getCategory() != null ? req.getCategory().trim() : null);
         quiz.setCreatedBy(user);
         quiz.setCreatedAt(LocalDateTime.now());
-        quiz.setIsPublished(false); // Standardmäßig nicht veröffentlicht
+        quiz.setIsPublished(false);
 
-        return quizRepository.save(quiz);
+        Quiz saved = quizRepository.save(quiz);
+        logger.info("Created quiz with id: {}", saved.getId());
+
+        return saved;
     }
 
     /**
-     * Aktualisiert Quiz
+     * Update quiz
      */
     @Transactional
     @CacheEvict(value = "publishedQuizzes", allEntries = true)
@@ -124,16 +131,20 @@ public class QuizService {
         validateQuizRequest(req);
 
         Quiz quiz = quizRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Quiz nicht gefunden mit ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Quiz not found with id: " + id));
 
-        quiz.setTitle(req.getTitle());
-        quiz.setDescription(req.getDescription());
+        quiz.setTitle(req.getTitle().trim());
+        quiz.setDescription(req.getDescription() != null ? req.getDescription().trim() : null);
+        quiz.setCategory(req.getCategory() != null ? req.getCategory().trim() : null);
 
-        return quizRepository.save(quiz);
+        Quiz updated = quizRepository.save(quiz);
+        logger.info("Updated quiz: {}", id);
+
+        return updated;
     }
 
     /**
-     * Löscht Quiz
+     * Delete quiz
      */
     @Transactional
     @CacheEvict(value = "publishedQuizzes", allEntries = true)
@@ -141,9 +152,9 @@ public class QuizService {
         logger.info("Deleting quiz: {}", id);
 
         Quiz quiz = quizRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Quiz nicht gefunden mit ID: " + id));
+                .orElseThrow(() -> new NoSuchElementException("Quiz not found with id: " + id));
 
-        // Prüfe ob Quiz Attempts hat
+        // Check if quiz has attempts
         long attemptCount = quizAttemptRepository.countByQuizId(id);
         if (attemptCount > 0) {
             logger.warn("Quiz {} has {} attempts, deleting anyway", id, attemptCount);
@@ -154,18 +165,16 @@ public class QuizService {
     }
 
     /**
-     * HAUPTMETHODE: Evaluiert Antworten und speichert Versuch
-     * Optimiert gegen N+1 Problem
+     * Evaluate answers and save attempt
+     * ✅ FIXED: Uses proper camelCase getters throughout
      */
     @Transactional
     public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
         logger.info("Evaluating quiz {} for user {}", quiz.getId(), user != null ? user.getEmail() : "anonymous");
 
-        Map<String, Object> result = new HashMap<>();
-
-        // Verwende eager-loaded Questions um N+1 zu vermeiden
+        // Load quiz with questions and choices to prevent N+1
         Quiz fullQuiz = quizRepository.findByIdWithQuestions(quiz.getId())
-                .orElseThrow(() -> new NoSuchElementException("Quiz nicht gefunden"));
+                .orElseThrow(() -> new NoSuchElementException("Quiz not found"));
 
         List<Question> questions = fullQuiz.getQuestions();
 
@@ -177,7 +186,7 @@ public class QuizService {
         int correctCount = 0;
         Map<Long, Map<String, Object>> detailedResults = new HashMap<>();
 
-        // Jede Frage auswerten
+        // Evaluate each question
         for (Question question : questions) {
             Object userAnswer = answers.get(question.getId());
             Map<String, Object> questionResult = evaluateQuestion(question, userAnswer);
@@ -190,15 +199,16 @@ public class QuizService {
             detailedResults.put(question.getId(), questionResult);
         }
 
-        // Score berechnen
+        // Calculate score
         BigDecimal scorePct = calculateScore(correctCount, totalQuestions);
 
-        // Versuch speichern (nur für eingeloggte User)
+        // Save attempt (only for logged-in users)
         if (user != null) {
             saveQuizAttempt(fullQuiz, user, answers, scorePct);
         }
 
-        // Result zusammenstellen
+        // Build result
+        Map<String, Object> result = new HashMap<>();
         result.put("scorePct", scorePct);
         result.put("correctCount", correctCount);
         result.put("totalQuestions", totalQuestions);
@@ -211,7 +221,8 @@ public class QuizService {
     }
 
     /**
-     * Evaluiert eine einzelne Frage
+     * Evaluate a single question
+     * ✅ FIXED: Uses proper camelCase getters
      */
     private Map<String, Object> evaluateQuestion(Question question, Object userAnswer) {
         Map<String, Object> result = new HashMap<>();
@@ -260,7 +271,7 @@ public class QuizService {
                     feedback = "Unbekannter Fragetyp";
             }
         } catch (Exception e) {
-            logger.error("Error evaluating question {}: {}", question.getId(), e.getMessage());
+            logger.error("Error evaluating question {}: {}", question.getId(), e.getMessage(), e);
             isCorrect = false;
             feedback = "Fehler bei der Auswertung";
         }
@@ -272,11 +283,13 @@ public class QuizService {
         return result;
     }
 
-    // Einzelne Evaluierungsmethoden (unverändert, aber mit besserer Fehlerbehandlung)
-
+    /**
+     * Evaluate single choice question
+     * ✅ FIXED: Uses getIsCorrect() instead of getIs_correct()
+     */
     private boolean evaluateSingleChoice(Question question, Object userAnswer, List<Long> correctChoiceIds) {
         List<Choice> correctChoices = question.getChoices().stream()
-                .filter(c -> Boolean.TRUE.equals(c.getIs_correct()))
+                .filter(c -> Boolean.TRUE.equals(c.getIsCorrect()))  // ✅ FIXED: camelCase
                 .collect(Collectors.toList());
 
         if (correctChoices.isEmpty()) {
@@ -298,9 +311,13 @@ public class QuizService {
         }
     }
 
+    /**
+     * Evaluate multiple choice question
+     * ✅ FIXED: Uses getIsCorrect() instead of getIs_correct()
+     */
     private boolean evaluateMultipleChoice(Question question, Object userAnswer, List<Long> correctChoiceIds) {
         Set<Long> correctIds = question.getChoices().stream()
-                .filter(c -> Boolean.TRUE.equals(c.getIs_correct()))
+                .filter(c -> Boolean.TRUE.equals(c.getIsCorrect()))  // ✅ FIXED: camelCase
                 .map(Choice::getId)
                 .collect(Collectors.toSet());
 
@@ -323,10 +340,17 @@ public class QuizService {
         return correctIds.equals(userIds);
     }
 
+    /**
+     * Evaluate true/false question
+     */
     private boolean evaluateTrueFalse(Question question, Object userAnswer, List<Long> correctChoiceIds) {
         return evaluateSingleChoice(question, userAnswer, correctChoiceIds);
     }
 
+    /**
+     * Evaluate short text question
+     * ✅ FIXED: Uses getAnswerText() and getMatchMode() instead of snake_case
+     */
     private boolean evaluateShortText(Question question, Object userAnswer) {
         if (!(userAnswer instanceof String)) {
             return false;
@@ -341,13 +365,21 @@ public class QuizService {
         }
 
         return acceptableAnswers.stream()
-                .anyMatch(acceptable -> matchesAnswer(answer, acceptable.getAnswer_text(), acceptable.getMatch_mode()));
+                .anyMatch(acceptable -> matchesAnswer(answer,
+                        acceptable.getAnswerText(),    // ✅ FIXED: camelCase
+                        acceptable.getMatchMode()));   // ✅ FIXED: camelCase
     }
 
+    /**
+     * Evaluate fill gap question
+     */
     private boolean evaluateFillGap(Question question, Object userAnswer) {
         return evaluateShortText(question, userAnswer);
     }
 
+    /**
+     * Check if user answer matches expected answer with given match mode
+     */
     private boolean matchesAnswer(String userAnswer, String expectedAnswer, MatchMode mode) {
         if (userAnswer == null || expectedAnswer == null) {
             return false;
@@ -372,6 +404,11 @@ public class QuizService {
         }
     }
 
+
+
+    /**
+     * Convert object to Long
+     */
     private Long getLongFromObject(Object obj) {
         if (obj == null) return null;
         if (obj instanceof Long) return (Long) obj;
@@ -386,6 +423,9 @@ public class QuizService {
         return null;
     }
 
+    /**
+     * Save quiz attempt to database
+     */
     private void saveQuizAttempt(Quiz quiz, User user, Map<Long, Object> answers, BigDecimal scorePct) {
         try {
             String answersJson = objectMapper.writeValueAsString(answers);
@@ -407,6 +447,9 @@ public class QuizService {
 
     // Helper Methods
 
+    /**
+     * Calculate score percentage
+     */
     private BigDecimal calculateScore(int correct, int total) {
         if (total == 0) return BigDecimal.ZERO;
 
@@ -415,6 +458,9 @@ public class QuizService {
                 .divide(BigDecimal.valueOf(total), 2, RoundingMode.HALF_UP);
     }
 
+    /**
+     * Generate result message based on score
+     */
     private String generateResultMessage(BigDecimal scorePct) {
         if (scorePct.compareTo(BigDecimal.valueOf(90)) >= 0) {
             return "Ausgezeichnet!";
@@ -427,6 +473,9 @@ public class QuizService {
         }
     }
 
+    /**
+     * Create empty result for quizzes with no questions
+     */
     private Map<String, Object> createEmptyResult() {
         Map<String, Object> result = new HashMap<>();
         result.put("scorePct", BigDecimal.ZERO);
@@ -438,6 +487,9 @@ public class QuizService {
         return result;
     }
 
+    /**
+     * Validate quiz request
+     */
     private void validateQuizRequest(CreateQuizRequest req) {
         if (req.getTitle() == null || req.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("Quiz-Titel ist erforderlich");
@@ -446,5 +498,82 @@ public class QuizService {
         if (req.getTitle().length() > 255) {
             throw new IllegalArgumentException("Quiz-Titel ist zu lang (max. 255 Zeichen)");
         }
+
+        if (req.getDescription() != null && req.getDescription().length() > 1000) {
+            throw new IllegalArgumentException("Quiz-Beschreibung ist zu lang (max. 1000 Zeichen)");
+        }
+    }
+
+    /**
+     * Validate quiz can be published
+     */
+    private void validateQuizForPublishing(Quiz quiz) {
+        if (quiz.getQuestions() == null || quiz.getQuestions().isEmpty()) {
+            throw new IllegalStateException("Quiz kann nicht veröffentlicht werden: Keine Fragen vorhanden");
+        }
+
+        // Validate each question has choices or acceptable answers
+        for (Question question : quiz.getQuestions()) {
+            switch (question.getQtype()) {
+                case SINGLE:
+                case MULTIPLE:
+                case TRUE_FALSE:
+                    if (question.getChoices() == null || question.getChoices().isEmpty()) {
+                        throw new IllegalStateException(
+                                "Frage '" + question.getText() + "' hat keine Antwortmöglichkeiten"
+                        );
+                    }
+                    // Check at least one correct answer
+                    boolean hasCorrect = question.getChoices().stream()
+                            .anyMatch(c -> Boolean.TRUE.equals(c.getIsCorrect()));  // ✅ FIXED: camelCase
+                    if (!hasCorrect) {
+                        throw new IllegalStateException(
+                                "Frage '" + question.getText() + "' hat keine richtige Antwort markiert"
+                        );
+                    }
+                    break;
+
+                case SHORT_TEXT:
+                case FILL_GAP:
+                    if (question.getAcceptableAnswers() == null || question.getAcceptableAnswers().isEmpty()) {
+                        throw new IllegalStateException(
+                                "Frage '" + question.getText() + "' hat keine akzeptablen Antworten definiert"
+                        );
+                    }
+                    break;
+            }
+        }
+
+        logger.info("Quiz {} validated for publishing", quiz.getId());
+    }
+
+    /**
+     * Get all quizzes (admin only)
+     */
+    @Transactional(readOnly = true)
+    public List<Quiz> findAll() {
+        return quizRepository.findAll();
+    }
+
+    /**
+     * Get quizzes by category
+     */
+    @Transactional(readOnly = true)
+    public List<Quiz> findByCategory(String category) {
+        if (category == null || category.trim().isEmpty()) {
+            return findAll();
+        }
+        return quizRepository.findByCategoryOrderByCreatedAtDesc(category.trim());
+    }
+
+    /**
+     * Search quizzes by title
+     */
+    @Transactional(readOnly = true)
+    public List<Quiz> searchByTitle(String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return findAll();
+        }
+        return quizRepository.findByTitleContainingIgnoreCase(searchTerm.trim());
     }
 }

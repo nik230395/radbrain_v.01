@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Creator - RadBrain Admin</title>
+    <script src="/auth.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .header .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .header .back-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .content { padding: 40px; }
+        .section {
+            margin-bottom: 40px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+        }
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.75em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .form-group { margin-bottom: 25px; }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 1.05em;
+        }
+        label .required { color: #dc3545; margin-left: 4px; }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover:not(:disabled) {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            padding: 10px 18px;
+            font-size: 14px;
+        }
+        .btn-danger:hover:not(:disabled) { background: #c82333; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover:not(:disabled) { background: #5a6268; }
+        .question-card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 2px solid #e0e0e0;
+            position: relative;
+            transition: all 0.3s;
+        }
+        .question-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .question-number {
+            background: #667eea;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .choice-item {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 14px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .choice-item:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+        .choice-item input[type="text"] { flex: 1; margin: 0; }
+        .choice-item input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+        }
+        .choice-item label {
+            margin: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        .alert {
+            padding: 18px 24px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #bee5eb;
+        }
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <a href="/admin-dashboard.html" class="back-link">← Zurück</a>
+        <h1>🎓 Quiz Creator</h1>
+        <p>Erstelle professionelle Radiologie-Quizzes</p>
+    </div>
+
+    <div class="content">
+        <div id="alertContainer"></div>
+
+        <div class="section">
+            <h2>➕ Neues Quiz erstellen</h2>
+
+            <div class="form-group">
+                <label for="quizTitle">Titel <span class="required">*</span></label>
+                <input type="text" id="quizTitle" placeholder="z.B. Röntgen Thorax">
+            </div>
+
+            <div class="form-group">
+                <label for="quizDesc">Beschreibung</label>
+                <textarea id="quizDesc" rows="3" placeholder="Beschreibung..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="quizCategory">Kategorie</label>
+                <select id="quizCategory">
+                    <option value="">Keine</option>
+                    <option value="ROENTGEN">Röntgen</option>
+                    <option value="CT">CT</option>
+                    <option value="MRT">MRT</option>
+                    <option value="ULTRASCHALL">Ultraschall</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Fragen <span class="required">*</span></label>
+                <button class="btn btn-secondary" onclick="addQuestion()">➕ Frage hinzufügen</button>
+            </div>
+
+            <div id="questionsContainer"></div>
+
+            <div style="margin-top: 30px; display: flex; gap: 12px;">
+                <button class="btn btn-success" onclick="saveQuiz()" id="saveBtn">
+                    💾 Quiz speichern
+                </button>
+                <button class="btn btn-secondary" onclick="resetForm()">
+                    🔄 Zurücksetzen
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = '/api';
+    let questions = [];
+    let questionCounter = 0;
+
+    async function authFetch(url, options = {}) {
+        if (!window.auth || !window.auth.getToken()) {
+            throw new Error('Nicht eingeloggt');
+        }
+        return window.auth.authFetch(url, options);
+    }
+
+    (async function() {
+        if (!window.auth || !window.auth.isLoggedIn()) {
+            showAlert('Bitte melden Sie sich an!', 'error');
+            setTimeout(() => window.location.href = '/login.html', 2000);
+            return;
+        }
+
+        if (!window.auth.hasRole('ADMIN')) {
+            showAlert('⛔ Nur für Administratoren!', 'error');
+            setTimeout(() => window.location.href = '/dashboard.html', 2000);
+            return;
+        }
+
+        renderQuestions();
+    })();
+
+    function addQuestion() {
+        questionCounter++;
+        questions.push({
+            id: questionCounter,
+            text: '',
+            qtype: 'SINGLE',
+            choices: [
+                { id: 1, text: '', isCorrect: false },
+                { id: 2, text: '', isCorrect: false }
+            ]
+        });
+        renderQuestions();
+    }
+
+    function removeQuestion(questionId) {
+        if (!confirm('Frage entfernen?')) return;
+        questions = questions.filter(q => q.id !== questionId);
+        renderQuestions();
+    }
+
+    function addChoice(questionId) {
+        const question = questions.find(q => q.id === questionId);
+        if (!question) return;
+        question.choices.push({
+            id: Date.now(),
+            text: '',
+            isCorrect: false
+        });
+        renderQuestions();
+    }
+
+    function removeChoice(questionId, choiceIndex) {
+        const question = questions.find(q => q.id === questionId);
+        if (!question) return;
+        if (question.choices.length <= 2) {
+            alert('Mindestens 2 Antworten erforderlich!');
+            return;
+        }
+        question.choices.splice(choiceIndex, 1);
+        renderQuestions();
+    }
+
+    function renderQuestions() {
+        const container = document.getElementById('questionsContainer');
+        container.innerHTML = '';
+
+        if (questions.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <p>Noch keine Fragen</p>
+                </div>
+            `;
+            return;
+        }
+
+        questions.forEach((q, qIndex) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.id = `question-${q.id}`;
+            card.innerHTML = `
+                <div class="question-header">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="question-number">${qIndex + 1}</div>
+                        <strong>Frage ${qIndex + 1}</strong>
+                    </div>
+                    <button class="btn btn-danger" onclick="removeQuestion(${q.id})">🗑️ Entfernen</button>
+                </div>
+                <div class="form-group">
+                    <label>Fragetext <span class="required">*</span></label>
+                    <input type="text" value="${q.text}"
+                           onchange="questions[${qIndex}].text = this.value"
+                           placeholder="Ihre Frage">
+                </div>
+                <div class="form-group">
+                    <label>Typ</label>
+                    <select onchange="questions[${qIndex}].qtype = this.value; renderQuestions()">
+                        <option value="SINGLE" ${q.qtype === 'SINGLE' ? 'selected' : ''}>Single Choice</option>
+                        <option value="MULTIPLE" ${q.qtype === 'MULTIPLE' ? 'selected' : ''}>Multiple Choice</option>
+                        <option value="SHORT_TEXT" ${q.qtype === 'SHORT_TEXT' ? 'selected' : ''}>Freitext</option>
+                    </select>
+                </div>
+                ${q.qtype !== 'SHORT_TEXT' ? `
+                    <div class="form-group">
+                        <label>Antworten <span class="required">*</span></label>
+                        <div id="choices-${q.id}"></div>
+                        <button class="btn btn-secondary" style="margin-top:10px" onclick="addChoice(${q.id})">➕ Antwort</button>
+                    </div>
+                ` : ''}
+            `;
+            container.appendChild(card);
+
+            if (q.qtype !== 'SHORT_TEXT') {
+                const choicesContainer = card.querySelector(`#choices-${q.id}`);
+                q.choices.forEach((choice, cIndex) => {
+                    const choiceDiv = document.createElement('div');
+                    choiceDiv.className = 'choice-item';
+                    choiceDiv.innerHTML = `
+                        <input type="text" value="${choice.text}"
+                               onchange="questions[${qIndex}].choices[${cIndex}].text = this.value"
+                               placeholder="Antwort">
+                        <label style="display: flex; align-items: center; gap: 6px; margin: 0;">
+                            <input type="checkbox"
+                                   ${choice.isCorrect ? 'checked' : ''}
+                                   onchange="questions[${qIndex}].choices[${cIndex}].isCorrect = this.checked">
+                            <span>Richtig</span>
+                        </label>
+                        <button class="btn btn-danger" onclick="removeChoice(${q.id}, ${cIndex})">✕</button>
+                    `;
+                    choicesContainer.appendChild(choiceDiv);
+                });
+            }
+        });
+    }
+
+    async function saveQuiz() {
+        const title = document.getElementById('quizTitle').value.trim();
+        const description = document.getElementById('quizDesc').value.trim();
+        const category = document.getElementById('quizCategory').value;
+        const saveBtn = document.getElementById('saveBtn');
+
+        if (!title) {
+            showAlert('❌ Titel erforderlich!', 'error');
+            return;
+        }
+
+        if (questions.length === 0) {
+            showAlert('❌ Mindestens eine Frage!', 'error');
+            return;
+        }
+
+        for (let i = 0; i < questions.length; i++) {
+            const q = questions[i];
+            if (!q.text.trim()) {
+                showAlert(`❌ Frage ${i + 1} hat keinen Text!`, 'error');
+                return;
+            }
+            if (q.qtype !== 'SHORT_TEXT') {
+                if (q.choices.length === 0) {
+                    showAlert(`❌ Frage ${i + 1} hat keine Antworten!`, 'error');
+                    return;
+                }
+                if (!q.choices.some(c => c.isCorrect)) {
+                    showAlert(`❌ Frage ${i + 1}: Mindestens eine richtige Antwort!`, 'error');
+                    return;
+                }
+                for (let j = 0; j < q.choices.length; j++) {
+                    if (!q.choices[j].text.trim()) {
+                        showAlert(`❌ Frage ${i + 1}, Antwort ${j + 1} ist leer!`, 'error');
+                        return;
+                    }
+                }
+            }
+        }
+
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="spinner"></span> Speichere...';
+
+        try {
+            // Create Quiz
+            const quizPayload = { title, description };
+            if (category) quizPayload.category = category;
+
+            const quizRes = await authFetch(`${API_BASE}/quizzes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(quizPayload)
+            });
+
+            if (!quizRes.ok) throw new Error('Quiz erstellen fehlgeschlagen');
+
+            const quiz = await quizRes.json();
+            const quizId = quiz.id;
+
+            // Create Questions
+            for (let i = 0; i < questions.length; i++) {
+                const q = questions[i];
+
+                const questionRes = await authFetch(`${API_BASE}/questions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        quizId: quizId,
+                        qtype: q.qtype.toUpperCase(),  // ✅ FIX: UPPERCASE!
+                        text: q.text,
+                        auxText: ''
+                    })
+                });
+
+                if (!questionRes.ok) throw new Error(`Frage ${i + 1} erstellen fehlgeschlagen`);
+
+                const question = await questionRes.json();
+
+                // Create Choices
+                if (q.qtype !== 'SHORT_TEXT') {
+                    for (let j = 0; j < q.choices.length; j++) {
+                        const choice = q.choices[j];
+
+                        const choiceRes = await authFetch(`${API_BASE}/choices`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                questionId: question.id,
+                                text: choice.text,
+                                isCorrect: choice.isCorrect
+                            })
+                        });
+
+                        if (!choiceRes.ok) throw new Error(`Antwort ${j + 1} für Frage ${i + 1} fehlgeschlagen`);
+                    }
+                }
+            }
+
+            showAlert('✅ Quiz erfolgreich erstellt!', 'success');
+            resetForm();
+
+        } catch (error) {
+            console.error('Save error:', error);
+            showAlert('❌ Fehler: ' + error.message, 'error');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = '💾 Quiz speichern';
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('quizTitle').value = '';
+        document.getElementById('quizDesc').value = '';
+        document.getElementById('quizCategory').value = '';
+        questions = [];
+        questionCounter = 0;
+        renderQuestions();
+    }
+
+    function showAlert(message, type = 'info') {
+        const container = document.getElementById('alertContainer');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type}`;
+
+        const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+        alert.innerHTML = `<span style="font-size: 1.2em;">${icon}</span><span>${message}</span>`;
+
+        container.appendChild(alert);
+
+        setTimeout(() => {
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 300);
+        }, 5000);
+    }
+</script>
+</body>
+</html>

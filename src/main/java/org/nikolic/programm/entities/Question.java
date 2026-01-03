@@ -1,8 +1,15 @@
 package org.nikolic.programm.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.util.List;
 
+/**
+ * ✅ FIXED Question Entity
+ *
+ * Added @JsonIgnoreProperties to prevent circular reference issues
+ * when serializing to JSON
+ */
 @Entity
 @Table(name = "questions")
 public class Question {
@@ -12,6 +19,7 @@ public class Question {
 
     @ManyToOne
     @JoinColumn(name = "quiz_id", nullable = false)
+    @JsonIgnoreProperties({"questions", "createdBy", "attempts"})
     private Quiz quiz;
 
     @Enumerated(EnumType.STRING)
@@ -27,9 +35,11 @@ public class Question {
     private Integer position;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("question")
     private List<Choice> choices;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnoreProperties("question")
     private List<AcceptableAnswer> acceptableAnswers;
 
     // Constructors
@@ -99,5 +109,15 @@ public class Question {
 
     public void setAcceptableAnswers(List<AcceptableAnswer> acceptableAnswers) {
         this.acceptableAnswers = acceptableAnswers;
+    }
+
+    @Override
+    public String toString() {
+        return "Question{" +
+                "id=" + id +
+                ", qtype=" + qtype +
+                ", text='" + text + '\'' +
+                ", position=" + position +
+                '}';
     }
 }

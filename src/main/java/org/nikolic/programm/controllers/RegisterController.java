@@ -1,5 +1,6 @@
 package org.nikolic.programm.controllers;
 
+import jakarta.validation.Valid;
 import org.nikolic.programm.dtos.RegisterRequest;
 import org.nikolic.programm.entities.EmailVerification;
 import org.nikolic.programm.entities.User;
@@ -21,13 +22,13 @@ import java.util.Optional;
 import java.util.Random;
 
 /**
- * RegisterController - Angepasst an neue User/EmailVerification Entities
+ * ✅ FIXED RegisterController
  *
- * Änderungen:
- * - setPassword_hash() → setPasswordHash()
- * - setIs_active() → setActive()
- * - EmailVerification Entity statt Transient
- * - Bean Validation Support
+ * Changes:
+ * - Added @Valid annotation for automatic validation
+ * - Improved error handling using GlobalExceptionHandler
+ * - Better logging
+ * - Cleaner code structure
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -53,53 +54,45 @@ public class RegisterController {
     }
 
     /**
-     * User-Registrierung mit Email-Verification
+     * User registration with email verification
+     * ✅ FIXED: Added @Valid annotation for automatic validation
      */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Validated @RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         try {
             logger.info("Registration attempt for email: {}", request.getEmail());
-
-            // Validation
-            if (!isValidEmail(request.getEmail())) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Ungültige E-Mail-Adresse"));
-            }
-
-            if (request.getPassword().length() < 8) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Passwort muss mindestens 8 Zeichen haben"));
-            }
 
             String cleanEmail = request.getEmail().toLowerCase().trim();
 
             // Check if user already exists
             if (userRepository.existsByEmail(cleanEmail)) {
+                logger.warn("Registration attempt for existing email: {}", cleanEmail);
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "E-Mail-Adresse bereits registriert"));
             }
 
             // Generate verification code
             String verificationCode = generateVerificationCode();
-            logger.info("Generated verification code for {}: {}", cleanEmail, verificationCode);
+            logger.debug("Generated verification code for {}", cleanEmail);
 
-            // ✅ ANGEPASST: Neue Methodennamen
+            // Create user
             User user = new User();
             user.setEmail(cleanEmail);
             user.setFullname(request.getFullname().trim());
-            user.setPasswordHash(passwordEncoder.encode(request.getPassword())); // ✅ NEU
+            user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
             user.setRole(UserRole.USER);
-            user.setActive(false); // ✅ NEU - Nicht aktiv bis Email verifiziert
+            user.setActive(false); // Not active until email verified
             user.setCreatedAt(LocalDateTime.now());
 
-            // ✅ NEU: EmailVerification Entity erstellen
+            // Create email verification entity
             EmailVerification emailVerification = new EmailVerification(
                     user,
                     verificationCode,
-                    10 // 10 Minuten gültig
+                    10 // 10 minutes validity
             );
             user.setEmailVerification(emailVerification);
 
+            // Save user
             User savedUser = userRepository.save(user);
             logger.info("Created inactive user with ID: {}", savedUser.getId());
 
@@ -136,10 +129,10 @@ public class RegisterController {
     }
 
     /**
-     * Email-Verification mit Code
+     * Email verification with code
      */
     @PostMapping("/verify-email")
-    public ResponseEntity<?> verifyEmail(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> verifyEmail(@Valid @RequestBody Map<String, String> request) {
         try {
             String email = request.get("email");
             String code = request.get("code");
@@ -157,8 +150,6 @@ public class RegisterController {
             }
 
             User user = userOpt.get();
-
-            // ✅ ANGEPASST: Verwende neue EmailVerification Entity
             EmailVerification verification = user.getEmailVerification();
 
             if (verification == null) {
@@ -191,9 +182,9 @@ public class RegisterController {
                         .body(Map.of("error", "Verifizierungscode ist abgelaufen"));
             }
 
-            // ✅ ANGEPASST: Aktiviere User mit neuer Methode
+            // Mark as verified and activate user
             verification.markAsVerified();
-            user.setActive(true); // ✅ NEU
+            user.setActive(true);
             userRepository.save(user);
 
             logger.info("User successfully verified and activated: {}", user.getEmail());
@@ -224,7 +215,7 @@ public class RegisterController {
     }
 
     /**
-     * Resend Verification Code
+     * Resend verification code
      */
     @PostMapping("/resend-verification")
     public ResponseEntity<?> resendVerification(@RequestBody Map<String, String> request) {
@@ -242,8 +233,6 @@ public class RegisterController {
             }
 
             User user = userOpt.get();
-
-            // ✅ ANGEPASST: Verwende EmailVerification Entity
             EmailVerification verification = user.getEmailVerification();
 
             if (verification == null) {
@@ -261,7 +250,7 @@ public class RegisterController {
             verification.regenerateCode(newCode, 10);
             userRepository.save(user);
 
-            logger.info("Generated new verification code for {}: {}", email, newCode);
+            logger.info("New verification code generated for {}", email);
 
             // Send new verification email
             emailService.sendVerificationEmail(user.getEmail(), user.getFullname(), newCode);
@@ -277,16 +266,13 @@ public class RegisterController {
         }
     }
 
-    // Helper Methods
+    // Private Helper Methods
 
+    /**
+     * Generate 6-digit verification code
+     */
     private String generateVerificationCode() {
         Random random = new Random();
         return String.format("%06d", random.nextInt(1000000));
-    }
-
-    private boolean isValidEmail(String email) {
-        return email != null &&
-                email.matches("^[A-Za-z0-9+_.-]+@(.+)$") &&
-                email.contains(".");
     }
 }
