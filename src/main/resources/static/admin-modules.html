@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul-Verwaltung - RadBrain Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="learning-areas.css">
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: #6b7280;
+        }
+
+        .breadcrumb a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-size: 2rem;
+            color: #1f2937;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .modules-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .module-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .module-item:hover {
+            background: #f9fafb;
+        }
+
+        .module-item:last-child {
+            border-bottom: none;
+        }
+
+        .module-info {
+            flex: 1;
+        }
+
+        .module-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .module-subtitle {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .module-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .module-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-edit, .btn-delete, .btn-content {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #2563eb;
+        }
+
+        .btn-content {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-content:hover {
+            background: #059669;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn-cancel {
+            padding: 0.75rem 1.5rem;
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-submit {
+            padding: 0.75rem 1.5rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .drag-handle {
+            cursor: move;
+            color: #9ca3af;
+            margin-right: 1rem;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="nav-left">
+            <img src="logo.png" alt="RadBrain Logo" class="nav-logo">
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/admin-dashboard.html" class="nav-link">Dashboard</a></li>
+            <li class="nav-item"><a href="/admin-learning-areas.html" class="nav-link active">Lernbereiche</a></li>
+            <li class="nav-item"><a href="/quiz-creator.html" class="nav-link">Quiz</a></li>
+        </ul>
+        <div class="nav-profile-dropdown">
+            <button class="nav-profile-btn" id="profileBtn">
+                <span id="userName">Admin</span>
+                <span style="font-size: 0.8rem;">▾</span>
+            </button>
+            <div class="nav-profile-menu" id="profileMenu">
+                <a href="/account.html">Mein Account</a>
+                <div class="divider"></div>
+                <button id="logoutBtn" style="color: #dc2626;">Abmelden</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="admin-container">
+    <div class="breadcrumb">
+        <a href="/admin-learning-areas.html">Lernbereiche</a>
+        <span>›</span>
+        <span id="areaName">Lernbereich</span>
+        <span>›</span>
+        <span>Module</span>
+    </div>
+
+    <div class="page-header">
+        <h1>Module verwalten</h1>
+        <button class="btn-primary" onclick="openCreateModuleModal()">+ Neues Modul</button>
+    </div>
+
+    <div class="modules-list" id="modulesList">
+        <!-- Wird dynamisch gefüllt -->
+    </div>
+
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-state-icon">📚</div>
+        <h2>Keine Module vorhanden</h2>
+        <p style="color: #6b7280;">Erstelle dein erstes Modul für diesen Lernbereich.</p>
+        <button class="btn-primary" onclick="openCreateModuleModal()">Erstes Modul erstellen</button>
+    </div>
+</div>
+
+<!-- Module Modal -->
+<div id="moduleModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="moduleModalTitle">Neues Modul</h2>
+            <button class="modal-close" onclick="closeModuleModal()">&times;</button>
+        </div>
+        <form id="moduleForm" onsubmit="saveModule(event)">
+            <input type="hidden" id="moduleId">
+
+            <div class="form-group">
+                <label class="form-label" for="moduleTitle">Titel *</label>
+                <input type="text" id="moduleTitle" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="moduleSubtitle">Untertitel</label>
+                <input type="text" id="moduleSubtitle" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="moduleDescription">Beschreibung</label>
+                <textarea id="moduleDescription" class="form-textarea"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="moduleIcon">Icon (Emoji)</label>
+                <input type="text" id="moduleIcon" class="form-input" placeholder="z.B. ⚛️">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="moduleDuration">Geschätzte Dauer (Minuten)</label>
+                <input type="number" id="moduleDuration" class="form-input" min="1">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="moduleOrder">Reihenfolge</label>
+                <input type="number" id="moduleOrder" class="form-input" value="0" min="0">
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="closeModuleModal()">Abbrechen</button>
+                <button type="submit" class="btn-submit">Speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="auth.js"></script>
+<script src="admin-modules.js"></script>
+</body>
+</html>

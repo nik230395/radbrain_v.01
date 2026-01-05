@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">Lernbereich - RadBrain</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="learning-areas.css">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="nav-left">
+            <img src="logo.png" alt="RadBrain Logo" class="nav-logo">
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/user-home.html" class="nav-link">Home</a></li>
+            <li class="nav-item dropdown">
+                <a href="#" class="nav-link active">Lernbereiche</a>
+                <ul class="dropdown-menu" id="learningAreasDropdown">
+                    <!-- Wird dynamisch gefüllt -->
+                </ul>
+            </li>
+            <li class="nav-item"><a href="/quizzes.html" class="nav-link">Quiz</a></li>
+            <li class="nav-item"><a href="/dashboard.html" class="nav-link">Dashboard</a></li>
+            <li class="nav-item" id="adminNavItem" style="display: none;">
+                <a href="/admin-dashboard.html" class="nav-link">Admin Panel</a>
+            </li>
+        </ul>
+
+        <div class="nav-profile-dropdown" id="profileDropdown" style="margin-left: auto; display: none;">
+            <button class="nav-profile-btn" id="profileBtn">
+                <span id="userName">Mein Account</span>
+                <span style="font-size: 0.8rem;">▾</span>
+            </button>
+            <div class="nav-profile-menu" id="profileMenu">
+                <a href="/account.html">Mein Account</a>
+                <a href="/dashboard.html">Dashboard</a>
+                <div class="divider"></div>
+                <button id="logoutBtn" style="color: #dc2626;">Abmelden</button>
+            </div>
+        </div>
+
+        <div class="nav-auth-section" id="navAuthSection" style="margin-left: auto;">
+            <a href="/login.html" class="btn-login">Anmelden</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Loading State -->
+<div id="loadingState" style="text-align: center; padding: 4rem;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+    <p style="color: #6b7280; font-size: 1.125rem;">Lernbereich wird geladen...</p>
+</div>
+
+<!-- Error State -->
+<div id="errorState" style="display: none; text-align: center; padding: 4rem;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+    <h2 style="color: #1f2937; margin-bottom: 1rem;">Lernbereich nicht gefunden</h2>
+    <p style="color: #6b7280; margin-bottom: 2rem;">Dieser Lernbereich existiert nicht oder ist nicht verfügbar.</p>
+    <a href="/user-home.html" class="btn-primary">Zurück zur Startseite</a>
+</div>
+
+<!-- Main Content -->
+<div id="mainContent" style="display: none;">
+    <!-- Hero Section -->
+    <section class="hero" id="heroSection">
+        <div class="hero-background"></div>
+        <div class="hero-content">
+            <h1 class="hero-title" id="heroTitle">Lernbereich</h1>
+            <p class="hero-subtitle" id="heroSubtitle">Beschreibung</p>
+            <div class="hero-buttons">
+                <a href="#inhaltsverzeichnis" class="btn-primary">Los geht's</a>
+                <a href="#" id="quizLink" class="btn-secondary-outline">Zum Quiz</a>
+            </div>
+        </div>
+        <div class="hero-wave">
+            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="white" />
+            </svg>
+        </div>
+    </section>
+
+    <!-- Inhaltsverzeichnis -->
+    <section id="inhaltsverzeichnis" class="toc-section">
+        <div class="container">
+            <h2 class="section-title">Inhaltsverzeichnis</h2>
+            <p class="section-subtitle">Wähle ein Kapitel aus, um direkt dorthin zu springen</p>
+            <div class="toc-grid" id="modulesGrid">
+            </div>
+        </div>
+    </section>
+
+    <!-- Content Wrapper mit Sticky TOC -->
+    <div class="content-wrapper">
+        <aside class="sticky-toc">
+            <div class="toc-progress">
+                <div class="toc-progress-bar" id="progressBar"></div>
+            </div>
+            <h3>Auf dieser Seite</h3>
+            <ul class="sticky-toc-list" id="stickyTocList">
+            </ul>
+        </aside>
+
+        <main class="main-content" id="mainContentArea">
+        </main>
+    </div>
+</div>
+
+<script src="auth.js"></script>
+<script src="learning-area-new.js"></script>
+</body>
+</html>

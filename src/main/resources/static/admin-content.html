@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content-Verwaltung - RadBrain Admin</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="learning-areas.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .breadcrumb {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 2rem;
+            color: #6b7280;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .content-list {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .content-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .content-item:last-child {
+            border-bottom: none;
+        }
+
+        .drag-handle {
+            cursor: move;
+            color: #9ca3af;
+        }
+
+        .content-type-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .type-TEXT { background: #dbeafe; color: #1e40af; }
+        .type-HEADING { background: #fce7f3; color: #9f1239; }
+        .type-IMAGE { background: #fef3c7; color: #92400e; }
+        .type-LIST { background: #d1fae5; color: #065f46; }
+        .type-CALLOUT { background: #e0e7ff; color: #3730a3; }
+        .type-CODE { background: #f3f4f6; color: #1f2937; }
+
+        .content-preview {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .content-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 0.25rem;
+        }
+
+        .content-data {
+            color: #6b7280;
+            font-size: 0.875rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .content-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-edit, .btn-delete {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: monospace;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn-cancel {
+            padding: 0.75rem 1.5rem;
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-submit {
+            padding: 0.75rem 1.5rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .helper-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .content-type-info {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .content-type-info h4 {
+            margin: 0 0 0.5rem 0;
+            color: #1f2937;
+        }
+
+        .content-type-info p {
+            margin: 0;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="nav-left">
+            <img src="logo.png" alt="RadBrain Logo" class="nav-logo">
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/admin-dashboard.html" class="nav-link">Dashboard</a></li>
+            <li class="nav-item"><a href="/admin-learning-areas.html" class="nav-link active">Lernbereiche</a></li>
+            <li class="nav-item"><a href="/quiz-creator.html" class="nav-link">Quiz</a></li>
+        </ul>
+        <div class="nav-profile-dropdown">
+            <button class="nav-profile-btn" id="profileBtn">
+                <span id="userName">Admin</span>
+                <span style="font-size: 0.8rem;">▾</span>
+            </button>
+            <div class="nav-profile-menu" id="profileMenu">
+                <a href="/account.html">Mein Account</a>
+                <div class="divider"></div>
+                <button id="logoutBtn" style="color: #dc2626;">Abmelden</button>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="admin-container">
+    <div class="breadcrumb">
+        <a href="/admin-learning-areas.html">Lernbereiche</a>
+        <span>›</span>
+        <a href="#" id="backToModules">Module</a>
+        <span>›</span>
+        <span id="moduleTitle">Modul</span>
+    </div>
+
+    <div class="page-header">
+        <h1>Inhalte verwalten</h1>
+        <button class="btn-primary" onclick="openCreateContentModal()">+ Neuer Inhalt</button>
+    </div>
+
+    <div class="content-list" id="contentList">
+    </div>
+
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📝</div>
+        <h2>Noch keine Inhalte vorhanden</h2>
+        <p style="color: #6b7280;">Erstelle den ersten Inhalt für dieses Modul.</p>
+        <button class="btn-primary" onclick="openCreateContentModal()">Ersten Inhalt erstellen</button>
+    </div>
+</div>
+
+<!-- Content Modal -->
+<div id="contentModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="contentModalTitle">Neuer Inhalt</h2>
+            <button class="modal-close" onclick="closeContentModal()">&times;</button>
+        </div>
+        <form id="contentForm" onsubmit="saveContent(event)">
+            <input type="hidden" id="contentId">
+
+            <div class="form-group">
+                <label class="form-label" for="contentType">Content-Typ *</label>
+                <select id="contentType" class="form-select" required onchange="updateContentTypeInfo()">
+                    <option value="TEXT">Text</option>
+                    <option value="HEADING">Überschrift</option>
+                    <option value="LIST">Liste</option>
+                    <option value="CALLOUT">Hinweisbox</option>
+                    <option value="QUOTE">Zitat</option>
+                    <option value="CODE">Code</option>
+                    <option value="IMAGE">Bild</option>
+                    <option value="TABLE">Tabelle</option>
+                </select>
+                <div id="contentTypeInfo" class="content-type-info"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="contentTitle">Titel (optional)</label>
+                <input type="text" id="contentTitle" class="form-input">
+                <div class="helper-text">Wird als Überschrift angezeigt (bei manchen Typen)</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="contentData">Inhalt *</label>
+                <textarea id="contentData" class="form-textarea" required></textarea>
+                <div class="helper-text" id="contentDataHelper">Formatierung abhängig vom Content-Typ</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="contentOrder">Reihenfolge</label>
+                <input type="number" id="contentOrder" class="form-input" value="0" min="0">
+            </div>
+
+            <div class="form-actions">
+                <button type="button" class="btn-cancel" onclick="closeContentModal()">Abbrechen</button>
+                <button type="submit" class="btn-submit">Speichern</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="auth.js"></script>
+<script src="admin-content.js"></script>
+</body>
+</html>
