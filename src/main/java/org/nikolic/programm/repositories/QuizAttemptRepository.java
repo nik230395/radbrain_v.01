@@ -1,5 +1,6 @@
 package org.nikolic.programm.repositories;
 
+import org.nikolic.programm.entities.User;
 import org.nikolic.programm.entities.QuizAttempt;
 import org.springframework.data.jpa.repository. JpaRepository;
 import org. springframework.data.jpa.repository.Query;
@@ -13,6 +14,9 @@ import java.util.Optional;
 
 @Repository
 public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> {
+
+    List<QuizAttempt> findByUserAndCompletedAtNotNull(User user);
+    List<QuizAttempt> findByUserAndCompletedAtNotNullOrderByCompletedAtDesc(User user);
 
     List<QuizAttempt> findByUserId(Long userId);
     List<QuizAttempt> findByQuizId(Long quizId);

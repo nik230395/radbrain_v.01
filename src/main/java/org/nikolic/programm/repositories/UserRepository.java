@@ -11,14 +11,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * ✅ FIXED UserRepository
- *
- * Changes:
- * - Removed unnecessary @Query annotations
- * - Updated method names to use camelCase field names (isActive)
- * - Spring Data JPA can now auto-generate most queries
- */
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
@@ -44,7 +36,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Find all active users
-     * ✅ FIXED: Uses camelCase field name 'isActive'
      */
     List<User> findByIsActive(Boolean isActive);
 
@@ -69,7 +60,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Find users by role and active status
-     * ✅ FIXED: Uses camelCase field name 'isActive'
      */
     List<User> findByRoleAndIsActive(UserRole role, Boolean isActive);
 
@@ -89,7 +79,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Check if any active admin exists
-     * ✅ FIXED: Uses camelCase in JPQL query
      */
     @Query("SELECT COUNT(u) > 0 FROM User u WHERE u.role = 'ADMIN' AND u.isActive = true")
     boolean hasActiveAdmin();
@@ -101,7 +90,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     /**
      * Count active users
-     * ✅ FIXED: Uses camelCase field name 'isActive'
      */
     long countByIsActive(Boolean isActive);
 

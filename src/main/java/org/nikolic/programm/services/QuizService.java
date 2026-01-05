@@ -170,6 +170,16 @@ public class QuizService {
      */
     @Transactional
     public Map<String, Object> evaluateAndSaveAttempt(Quiz quiz, User user, Map<Long, Object> answers) {
+        System.out.println("========================================");
+        System.out.println("🔍 EVALUATING QUIZ - USER CHECK");
+        System.out.println("User object: " + user);
+        System.out.println("User is null? " + (user == null));
+        if (user != null) {
+            System.out.println("User email: " + user.getEmail());
+            System.out.println("User ID: " + user.getId());
+        }
+        System.out.println("========================================");
+
         logger.info("Evaluating quiz {} for user {}", quiz.getId(), user != null ? user.getEmail() : "anonymous");
 
         // Load quiz with questions and choices to prevent N+1
@@ -427,9 +437,28 @@ public class QuizService {
      * Save quiz attempt to database
      */
     private void saveQuizAttempt(Quiz quiz, User user, Map<Long, Object> answers, BigDecimal scorePct) {
-        try {
-            String answersJson = objectMapper.writeValueAsString(answers);
+        // DEBUG: Log attempt to save
+        System.out.println("========================================");
+        System.out.println("ATTEMPTING TO SAVE QUIZ ATTEMPT");
+        System.out.println("User: " + (user != null ? user.getEmail() : "NULL!!!"));
+        System.out.println("Quiz: " + quiz.getTitle());
+        System.out.println("Score: " + scorePct + "%");
+        System.out.println("Answers count: " + answers.size());
+        System.out.println("========================================");
 
+        // Check if user is null
+        if (user == null) {
+            System.err.println("❌ ERROR: User is NULL! Cannot save quiz attempt!");
+            logger.error("Cannot save quiz attempt - user is null");
+            return;
+        }
+
+        try {
+            System.out.println("Converting answers to JSON...");
+            String answersJson = objectMapper.writeValueAsString(answers);
+            System.out.println("✅ JSON created: " + answersJson.substring(0, Math.min(100, answersJson.length())) + "...");
+
+            System.out.println("Creating QuizAttempt object...");
             QuizAttempt attempt = new QuizAttempt();
             attempt.setQuiz(quiz);
             attempt.setUser(user);
@@ -437,10 +466,26 @@ public class QuizService {
             attempt.setCompletedAt(LocalDateTime.now());
             attempt.setAnswersJson(answersJson);
             attempt.setScorePct(scorePct);
+            System.out.println("✅ QuizAttempt object created");
 
-            quizAttemptRepository.save(attempt);
-            logger.info("Quiz attempt saved for user {}", user.getEmail());
+            System.out.println("Saving to database...");
+            QuizAttempt savedAttempt = quizAttemptRepository.save(attempt);
+            System.out.println("========================================");
+            System.out.println("✅✅✅ SUCCESS! Quiz attempt saved!");
+            System.out.println("ID: " + savedAttempt.getId());
+            System.out.println("User: " + savedAttempt.getUser().getEmail());
+            System.out.println("Score: " + savedAttempt.getScorePct() + "%");
+            System.out.println("========================================");
+
+            logger.info("Quiz attempt saved for user {} with ID {}", user.getEmail(), savedAttempt.getId());
         } catch (Exception e) {
+            System.err.println("========================================");
+            System.err.println("❌❌❌ FAILED TO SAVE QUIZ ATTEMPT!");
+            System.err.println("Error type: " + e.getClass().getName());
+            System.err.println("Error message: " + e.getMessage());
+            System.err.println("Stack trace:");
+            e.printStackTrace();
+            System.err.println("========================================");
             logger.error("Failed to save quiz attempt: {}", e.getMessage(), e);
         }
     }

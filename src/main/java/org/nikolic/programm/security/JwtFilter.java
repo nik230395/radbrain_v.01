@@ -64,11 +64,10 @@ public class JwtFilter extends OncePerRequestFilter {
                             // Verify user is active and verified
                             if (user.isActive() && user.isEmailVerified()) {
 
-                                // ✅ CRITICAL FIX:  Ensure role has ROLE_ prefix
                                 String role = "ROLE_" + user.getRole().name();
                                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
 
-                                logger.info("✅ Authenticating user: {} with authority: {}", email, role);
+                                logger.info("Authenticating user: {} with authority: {}", email, role);
 
                                 UsernamePasswordAuthenticationToken authentication =
                                         new UsernamePasswordAuthenticationToken(
@@ -83,19 +82,19 @@ public class JwtFilter extends OncePerRequestFilter {
 
                                 SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                                logger.debug("✅ Authentication successful for:  {}", email);
+                                logger.debug("Authentication successful for:  {}", email);
                             } else {
-                                logger.warn("❌ User inactive or unverified: {}", email);
+                                logger.warn("User inactive or unverified: {}", email);
                             }
                         } else {
-                            logger.warn("❌ User not found: {}", email);
+                            logger.warn("User not found: {}", email);
                         }
                     }
                 } else {
-                    logger.debug("❌ Invalid token");
+                    logger.debug("Invalid token");
                 }
             } catch (Exception e) {
-                logger.error("❌ JWT Authentication error:  {}", e.getMessage());
+                logger.error("JWT Authentication error:  {}", e.getMessage());
                 SecurityContextHolder.clearContext();
             }
         } else {
@@ -115,9 +114,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 path.startsWith("/api/users/verify") ||
                 path.startsWith("/api/users/resend") ||
                 path.equals("/api/quizzes/published") ||
-                path.matches("/api/quizzes/\\d+") ||
-                path.matches("/api/quizzes/\\d+/submit") ||
-                path.endsWith(". html") ||
+                path.endsWith(".html") ||
                 path.endsWith(".css") ||
                 path. endsWith(".js") ||
                 path.endsWith(".ico") ||

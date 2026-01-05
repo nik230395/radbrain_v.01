@@ -21,11 +21,6 @@ import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * ✅ FIXED SecurityConfig - CORS Issue Resolved
- *
- * Fix: Removed setAllowedOrigins, only using setAllowedOriginPatterns
- */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -169,11 +164,8 @@ public class SecurityConfig {
 
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // ✅ CRITICAL FIX: Use setAllowedOriginPatterns, NOT setAllowedOrigins
         configuration.setAllowedOriginPatterns(List.of("*"));
 
-        // ✅ Do NOT use setAllowedOrigins when credentials are true!
-        // configuration.setAllowedOrigins(...) ❌ REMOVED
 
         configuration.setAllowCredentials(true);
 
@@ -204,20 +196,20 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
 
-        logger.info("✅ CORS configured with allowedOriginPatterns");
+        logger.info("CORS configured with allowedOriginPatterns");
         return source;
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        logger.debug("🔒 Creating BCrypt Password Encoder");
+        logger.debug("Creating BCrypt Password Encoder");
         return new BCryptPasswordEncoder();
     }
 
     @Bean
     public AuthenticationManager authenticationManager(
             AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        logger.debug("🔑 Creating Authentication Manager");
+        logger.debug("Creating Authentication Manager");
         return authenticationConfiguration.getAuthenticationManager();
     }
 }

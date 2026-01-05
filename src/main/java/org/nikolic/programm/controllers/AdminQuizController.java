@@ -16,11 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * ✅ FIXED AdminQuizController
- *
- * Now returns ALL quizzes (not just published) for admin panel
- */
+
 @RestController
 @RequestMapping("/api/secure/admin/quizzes")
 @CrossOrigin(origins = "*")
@@ -42,9 +38,6 @@ public class AdminQuizController {
         return userService.getAuthenticatedUser(auth);
     }
 
-    /**
-     * ✅ FIXED: Get ALL quizzes (published AND draft) for admin
-     */
     @GetMapping
     public ResponseEntity<?> listAll(Authentication auth) {
         if (!isAdmin(auth)) {

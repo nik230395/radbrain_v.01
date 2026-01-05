@@ -1,0 +1,24 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_DATABASE: radbrain
+      MYSQL_ROOT_PASSWORD:
+    volumes:
+      - mysqlvolume:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  server:
+    build: .
+    container_name: spring-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/radbrain
+
+volumes:
+  mysqlvolume:

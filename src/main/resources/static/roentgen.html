@@ -3,142 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RadBrain - Radiologie einfach lernen</title>
+    <title>Röntgen - RadBrain Lernbereich</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="learning-areas.css">
 </head>
 <body>
 
-    <!-- Navigationsbar-->
-    <nav class="navbar navbar-inverse navbar-fixed-top" style="height: 70px; background-color: #1a1a1a; color: white; padding: 0 20px; display: flex; align-items: center;">
-        <div class="nav-left" style="display: flex; align-items: center; gap: 10px;">
-            <img src="Bilder/logo.png" alt="RadBrain Logo" style="height: 35px; width: auto;" />
-            <span class="logo-text" style="font-size: 1.4rem; font-weight: bold;"></span>
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="nav-left">
+            <img src="logo.png" alt="RadBrain Logo" class="nav-logo">
         </div>
-
-
-        <ul class="nav-menu" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; list-style: none; gap: 30px; margin: 0; padding: 0;">
-            <li class="nav-item"><a href="index.html" class="nav-link" style="color: white; text-decoration: none;">Home</a></li>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/user-home.html" class="nav-link">Home</a></li>
             <li class="nav-item dropdown">
-                <a href="#lernbereiche" class="nav-link" style="color: white; text-decoration: none;">Lernbereiche</a>
+                <a href="#" class="nav-link active">Lernbereiche</a>
                 <ul class="dropdown-menu">
-                    <li><a href="ct.html">CT</a></li>
-                    <li><a href="mrt.html">MRT</a></li>
-                    <li><a href="ultraschall.html">Ultraschall</a></li>
+                    <li><a href="/ct.html">CT</a></li>
+                    <li><a href="/mrt.html">MRT</a></li>
+                    <li><a href="/ultraschall.html">Ultraschall</a></li>
                 </ul>
             </li>
-            <li class="nav-item"><a href="#quiz" class="nav-link" style="color: white; text-decoration: none;">Quiz</a></li>
-            <li class="nav-item"><a href="#inhaltsverzeichnis" class="nav-link" style="color: white; text-decoration: none;">Inhaltsverzeichnis</a></li>
-            <li class="nav-item"><a href="#kontakt" class="nav-link" style="color: white; text-decoration: none;">Kontakt</a></li>
+            <li class="nav-item"><a href="/quizzes.html" class="nav-link">Quiz</a></li>
+            <li class="nav-item"><a href="/dashboard.html" class="nav-link">Dashboard</a></li>
+            <li class="nav-item" id="adminNavItem" style="display: none;">
+                <a href="/admin-dashboard.html" class="nav-link">Admin Panel</a>
+            </li>
         </ul>
 
-        <!-- Rechts: Anmelde-Button -->
-        <div class="nav-right" style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
-            <a href="login.html" class="btn-login">Anmelden</a>
-            <!-- Hamburger für mobile -->
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
+        <!-- Wenn user angemeldet dann Konto nicht Anmelden -->
+        <div class="nav-profile-dropdown" id="profileDropdown" style="margin-left: auto; display: none;">
+            <button class="nav-profile-btn" id="profileBtn">
+                <span id="userName">Mein Account</span>
+                <span style="font-size: 0.8rem;">▾</span>
+            </button>
+            <div class="nav-profile-menu" id="profileMenu">
+                <a href="/account.html">Mein Account</a>
+                <a href="/dashboard.html">Dashboard</a>
+                <div class="divider"></div>
+                <button id="logoutBtn" style="color: #dc2626;">Abmelden</button>
             </div>
         </div>
 
-    </nav>
-
-
-    <section id="home" class="hero">
-        <div class="hero-background"></div>
-        <div class="hero-content">
-            <h1 class="hero-title">Röntgen</h1>
-            <p class="hero-subtitle">Grundlagen der Radiologie und systematische Bildinterpretation</p>
-            <div class="hero-buttons">
-                <a href="login.html" class="btn-primary">Kostenlos starten</a>
-
-                <a href="#inhaltsverzeichnis" class="btn-secondary-outline">Zur Übersicht</a>
-            </div>
+        <div class="nav-auth-section" id="navAuthSection" style="margin-left: auto;">
+            <a href="/login.html" class="btn-login">Anmelden</a>
         </div>
-        <div class="hero-wave">
-            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="white" />
-            </svg>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="hero-background"></div>
+    <div class="hero-content">
+        <h1 class="hero-title">Röntgen</h1>
+        <p class="hero-subtitle">Grundlagen der Radiologie und systematische Bildinterpretation</p>
+        <div class="hero-buttons">
+            <a href="#inhaltsverzeichnis" class="btn-primary">Los geht's</a>
+            <a href="/quiz.html" class="btn-secondary-outline">Zum Quiz</a>
         </div>
-    </section>
+    </div>
+    <div class="hero-wave">
+        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="white" />
+        </svg>
+    </div>
+</section>
 
-    <!-- Inhaltsverzeichnis -->
-    <section id="inhaltsverzeichnis" class="toc-section">
-        <div class="container">
-            <h2 class="section-title">Inhaltsverzeichnis</h2>
-            <p class="section-subtitle">Wähle einen Bereich aus, um direkt dorthin zu springen</p>
-
-            <div class="toc-grid">
-                <a href="#grundlagen" class="toc-card">
-                    <div class="toc-number">01</div>
-                    <h3>Physikalische Grundlagen</h3>
-                    <p>Röntgenstrahlung, Strahlenphysik und Bildgebung</p>
-                </a>
-
-                <a href="#technik" class="toc-card">
-                    <div class="toc-number">02</div>
-                    <h3>Aufnahmetechnik</h3>
-                    <p>Einstellungen, Projektionen und Bildqualität</p>
-                </a>
-
-                <a href="#anatomie" class="toc-card">
-                    <div class="toc-number">03</div>
-                    <h3>Radiologische Anatomie</h3>
-                    <p>Normale Anatomie im Röntgenbild</p>
-                </a>
-
-                <a href="#befundung" class="toc-card">
-                    <div class="toc-number">04</div>
-                    <h3>Systematische Befundung</h3>
-                    <p>Strukturierte Bildanalyse und Checklisten</p>
-                </a>
-
-                <a href="#thorax" class="toc-card">
-                    <div class="toc-number">05</div>
-                    <h3>Thoraxröntgen</h3>
-                    <p>Lunge, Herz und Mediastinum</p>
-                </a>
-
-                <a href="#skelett" class="toc-card">
-                    <div class="toc-number">06</div>
-                    <h3>Skelettradiologie</h3>
-                    <p>Frakturen und Knochenerkrankungen</p>
-                </a>
-
-                <a href="#abdomen" class="toc-card">
-                    <div class="toc-number">07</div>
-                    <h3>Abdomenübersicht</h3>
-                    <p>Gastrointestinale Pathologien erkennen</p>
-                </a>
-
-                <a href="#strahlenschutz" class="toc-card">
-                    <div class="toc-number">08</div>
-                    <h3>Strahlenschutz</h3>
-                    <p>Rechtfertigung und Dosisreduktion</p>
-                </a>
-            </div>
+<section id="inhaltsverzeichnis" class="toc-section">
+    <div class="container">
+        <h2 class="section-title">Inhaltsverzeichnis</h2>
+        <p class="section-subtitle">Wähle ein Kapitel aus, um direkt dorthin zu springen</p>
+        <div class="toc-grid">
+            <a href="#grundlagen" class="toc-card">
+                <div class="toc-number">01</div>
+                <h3>Physikalische Grundlagen</h3>
+                <p>Röntgenstrahlung, Strahlenphysik und Bildgebung</p>
+            </a>
+            <a href="#technik" class="toc-card">
+                <div class="toc-number">02</div>
+                <h3>Aufnahmetechnik</h3>
+                <p>Einstellungen, Projektionen und Bildqualität</p>
+            </a>
+            <a href="#anatomie" class="toc-card">
+                <div class="toc-number">03</div>
+                <h3>Radiologische Anatomie</h3>
+                <p>Normale Anatomie im Röntgenbild</p>
+            </a>
+            <a href="#befundung" class="toc-card">
+                <div class="toc-number">04</div>
+                <h3>Systematische Befundung</h3>
+                <p>Strukturierte Bildanalyse und Checklisten</p>
+            </a>
+            <a href="#thorax" class="toc-card">
+                <div class="toc-number">05</div>
+                <h3>Thoraxröntgen</h3>
+                <p>Lunge, Herz und Mediastinum</p>
+            </a>
+            <a href="#skelett" class="toc-card">
+                <div class="toc-number">06</div>
+                <h3>Skelettradiologie</h3>
+                <p>Frakturen und Knochenerkrankungen</p>
+            </a>
+            <a href="#abdomen" class="toc-card">
+                <div class="toc-number">07</div>
+                <h3>Abdomenübersicht</h3>
+                <p>Gastrointestinale Pathologien erkennen</p>
+            </a>
+            <a href="#strahlenschutz" class="toc-card">
+                <div class="toc-number">08</div>
+                <h3>Strahlenschutz</h3>
+                <p>Rechtfertigung und Dosisreduktion</p>
+            </a>
         </div>
-    </section>
+    </div>
+</section>
 
-    <!-- Lerninhalt: Physikalische Grundlagen -->
-    <section id="grundlagen" class="content-section">
-        <div class="container">
+<div class="content-wrapper">
+    <aside class="sticky-toc">
+        <div class="toc-progress">
+            <div class="toc-progress-bar" id="progressBar"></div>
+        </div>
+        <h3>Auf dieser Seite</h3>
+        <ul class="sticky-toc-list">
+            <li><a href="#grundlagen" class="toc-link">Physikalische Grundlagen</a></li>
+            <li><a href="#technik" class="toc-link">Aufnahmetechnik</a></li>
+            <li><a href="#anatomie" class="toc-link">Radiologische Anatomie</a></li>
+            <li><a href="#befundung" class="toc-link">Systematische Befundung</a></li>
+            <li><a href="#thorax" class="toc-link">Thoraxröntgen</a></li>
+            <li><a href="#skelett" class="toc-link">Skelettradiologie</a></li>
+            <li><a href="#abdomen" class="toc-link">Abdomenübersicht</a></li>
+            <li><a href="#strahlenschutz" class="toc-link">Strahlenschutz</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <section id="grundlagen" class="content-section">
             <div class="content-header">
                 <span class="content-badge">Kapitel 1</span>
                 <h2>Physikalische Grundlagen</h2>
             </div>
-
             <div class="content-grid">
                 <div class="content-text">
                     <h3>Röntgenstrahlung und ihre Eigenschaften</h3>
                     <p>Röntgenstrahlung ist eine hochenergetische Form elektromagnetischer Strahlung mit sehr kurzen Wellenlängen. Sie entsteht, wenn schnelle Elektronen auf ein Anodenmaterial – meist Wolfram – treffen und dort abrupt abgebremst werden. Dabei entsteht sogenannte <strong>Bremsstrahlung</strong>, ergänzt durch <strong>charakteristische Strahlung</strong>, die vom Anodenmaterial abhängt.</p>
-                    <br />
                     <p>Die physikalischen Eigenschaften der Röntgenstrahlen ermöglichen es, verschiedene Gewebearten unterschiedlich stark zu durchdringen. Knochen absorbieren Strahlung stärker und erscheinen auf dem Bild hell, während Weichteile und Luft dunkler dargestellt werden. Dieses Prinzip bildet die Grundlage der radiologischen Bildgebung.</p>
-                    <br />
                     <p>Die Intensität und Qualität der erzeugten Strahlung hängen von der Röhrenspannung (kV) und dem Röhrenstrom (mAs) ab. Höhere Spannungen führen zu einer besseren Durchdringungsfähigkeit, während höhere Stromstärken die Strahlungsmenge und somit die Helligkeit beeinflussen. Eine ausgewogene Kombination beider Faktoren sorgt für eine optimale Bildqualität bei minimaler Dosis.</p>
-
-                    <div class="info-box">
+                    <div class="info-box" style="margin-top: 2rem;">
                         <h4>Wichtige Konzepte</h4>
                         <ul>
                             <li><strong>Bremsstrahlung und charakteristische Strahlung:</strong> Grundlage der Röntgenerzeugung</li>
@@ -148,46 +157,39 @@
                         </ul>
                     </div>
                 </div>
-
                 <div class="content-visual">
                     <div class="image-placeholder">
                         <svg viewBox="0 0 400 300" fill="none">
                             <rect width="400" height="300" fill="#f0f4ff" />
+                            <text x="200" y="150" text-anchor="middle" fill="#9ca3af" font-size="18" font-family="sans-serif">Röntgenstrahlenerzeugung</text>
                         </svg>
                     </div>
                     <p class="image-caption">Schematische Darstellung der Röntgenstrahlenerzeugung</p>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Lerninhalt: Aufnahmetechnik -->
-    <section id="technik" class="content-section">
-        <div class="container">
+        <section id="technik" class="content-section">
             <div class="content-header">
                 <span class="content-badge">Kapitel 2</span>
                 <h2>Aufnahmetechnik</h2>
             </div>
-
             <div class="content-grid reverse">
                 <div class="content-visual">
                     <div class="image-placeholder">
                         <svg viewBox="0 0 400 300" fill="none">
                             <rect width="400" height="300" fill="#f8f0ff" />
+                            <text x="200" y="150" text-anchor="middle" fill="#9ca3af" font-size="18" font-family="sans-serif">Standardprojektionen</text>
                         </svg>
                     </div>
                     <p class="image-caption">Standardprojektionen in der Röntgendiagnostik</p>
                 </div>
-
                 <div class="content-text">
                     <h3>Einstellungen und Projektionen</h3>
                     <p>Die richtige Aufnahmetechnik ist entscheidend für die Bildqualität und die diagnostische Aussagekraft. Je nach Fragestellung werden unterschiedliche Projektionen verwendet, um anatomische Strukturen optimal darzustellen. Dabei müssen Positionierung, Belichtung und Fokus-Film-Abstand präzise abgestimmt werden.</p>
-                    <br />
                     <p>Zu den häufigsten Projektionen zählen die <strong>posterior–anterior (p.a.)</strong> Aufnahme beim Thorax, die eine natürliche Herzgröße abbildet, sowie die <strong>seitliche</strong> Projektion zur ergänzenden Beurteilung überlagerter Strukturen. In speziellen Fällen werden auch schräge oder zielgerichtete Aufnahmen (z. B. für Gelenke) verwendet.</p>
-                    <br />
                     <p>Auch die Wahl des Detektors, die Verwendung von Streustrahlenraster und die Anpassung der Belichtungsparameter spielen eine große Rolle, um Bewegungsunschärfe zu vermeiden und den Kontrast zu optimieren.</p>
-
-                    <div class="info-box">
+                    <div class="info-box" style="margin-top: 2rem;">
                         <h4>Technische Parameter</h4>
                         <ul>
                             <li><strong>Röhrenspannung:</strong> Beeinflusst Kontrast und Durchdringung</li>
@@ -198,24 +200,18 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Lerninhalt: Radiologische Anatomie -->
-    <section id="anatomie" class="content-section">
-        <div class="container">
+        <section id="anatomie" class="content-section">
             <div class="content-header">
                 <span class="content-badge">Kapitel 3</span>
                 <h2>Radiologische Anatomie</h2>
             </div>
-
-            <div class="content-text-full">
+            <div class="content-text">
                 <h3>Normale Anatomie im Röntgenbild</h3>
                 <p>Das Verständnis der normalen radiologischen Anatomie ist die Grundlage für jede Bildinterpretation. Nur wer die physiologische Darstellung der Gewebe und Organe kennt, kann pathologische Veränderungen sicher erkennen. Unterschiedliche Gewebe weisen verschiedene Röntgendichten auf, die als Helligkeitsabstufungen im Bild sichtbar werden.</p>
-
                 <p>Im Röntgenbild erscheinen dichte Strukturen wie Knochen hell (weiß), während luftgefüllte Bereiche wie die Lunge dunkel (schwarz) dargestellt werden. Weichteile, Fettgewebe und Flüssigkeiten liegen dazwischen und erzeugen den charakteristischen Graustufenverlauf eines Röntgenbilds.</p>
-
-                <div class="anatomy-cards">
+                <div class="anatomy-cards" style="margin-top: 2rem;">
                     <div class="anatomy-card">
                         <h4>Knochen</h4>
                         <p>Hohe Dichte, erscheinen hell (hyperdens). Die Kortikalis ist dichter und klarer abgegrenzt als die Spongiosa.</p>
@@ -233,444 +229,328 @@
                         <p>Sehr niedrige Dichte, erscheint schwarz (hypodens). Besonders wichtig bei Thorax- und Abdomenaufnahmen.</p>
                     </div>
                 </div>
-                <br />
-                <p>Die Kenntnis anatomischer Landmarken wie Herzränder, Diaphragma, Hilusstrukturen oder Wirbelsäulenverläufe ist essenziell. Regelmäßige Übung mit Normalaufnahmen trainiert das Auge und verbessert die diagnostische Sicherheit bei der Befundung.</p>
+                <p style="margin-top: 2rem;">Die Kenntnis anatomischer Landmarken wie Herzränder, Diaphragma, Hilusstrukturen oder Wirbelsäulenverläufe ist essenziell. Regelmäßige Übung mit Normalaufnahmen trainiert das Auge und verbessert die diagnostische Sicherheit bei der Befundung.</p>
             </div>
-        </div>
-    </section>
+        </section>
 
-
-    <!-- Lerninhalt: Systematische Befundung -->
-    <section id="befundung" class="content-section ">
-        <div class="container">
+        <section id="befundung" class="content-section">
             <div class="content-header">
                 <span class="content-badge">Kapitel 4</span>
                 <h2>Systematische Befundung</h2>
             </div>
-
-            <div class="content-grid">
-                <div class="content-text">
-                    <h3>Strukturierte Bildanalyse</h3>
-                    <p>Eine systematische Herangehensweise ist entscheidend, um keine pathologischen Befunde zu übersehen. Die Befundung sollte immer nach dem gleichen Schema erfolgen, unabhängig von der klinischen Fragestellung.</p>
-
-                    <div class="checklist-box">
-                        <h4>Befundungsschema</h4>
-                        <div class="checklist-item">
-                            <span class="check-number">1</span>
-                            <div>
-                                <strong>Technische Qualität prüfen</strong>
-                                <p>Belichtung, Einstellung, Artefakte bewerten</p>
-                            </div>
-                        </div>
-                        <div class="checklist-item">
-                            <span class="check-number">2</span>
-                            <div>
-                                <strong>Systematische Durchsicht</strong>
-                                <p>Von innen nach außen oder nach anatomischen Regionen</p>
-                            </div>
-                        </div>
-                        <div class="checklist-item">
-                            <span class="check-number">3</span>
-                            <div>
-                                <strong>Vergleich mit Voraufnahmen</strong>
-                                <p>Zeitliche Dynamik pathologischer Prozesse beurteilen</p>
-                            </div>
-                        </div>
-                        <div class="checklist-item">
-                            <span class="check-number">4</span>
-                            <div>
-                                <strong>Klinische Korrelation</strong>
-                                <p>Befunde im klinischen Kontext interpretieren</p>
-                            </div>
-                        </div>
-                    </div>
+            <div class="content-text">
+                <h3>Strukturierter Ansatz zur Bildanalyse</h3>
+                <p>Eine systematische Befundung ist der Schlüssel zu einer zuverlässigen Diagnostik. Statt impulsiv auf auffällige Befunde zu reagieren, folgt man einem festen Schema, um keine Details zu übersehen. Diese Disziplin reduziert das Risiko von Fehlinterpretationen erheblich.</p>
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4>ABCDE-Schema für Thoraxröntgen</h4>
+                    <ul>
+                        <li><strong>A – Airway:</strong> Trachea mittelständig, nicht verlagert?</li>
+                        <li><strong>B – Bones:</strong> Rippen, Wirbelsäule, Schlüsselbein unauffällig?</li>
+                        <li><strong>C – Cardiac:</strong> Herzgröße normal, Herzsilhouette glatt?</li>
+                        <li><strong>D – Diaphragm:</strong> Zwerchfellkuppeln klar abgrenzbar, symmetrisch?</li>
+                        <li><strong>E – Everything else:</strong> Lunge, Hilum, Mediastinum, Pleura</li>
+                    </ul>
                 </div>
-
-                <div class="content-visual">
-                    <div class="tip-box">
-                        <h4>Häufige Fehlerquellen</h4>
-                        <ul>
-                            <li>Übersehen von Befunden außerhalb des primären Fokus</li>
-                            <li>Fehlinterpretation anatomischer Varianten</li>
-                            <li>Unzureichende Beurteilung der Bildqualität</li>
-                            <li>Vernachlässigung von Weichteilen und Knochen</li>
-                        </ul>
-                    </div>
-
-                    <div class="tip-box" style="margin-top: 1.5rem;">
-                        <h4>Merkhilfen</h4>
-                        <ul>
-                            <li>Immer beide Seiten vergleichen</li>
-                            <li>Ränder des Bildes nicht vergessen</li>
-                            <li>Bei Unklarheiten: Zusatzaufnahmen erwägen</li>
-                            <li>Dokumentation aller Befunde</li>
-                        </ul>
-                    </div>
-                </div>
+                <p style="margin-top: 2rem;">Zusätzlich empfiehlt sich ein Vergleich mit Voraufnahmen, sofern vorhanden. Veränderungen im zeitlichen Verlauf können subtile Pathologien offenlegen, die auf einer Einzelaufnahme leicht übersehen werden.</p>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Lerninhalt: Thoraxröntgen -->
-    <section id="thorax" class="content-section">
-        <div class="container">
+        <section id="thorax" class="content-section">
             <div class="content-header">
                 <span class="content-badge">Kapitel 5</span>
                 <h2>Thoraxröntgen</h2>
             </div>
-
-            <div class="content-text-full">
-                <h3>Bildgebung von Lunge, Herz und Mediastinum</h3>
-                <p>Die Thoraxaufnahme ist die häufigste radiologische Untersuchung und dient zur Beurteilung von Lunge, Herz, Mediastinum und knöchernem Thorax. Sie ist oft der erste bildgebende Schritt in der Diagnostik thorakaler Erkrankungen.</p>
-
-                <div class="content-columns">
-                    <div class="column-content">
-                        <h4>Lungenfelder</h4>
-                        <p>Systematische Beurteilung der Lungentransparenz, Gefäßzeichnung und möglicher Verschattungen. Unterscheidung zwischen alveolären und interstitiellen Mustern ist wichtig für die Differentialdiagnose.</p>
-                        <br />
+            <div class="content-grid">
+                <div class="content-text">
+                    <h3>Lunge, Herz und Mediastinum</h3>
+                    <p>Das Thoraxröntgen ist eine der häufigsten radiologischen Untersuchungen. Es dient zur Beurteilung von Lunge, Herz, Mediastinum und knöchernem Thorax. Die Standardaufnahme erfolgt in posterior-anteriorer (p.a.) Projektion bei maximaler Inspiration.</p>
+                    <p>Bei der Befundung der Lunge achtet man auf Transparenz, Gefäßzeichnung und mögliche Verschattungen. Das Herz wird hinsichtlich Größe und Konfiguration beurteilt, wobei der Herz-Thorax-Quotient (HTQ) nicht mehr als 0,5 betragen sollte.</p>
+                    <div class="warning-box" style="margin-top: 2rem;">
+                        <h4>Häufige Pathologien</h4>
                         <ul>
-                            <li>Verschattungsmuster erkennen</li>
-                            <li>Pneumonien und Atelektasen</li>
-                            <li>Pleuraergüsse identifizieren</li>
-                            <li>Pneumothorax ausschließen</li>
-                        </ul>
-                    </div>
-
-                    <div class="column-content">
-                        <h4>Herz und Mediastinum</h4>
-                        <p>Beurteilung der Herzgröße (Cardiothorakaler Quotient), Herzkontur und mediastinaler Strukturen. Vergrößerungen einzelner Herzkammern führen zu charakteristischen Konturveränderungen.</p>
-                        <br />
-                        <ul>
-
-                            <li>Herzgröße und -konfiguration</li>
-                            <li>Mediastinalverbreiterung</li>
-                            <li>Hilusstrukturen beurteilen</li>
-                            <li>Gefäßzeichnung analysieren</li>
+                            <li><strong>Pneumonie:</strong> Verschattung mit positivem Aerobronchogramm</li>
+                            <li><strong>Pleuraerguss:</strong> Kostophrenischer Winkel aufgehoben</li>
+                            <li><strong>Pneumothorax:</strong> Fehlende Lungenzeichnung, sichtbare Pleuragrenze</li>
+                            <li><strong>Herzinsuffizienz:</strong> Kardiomegalie, Stauungszeichen</li>
                         </ul>
                     </div>
                 </div>
+                <div class="content-visual">
+                    <div class="image-placeholder">
+                        <svg viewBox="0 0 400 300" fill="none">
+                            <rect width="400" height="300" fill="#fff7ed" />
+                            <text x="200" y="150" text-anchor="middle" fill="#9ca3af" font-size="18" font-family="sans-serif">Thorax p.a.</text>
+                        </svg>
+                    </div>
+                    <p class="image-caption">Normales Thoraxröntgen in p.a. Projektion</p>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Lerninhalt: Skelettradiologie -->
-    <section id="skelett" class="content-section">
-        <div class="container">
+        <section id="skelett" class="content-section">
             <div class="content-header">
                 <span class="content-badge">Kapitel 6</span>
                 <h2>Skelettradiologie</h2>
             </div>
-
-            <div class="content-grid">
-                <div class="content-text">
-                    <h3>Frakturen und Knochenerkrankungen</h3>
-                    <p>Die Skelettradiologie umfasst die Diagnostik von Frakturen, Luxationen, degenerativen Veränderungen und Knochenläsionen. Mindestens zwei Ebenen sind für eine adäquate Beurteilung erforderlich.</p>
-
-                    <h4>Frakturdiagnostik</h4>
-                    <p>Bei der Beurteilung von Frakturen müssen Frakturtyp, Dislokationsgrad, Gelenkbeteiligung und begleitende Weichteilverletzungen erfasst werden. Die Beschreibung sollte systematisch und präzise erfolgen.</p>
-                    <br />
-                    <div class="info-box">
-                        <h4>Frakturklassifikationen</h4>
-                        <ul>
-                            <li>AO-Klassifikation nach Lokalisation und Morphologie</li>
-                            <li>Weber-Klassifikation bei Sprunggelenksfrakturen</li>
-                            <li>Salter-Harris bei Wachstumsfugenverletzungen</li>
-                            <li>Garden-Klassifikation bei Schenkelhalsfrakturen</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="content-visual">
-                    <div class="image-placeholder">
-                        <svg viewBox="0 0 400 300" fill="none">
-                        </svg>
-                    </div>
-                    <p class="image-caption">Schematische Darstellung einer Fraktur</p>
-
-                    <div class="tip-box" style="margin-top: 1.5rem;">
-                        <h4>Wichtige Aspekte</h4>
-                        <ul>
-                            <li>Zwei Ebenen obligat</li>
-                            <li>Angrenzende Gelenke mit abbilden</li>
-                            <li>Auf Zweitfrakturen achten</li>
-                            <li>Weichteilschwellung beachten</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Lerninhalt: Abdomenübersicht -->
-    <section id="abdomen" class="content-section">
-        <div class="container">
-            <div class="content-header">
-                <span class="content-badge">Kapitel 7</span>
-                <h2>Abdomenübersicht</h2>
-            </div>
-
             <div class="content-grid reverse">
                 <div class="content-visual">
                     <div class="image-placeholder">
                         <svg viewBox="0 0 400 300" fill="none">
-                            <rect width="400" height="300" fill="#f0fff8" />
+                            <rect width="400" height="300" fill="#fef3c7" />
+                            <text x="200" y="150" text-anchor="middle" fill="#9ca3af" font-size="18" font-family="sans-serif">Skelettaufnahme</text>
                         </svg>
                     </div>
-                    <p class="image-caption">Normale Darmgasverteilung im Abdomen</p>
+                    <p class="image-caption">Beispiel einer Skelettaufnahme</p>
                 </div>
-
                 <div class="content-text">
-                    <h3>Gastrointestinale Pathologien erkennen</h3>
-                    <p>Die Abdomenübersichtsaufnahme ist besonders wertvoll bei akuten abdominellen Beschwerden. Sie kann wichtige Hinweise auf Ileus, Perforation oder andere akute Pathologien liefern.</p>
-
-                    <h4>Systematische Beurteilung</h4>
-                    <p>Die Bildanalyse sollte Organgrenzen, Darmgasverteilung, freie Luft, Verkalkungen und Fremdkörper umfassen. Pathologische Luftansammlungen und abnorme Gasverteilungsmuster sind wichtige Befunde.</p>
-
-                    <div class="info-box">
-                        <h4>Wichtige Befunde</h4>
+                    <h3>Frakturen und Knochenerkrankungen</h3>
+                    <p>Die Skelettröntgenaufnahme ist essentiell für die Diagnostik von Frakturen, Luxationen und degenerativen Veränderungen. Standardmäßig werden mindestens zwei Ebenen (meist anterior-posterior und lateral) aufgenommen, um die räumliche Lage von Frakturfragmenten zu beurteilen.</p>
+                    <p>Bei der Frakturdiagnostik achtet man auf Kontinuitätsunterbrechung der Kortikalis, Dislokation, Angulation und eventuelle Gelenkbeteiligung. Auch Weichteilverschattungen durch Hämatome oder Schwellungen können wichtige Hinweise liefern.</p>
+                    <div class="info-box" style="margin-top: 2rem;">
+                        <h4>Frakturklassifikation</h4>
                         <ul>
-                            <li>Freie Luft unter dem Zwerchfell (Perforation)</li>
-                            <li>Spiegelbildung bei Ileus</li>
-                            <li>Verkalkungen (Nierensteine, Gallensteine)</li>
-                            <li>Organvergrößerungen erkennen</li>
+                            <li><strong>Geschlossene Fraktur:</strong> Haut intakt, kein Kontakt nach außen</li>
+                            <li><strong>Offene Fraktur:</strong> Hautverletzung, Infektionsrisiko erhöht</li>
+                            <li><strong>Grünholzfraktur:</strong> Inkomplette Fraktur bei Kindern</li>
+                            <li><strong>Pathologische Fraktur:</strong> Bruch durch vorgeschädigte Knochenstruktur</li>
                         </ul>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Lerninhalt: Strahlenschutz -->
-    <section id="strahlenschutz" class="content-section">
-        <div class="container">
+        <section id="abdomen" class="content-section">
+            <div class="content-header">
+                <span class="content-badge">Kapitel 7</span>
+                <h2>Abdomenübersicht</h2>
+            </div>
+            <div class="content-text">
+                <h3>Gastrointestinale Pathologien erkennen</h3>
+                <p>Die Abdomenübersichtsaufnahme hilft bei der Erkennung von Ileus, freier Luft, Steinen und Organvergrößerungen. Die Aufnahme erfolgt im Stehen oder in Linksseitenlage, um freie Luft unter dem Zwerchfell bzw. zwischen Leber und Bauchwand darzustellen.</p>
+                <p>Bei der systematischen Befundung achtet man auf Darmgaskonfiguration, Organsilhouetten, Verkalkungen und freie Flüssigkeit. Erweiterte, flüssigkeitsgefüllte Darmschlingen mit Spiegelbildung deuten auf einen Ileus hin.</p>
+                <div class="anatomy-cards" style="margin-top: 2rem;">
+                    <div class="anatomy-card">
+                        <h4>Mechanischer Ileus</h4>
+                        <p>Erweiterte Darmschlingen proximal der Obstruktion, Spiegelniveaus, kollabierte Schlingen distal.</p>
+                    </div>
+                    <div class="anatomy-card">
+                        <h4>Paralytischer Ileus</h4>
+                        <p>Diffus erweiterte Darmschlingen ohne klare Obstruktion, verminderte Peristaltik.</p>
+                    </div>
+                    <div class="anatomy-card">
+                        <h4>Freie Luft</h4>
+                        <p>Sichelförmige Luftansammlung unter dem Zwerchfell bei Perforation.</p>
+                    </div>
+                    <div class="anatomy-card">
+                        <h4>Steine</h4>
+                        <p>Verkalkungen im Projektionsbereich von Niere, Harnleiter oder Gallenblase.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="strahlenschutz" class="content-section">
             <div class="content-header">
                 <span class="content-badge">Kapitel 8</span>
                 <h2>Strahlenschutz</h2>
             </div>
-
-            <div class="content-text-full">
+            <div class="content-text">
                 <h3>Rechtfertigung und Dosisreduktion</h3>
-                <p>Strahlenschutz hat oberste Priorität in der Röntgendiagnostik. Das ALARA-Prinzip (As Low As Reasonably Achievable) fordert, die Strahlenbelastung so gering wie möglich zu halten, ohne die diagnostische Aussagekraft zu beeinträchtigen.</p>
-
-                <div class="protection-grid">
-                    <div class="protection-card">
-                        <h4>Rechtfertigung</h4>
-                        <p>Jede Röntgenuntersuchung muss durch einen Arzt mit der erforderlichen Fachkunde gerechtfertigt werden. Alternative Verfahren ohne Strahlenbelastung (z.B. Ultraschall, MRT) sollten in Betracht gezogen werden.</p>
-                    </div>
-
-                    <div class="protection-card">
-                        <h4>Dosisoptimierung</h4>
-                        <p>Durch optimierte Aufnahmetechnik, Verwendung von Strahlenschutzmitteln und moderne Bildempfängersysteme kann die Dosis minimiert werden. Wiederholungsaufnahmen sollten vermieden werden.</p>
-                    </div>
-
-                    <div class="protection-card">
-                        <h4>Besondere Patientengruppen</h4>
-                        <p>Schwangere, Kinder und junge Erwachsene bedürfen besonderer Aufmerksamkeit. Bei Schwangeren sollten Röntgenuntersuchungen wenn möglich vermieden oder verschoben werden.</p>
-                    </div>
-
-                    <div class="protection-card">
-                        <h4>Dokumentation</h4>
-                        <p>Die rechtfertigende Indikation und die Aufklärung des Patienten müssen dokumentiert werden. Auch die angewandte Dosis sollte erfasst werden.</p>
-                    </div>
-                </div>
-
-                <div class="info-box" style="margin-top: 2rem;">
-                    <h4>Dosisvergleiche (typische effektive Dosis)</h4>
+                <p>Der Strahlenschutz hat höchste Priorität. Jede Röntgenuntersuchung muss gerechtfertigt sein und nach dem ALARA-Prinzip (As Low As Reasonably Achievable) durchgeführt werden. Die rechtfertigende Indikation darf nur durch einen fachkundigen Arzt gestellt werden.</p>
+                <p>Zur Dosisreduktion tragen optimierte Aufnahmeparameter, Verwendung von Streustrahlenrastern, Einblendung auf die relevante Region und der Einsatz moderner Detektorsysteme bei. Besonders bei Kindern und Schwangeren ist größte Sorgfalt geboten.</p>
+                <div class="warning-box" style="margin-top: 2rem;">
+                    <h4>ALARA-Prinzip</h4>
                     <ul>
-                        <li>Thorax p.a.: 0,02 mSv (entspricht etwa 2 Tagen natürlicher Hintergrundstrahlung)</li>
-                        <li>Abdomen: 0,7 mSv</li>
-                        <li>Wirbelsäule: 1,0 mSv</li>
-                        <li>Becken: 0,6 mSv</li>
+                        <li><strong>As Low As Reasonably Achievable:</strong> Dosis so niedrig wie vernünftigerweise erreichbar</li>
+                        <li><strong>Rechtfertigung:</strong> Nutzen muss Risiko überwiegen</li>
+                        <li><strong>Optimierung:</strong> Technische Parameter anpassen</li>
+                        <li><strong>Dosisbegrenzung:</strong> Grenzwerte einhalten</li>
+                    </ul>
+                </div>
+                <div class="success-box" style="margin-top: 2rem;">
+                    <h4>Maßnahmen zur Dosisreduktion</h4>
+                    <ul>
+                        <li><strong>Einblendung:</strong> Nur notwendige Region belichten</li>
+                        <li><strong>Abstandsquadratgesetz:</strong> Größerer Fokus-Haut-Abstand reduziert Dosis</li>
+                        <li><strong>Optimierte Parameter:</strong> Höhere kV, niedrigere mAs bei gleichbleibender Bildqualität</li>
+                        <li><strong>Gonadenschutz:</strong> Bleischürze bei Untersuchungen außerhalb des Beckens</li>
                     </ul>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
+</div>
 
-
-
-    <!-- Quiz Section -->
-    <section id="quiz" class="quiz-section">
-        <div class="container">
-            <h2 class="section-title">Teste dein Wissen</h2>
-            <p class="section-subtitle">Zeit das neu erlernte Wissen zu überprüfen und zu schauen, wo noch Übungsbedarf besteht!</p>
-            <div class="quiz-container">
-                <div class="quiz-card-large">
-                    <div class="quiz-header">
-                        <h3>Röntgen</h3>
-                        <span class="quiz-badge">12 Fragen</span>
-                    </div>
-                    <p>Grundlagen der Röntgentechnik, typische anatomische Strukturen und theoretische Konzepte</p>
-                    <div class="quiz-info">
-                        <span class="info-item">⏱ ~10 Min</span>
-                        <span class="info-item">★ Mittel</span>
-                    </div>
-                    <a href="" class="btn-quiz">Quiz starten</a>
-                </div>
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-grid">
+            <div class="footer-section">
+                <h3>RadBrain</h3>
+                <p>Ihre Plattform für radiologisches Lernen und Wissensvertiefung.</p>
+                <p style="margin-top: 1rem;">© 2025 RadBrain</p>
+            </div>
+            <div class="footer-section">
+                <h3>Lernbereiche</h3>
+                <a href="/roentgen.html">Röntgen</a>
+                <a href="/ct.html">Computertomographie</a>
+                <a href="/mrt.html">MRT</a>
+                <a href="/ultraschall.html">Ultraschall</a>
+            </div>
+            <div class="footer-section">
+                <h3>Navigation</h3>
+                <a href="/user-home.html">Home</a>
+                <a href="/quiz.html">Quiz</a>
+                <a href="/dashboard.html">Dashboard</a>
+                <a href="/account.html">Mein Account</a>
+            </div>
+            <div class="footer-section">
+                <h3>Kontakt & Rechtliches</h3>
+                <p>E-Mail: <a href="mailto:info@radbrain.at">info@radbrain.at</a></p>
+                <p style="margin-top: 1rem;">
+                    <strong>Impressum</strong><br>
+                    RadBrain Lernplattform<br>
+                    Musterstraße 123<br>
+                    1010 Wien, Österreich
+                </p>
             </div>
         </div>
-    </section>
-
-
-    <!-- Lernbereiche -->
-    <section id="lernbereiche" class="learning-areas">
-        <div class="container">
-            <h2 class="section-title">Weitere Lernbereiche</h2>
-            <p class="section-subtitle">Wähle deinen Schwerpunkt und setze deine Lernreise fort!</p>
-
-            <div class="areas-grid">
-                <a href="roentgen.html" class="area-card area-card-1">
-                    <div class="area-icon">
-                        <svg viewBox="0 0 100 100" width="60" height="60">
-                            <rect x="30" y="20" width="40" height="60" rx="5" fill="white" opacity="0.3" />
-                            <circle cx="50" cy="50" r="15" fill="white" opacity="0.5" />
-                        </svg>
-                    </div>
-                    <h3>Röntgen</h3>
-                    <p>Grundlagen der konventionellen Radiologie</p>
-                    <span class="card-arrow">→</span>
-                </a>
-
-                <a href="ct.html" class="area-card area-card-2">
-                    <div class="area-icon">
-                        <svg viewBox="0 0 100 100" width="60" height="60">
-                            <circle cx="50" cy="50" r="25" fill="none" stroke="white" stroke-width="3" opacity="0.3" />
-                            <circle cx="50" cy="50" r="15" fill="white" opacity="0.5" />
-                        </svg>
-                    </div>
-                    <h3>Computertomographie</h3>
-                    <p>CT-Anatomie, Kontrastmittel und mehr</p>
-                    <span class="card-arrow">→</span>
-                </a>
-
-                <a href="mrt.html" class="area-card area-card-3">
-                    <div class="area-icon">
-                        <svg viewBox="0 0 100 100" width="60" height="60">
-                            <path d="M 30 50 Q 50 30 70 50 Q 50 70 30 50" fill="white" opacity="0.3" />
-                            <circle cx="50" cy="50" r="8" fill="white" opacity="0.5" />
-                        </svg>
-                    </div>
-                    <h3>Magnetresonanztomographie</h3>
-                    <p>MRT-Sequenzen, Anatomie und häufige Pathologien</p>
-                    <span class="card-arrow">→</span>
-                </a>
-
-                <a href="ultraschall.html" class="area-card area-card-4">
-                    <div class="area-icon">
-                        <svg viewBox="0 0 100 100" width="60" height="60">
-                            <path d="M 50 30 L 50 70 M 35 40 Q 50 50 35 60 M 65 40 Q 50 50 65 60" stroke="white" stroke-width="3" fill="none" opacity="0.4" />
-                        </svg>
-                    </div>
-                    <h3>Ultraschall</h3>
-                    <p>Sonographie-Grundlagen und organspezifische Untersuchungstechniken</p>
-                    <span class="card-arrow">→</span>
-                </a>
+        <div class="footer-bottom">
+            <div class="footer-links">
+                <a href="#">Datenschutz</a>
+                <a href="#">AGB</a>
+                <a href="#">Impressum</a>
+                <a href="#">Kontakt</a>
             </div>
+            <p style="margin-top: 1rem;">Entwickelt mit ❤️ für Radiologie-Lernende</p>
         </div>
-    </section>
+    </div>
+</footer>
 
+<script src="auth.js"></script>
+<script>
+    // Sticky TOC with IntersectionObserver
+    const observerOptions = {
+        root: null,
+        rootMargin: '-90px 0px -60% 0px',
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1]
+    };
 
-    <!-- regristrierungspromotion Section -->
-    <section class="cta-section">
-        <div class="cta-content">
-            <h2>Bereit, Radiologie zu meistern?</h2>
-            <p>Starte jetzt deine Lernreise und werde zum Radiologie-Experten</p>
-            <a href="login.html" class="btn-cta">Kostenlos Regristrieren</a>
-        </div>
-    </section>
+    const observer = new IntersectionObserver((entries) => {
+        let maxRatio = 0;
+        let activeEntry = null;
 
-    <!-- Footer -->
-    <footer id="kontakt" class="footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h4>RadBrain</h4>
-                    <p>Deine Online-Plattform für radiologisches Lernen</p>
+        entries.forEach(entry => {
+            if (entry.isIntersecting && entry.intersectionRatio > maxRatio) {
+                maxRatio = entry.intersectionRatio;
+                activeEntry = entry;
+            }
+        });
 
-                </div>
-                <div class="footer-col">
-                    <h4>Lernbereiche</h4>
-                    <ul>
-                        <li><a href="roentgen.html">Röntgen</a></li>
-                        <li><a href="ct.html">CT</a></li>
-                        <li><a href="mrt.html">MRT</a></li>
-                        <li><a href="ultraschall.html">Ultraschall</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Über uns</h4>
-                    <ul>
-                        <li><a href="#kontakt">Kontakt</a></li>
-                        <li><a href="#faq">FAQ</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Rechtliches</h4>
-                    <ul>
-                        <li><a href="#impressum">Impressum</a></li>
-                        <li><a href="datenschutz.html">Datenschutz</a></li>
+        if (activeEntry) {
+            const id = activeEntry.target.getAttribute('id');
+            const tocLink = document.querySelector(`.sticky-toc-list a[href="#${id}"]`);
 
+            document.querySelectorAll('.sticky-toc-list a').forEach(link => link.classList.remove('active'));
 
-                    </ul>
-                </div>
-            </div>
+            if (tocLink) {
+                tocLink.classList.add('active');
+                const tocContainer = document.querySelector('.sticky-toc');
+                if (tocContainer) {
+                    const linkTop = tocLink.offsetTop;
+                    const linkHeight = tocLink.offsetHeight;
+                    const containerScrollTop = tocContainer.scrollTop;
+                    const containerHeight = tocContainer.offsetHeight;
 
-            <div class="footer-bottom">
-                <div id="impressum" class="impressum">
-                    <h3>Impressum</h3>
-                    <div class="impressum-content">
-                        <div class="impressum-col">
-                            <p><strong>Team Dynamik</strong></p>
-                            <p>HTL Spengergasse</p>
-                            <p>1050 Wien</p>
-                            <p>Österreich</p>
-                        </div>
-                        <div class="impressum-col">
-                            <p><strong>Kontakt</strong></p>
-                            <p>E-Mail: info@radbrain.de</p>
-                            <p></p>
-                        </div>
-
-                    </div>
-                </div>
-                <p class="copyright">© 2025 RadBrain GmbH. Alle Rechte vorbehalten.</p>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        // Smooth Scrolling
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
+                    if (linkTop < containerScrollTop + 50) {
+                        tocContainer.scrollTo({top: linkTop - 50, behavior: 'smooth'});
+                    } else if (linkTop + linkHeight > containerScrollTop + containerHeight - 50) {
+                        tocContainer.scrollTo({top: linkTop - containerHeight + linkHeight + 50, behavior: 'smooth'});
+                    }
                 }
-            });
+            }
+        }
+    }, observerOptions);
+
+    document.querySelectorAll('.content-section').forEach(section => observer.observe(section));
+
+    // Progress bar
+    function updateProgressBar() {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        const progressBar = document.getElementById('progressBar');
+        if (progressBar) progressBar.style.height = scrolled + '%';
+    }
+
+    window.addEventListener('scroll', updateProgressBar);
+    window.addEventListener('resize', updateProgressBar);
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href');
+            if (targetId === '#') return;
+
+            const targetSection = document.querySelector(targetId);
+            if (targetSection) {
+                const offset = 90;
+                const targetPosition = targetSection.getBoundingClientRect().top + window.pageYOffset - offset;
+                window.scrollTo({top: targetPosition, behavior: 'smooth'});
+
+                if (link.classList.contains('toc-link')) {
+                    setTimeout(() => {
+                        document.querySelectorAll('.sticky-toc-list a').forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                    }, 300);
+                }
+            }
         });
+    });
 
-      
+    // Auth check and UI setup
+    if (window.auth && window.auth.isLoggedIn()) {
+        const user = window.auth.getUser();
+        const firstName = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
 
-        // Mobile Menu Toggle
-        const hamburger = document.querySelector('.hamburger');
-        const navMenu = document.querySelector('.nav-menu');
+        document.getElementById('userName').textContent = firstName;
+        document.getElementById('profileDropdown').style.display = 'block';
+        document.getElementById('navAuthSection').style.display = 'none';
 
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navMenu.classList.toggle('active');
+        if (window.auth.hasRole('ADMIN')) {
+            document.getElementById('adminNavItem').style.display = 'block';
+        }
+    } else {
+        document.getElementById('profileDropdown').style.display = 'none';
+        document.getElementById('navAuthSection').style.display = 'block';
+    }
+
+    // Profile dropdown
+    const dropdown = document.getElementById('profileDropdown');
+    const btn = document.getElementById('profileBtn');
+
+    if (btn) {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('active');
         });
+    }
 
-        // Close mobile menu when clicking a link
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navMenu.classList.remove('active');
-            });
+    document.addEventListener('click', (e) => {
+        if (dropdown && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('active');
+        }
+    });
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (window.auth) window.auth.logout('/index.html');
         });
-    </script>
+    }
+
+    updateProgressBar();
+</script>
+
 </body>
 </html>

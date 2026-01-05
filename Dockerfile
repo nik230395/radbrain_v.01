@@ -1,4 +1,5 @@
-FROM eclipse-temurin:17-jdk-alpine as build
+# Nutze die Standard-Version (Ubuntu-basiert), die Apple Silicon unterstützt
+FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
 COPY mvnw .
 COPY .mvn .mvn
@@ -7,9 +8,8 @@ COPY src src
 RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","app.jar"]
-
+ENTRYPOINT ["java", "-Dspring.profiles.active=docker", "-jar", "app.jar"]

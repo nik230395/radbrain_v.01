@@ -48,17 +48,17 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        logger.info("🚀 Starting data initialization...");
+        logger.info("Starting data initialization...");
 
         try {
             initializeAdminUser();
             initializeTestUsers();
             logSystemStatus();
         } catch (Exception e) {
-            logger.error("❌ Data initialization failed", e);
+            logger.error("Data initialization failed", e);
         }
 
-        logger.info("✅ Data initialization completed");
+        logger.info("Data initialization completed");
     }
 
     /**
@@ -66,31 +66,30 @@ public class DataInitializer implements CommandLineRunner {
      */
     private void initializeAdminUser() {
         if (!createAdmin) {
-            logger.info("🔧 Admin creation disabled by configuration");
+            logger.info("Admin creation disabled by configuration");
             return;
         }
 
         if (userRepository.existsByEmail(adminEmail)) {
-            logger.info("👤 Admin user already exists: {}", adminEmail);
+            logger.info("Admin user already exists: {}", adminEmail);
             return;
         }
 
         if (userRepository.hasActiveAdmin()) {
-            logger.info("👤 Active admin already exists, skipping creation");
+            logger.info("Active admin already exists, skipping creation");
             return;
         }
 
         try {
-            // ✅ ANGEPASST: Verwende neue Methodennamen
             User admin = new User();
             admin.setEmail(adminEmail.toLowerCase().trim());
             admin.setFullname(adminFullname);
-            admin.setPasswordHash(passwordEncoder.encode(adminPassword)); // ✅ NEU
+            admin.setPasswordHash(passwordEncoder.encode(adminPassword));
             admin.setRole(UserRole.ADMIN);
-            admin.setActive(true); // ✅ NEU
+            admin.setActive(true);
             admin.setCreatedAt(LocalDateTime.now());
 
-            // ✅ NEU: EmailVerification Entity erstellen (bereits verifiziert)
+            // EmailVerification Entity erstellen (bereits verifiziert)
             EmailVerification verification = new EmailVerification();
             verification.setUser(admin);
             verification.setVerificationCode("000000"); // Dummy code
@@ -103,14 +102,14 @@ public class DataInitializer implements CommandLineRunner {
 
             User savedAdmin = userRepository.save(admin);
 
-            logger.info("✅ Admin user created successfully:");
-            logger.info("   📧 Email: {}", savedAdmin.getEmail());
-            logger.info("   👤 Name: {}", savedAdmin.getFullname());
-            logger.info("   🔑 Role: {}", savedAdmin.getRole());
-            logger.info("   🔐 Password: {} (CHANGE THIS IN PRODUCTION!)", adminPassword);
+            logger.info("Admin user created successfully:");
+            logger.info("   Email: {}", savedAdmin.getEmail());
+            logger.info("   Name: {}", savedAdmin.getFullname());
+            logger.info("   Role: {}", savedAdmin.getRole());
+            logger.info("   Password: {} (später ändern)", adminPassword);
 
         } catch (Exception e) {
-            logger.error("❌ Failed to create admin user", e);
+            logger.error("Failed to create admin user", e);
             throw new RuntimeException("Admin user creation failed", e);
         }
     }
@@ -140,16 +139,16 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         try {
-            // ✅ ANGEPASST: Verwende neue Methodennamen
+
             User testUser = new User();
             testUser.setEmail(email.toLowerCase().trim());
             testUser.setFullname(fullname);
-            testUser.setPasswordHash(passwordEncoder.encode(password)); // ✅ NEU
+            testUser.setPasswordHash(passwordEncoder.encode(password));
             testUser.setRole(UserRole.USER);
-            testUser.setActive(true); // ✅ NEU
+            testUser.setActive(true);
             testUser.setCreatedAt(LocalDateTime.now());
 
-            // ✅ NEU: EmailVerification Entity (bereits verifiziert)
+            // EmailVerification Entity (bereits verifiziert)
             EmailVerification verification = new EmailVerification();
             verification.setUser(testUser);
             verification.setVerificationCode("000000");
@@ -161,10 +160,10 @@ public class DataInitializer implements CommandLineRunner {
             testUser.setEmailVerification(verification);
 
             User savedUser = userRepository.save(testUser);
-            logger.info("✅ Test user created: {} ({})", savedUser.getEmail(), savedUser.getFullname());
+            logger.info("Test user created: {} ({})", savedUser.getEmail(), savedUser.getFullname());
 
         } catch (Exception e) {
-            logger.error("❌ Failed to create test user: {}", email, e);
+            logger.error("Failed to create test user: {}", email, e);
         }
     }
 
@@ -177,22 +176,22 @@ public class DataInitializer implements CommandLineRunner {
             long activeUsers = userRepository.countActiveUsers();
             long adminUsers = userRepository.countByRole(UserRole.ADMIN);
 
-            logger.info("📊 System Status:");
-            logger.info("   👥 Total Users: {}", totalUsers);
-            logger.info("   ✅ Active Users: {}", activeUsers);
-            logger.info("   👑 Admin Users: {}", adminUsers);
-            logger.info("   ⚠️ Inactive Users: {}", totalUsers - activeUsers);
+            logger.info("System Status:");
+            logger.info("   Total Users: {}", totalUsers);
+            logger.info("   Active Users: {}", activeUsers);
+            logger.info("   Admin Users: {}", adminUsers);
+            logger.info("   Inactive Users: {}", totalUsers - activeUsers);
 
             if (adminUsers == 0) {
-                logger.warn("⚠️ WARNING: No admin users found! System may not be manageable.");
+                logger.warn("⚠WARNING: No admin users found! System may not be manageable.");
             }
 
             // Admin Login Info
             if (adminUsers > 0) {
-                logger.info("🔐 Admin Login:");
-                logger.info("   📧 Email: {}", adminEmail);
-                logger.info("   🔐 Password: {}", adminPassword);
-                logger.info("   🌐 URL: http://localhost:8080/login.html");
+                logger.info("Admin Login:");
+                logger.info("   Email: {}", adminEmail);
+                logger.info("   Password: {}", adminPassword);
+                logger.info("   URL: http://localhost:8080/login.html");
             }
 
         } catch (Exception e) {
