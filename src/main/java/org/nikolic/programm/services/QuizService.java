@@ -112,7 +112,7 @@ public class QuizService {
         quiz.setCategory(req.getCategory() != null ? req.getCategory().trim() : null);
         quiz.setCreatedBy(user);
         quiz.setCreatedAt(LocalDateTime.now());
-        quiz.setIsPublished(false);
+        quiz.setIsPublished(req.isIsPublished());
 
         Quiz saved = quizRepository.save(quiz);
         logger.info("Created quiz with id: {}", saved.getId());

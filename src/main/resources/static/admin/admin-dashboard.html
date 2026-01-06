@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - RadBrain</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/dropdown.js"></script>
 </head>
 <body>
 
-<!-- Navigation -->
 <nav class="navbar">
     <div class="navbar-content">
         <div class="nav-left">
-            <img src="../Bilder/logo.png" alt="RadBrain" class="nav-logo">
+            <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="/auth/user-home.html" class="nav-link">Übersicht</a>
+                    <a href="/userpages/user-home.html" class="nav-link">Übersicht</a>
                 </li>
                 <li class="nav-item">
                     <a href="/admin/admin-dashboard.html" class="nav-link active">Admin</a>
@@ -26,9 +26,7 @@
     </div>
 </nav>
 
-<!-- Main Content -->
 <div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
-    <!-- Header -->
     <div style="margin-bottom: var(--space-12);">
         <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-2);">
             Admin Dashboard
@@ -38,146 +36,139 @@
         </p>
     </div>
 
-    <!-- Management Cards -->
     <div class="grid grid-2" style="margin-bottom: var(--space-12);">
-        <!-- Learning Areas Management -->
         <div class="card">
             <div style="display: flex; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-6);">
                 <div style="width: 56px; height: 56px; background: var(--primary-light); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0;">
                     📚
                 </div>
                 <div style="flex: 1;">
-                    <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: var(--space-2);">
-                        Lernbereiche
-                    </h2>
-                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">
-                        Verwalte Lernbereiche, Module und Lerninhalte
-                    </p>
+                    <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: var(--space-2);">Lernbereiche</h2>
+                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">Inhalte und Struktur verwalten</p>
                 </div>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: var(--space-3);">
                 <a href="/admin/admin-learning-areas.html" class="btn btn-primary" style="width: 100%;">
-                    Lernbereiche verwalten
+                    Alle Bereiche verwalten
                 </a>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                    <button onclick="quickCreateArea()" class="btn btn-outline btn-sm">
-                        Neuer Bereich
-                    </button>
-                    <a href="/admin/admin-modules.html" class="btn btn-ghost btn-sm">
-                        Module bearbeiten
-                    </a>
-                </div>
+                <button onclick="quickCreateArea()" class="btn btn-outline btn-sm">
+                    ✨ Schnellanlage Bereich
+                </button>
             </div>
 
             <div style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--gray-200);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--gray-600); font-size: 0.9375rem;">Bereiche</span>
+                    <span style="color: var(--gray-600); font-size: 0.9375rem;">Aktive Bereiche</span>
                     <span id="areasCount" style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">0</span>
                 </div>
             </div>
         </div>
 
-        <!-- Quiz Management -->
         <div class="card">
             <div style="display: flex; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-6);">
                 <div style="width: 56px; height: 56px; background: #ecfdf5; border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0;">
-                    ✓
+                    ✅
                 </div>
                 <div style="flex: 1;">
-                    <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: var(--space-2);">
-                        Quizzes
-                    </h2>
-                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">
-                        Erstelle und bearbeite Quizzes und Fragen
-                    </p>
+                    <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: var(--space-2);">Quizzes</h2>
+                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">Fragen und Prüfungen erstellen</p>
                 </div>
             </div>
 
             <div style="display: flex; flex-direction: column; gap: var(--space-3);">
-                <a href="/admin/quiz-creator.html" class="btn" style="width: 100%; background: var(--success); color: white;">
+                <a href="/admin/quiz-creator.html" class="btn" style="width: 100%; background: #10b981; color: white; text-align: center; text-decoration: none; padding: 10px; border-radius: 8px;">
                     Quiz Creator öffnen
                 </a>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2);">
-                    <button onclick="quickCreateQuiz()" class="btn btn-outline btn-sm">
-                        Neues Quiz
-                    </button>
-                    <a href="/quizzes.html" class="btn btn-ghost btn-sm">
-                        Alle Quizzes
+
+                <div style="display: flex; gap: var(--space-2);">
+                    <a href="/quiz/quizzes.html" class="btn btn-outline btn-sm" style="flex: 1; text-align: center; font-size: 0.8rem;">
+                        Öffentliche Ansicht
+                    </a>
+                    <a href="/admin/quiz-verwaltung.html" class="btn btn-outline btn-sm" style="flex: 1; text-align: center; font-size: 0.8rem; border-color: #10b981; color: #10b981;">
+                        Quiz Verwaltung
                     </a>
                 </div>
             </div>
 
             <div style="margin-top: var(--space-6); padding-top: var(--space-6); border-top: 1px solid var(--gray-200);">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: var(--gray-600); font-size: 0.9375rem;">Quizzes</span>
-                    <span id="quizzesCount" style="font-size: 1.5rem; font-weight: 700; color: var(--success);">0</span>
+                    <span style="color: var(--gray-600); font-size: 0.9375rem;">Verfügbare Quizzes</span>
+                    <span id="quizzesCount" style="font-size: 1.5rem; font-weight: 700; color: #10b981;">0</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="card" style="margin-bottom: var(--space-12);">
-        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: var(--space-6);">
-            Schnellzugriff
-        </h3>
-
+    <div class="card">
+        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: var(--space-6);">Schnellzugriff</h3>
         <div class="grid grid-3">
-            <a href="/admin/admin-learning-areas.html" style="padding: var(--space-4); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); text-decoration: none; color: inherit; transition: all var(--transition-fast);">
+            <a href="/admin/admin-learning-areas.html" class="quick-action-card">
                 <div style="font-size: 1.5rem; margin-bottom: var(--space-2);">➕</div>
-                <div style="font-weight: 600; color: var(--gray-900); margin-bottom: var(--space-1);">
-                    Neuer Lernbereich
-                </div>
-                <div style="font-size: 0.875rem; color: var(--gray-600);">
-                    Lernbereich erstellen
-                </div>
+                <div style="font-weight: 600;">Neuer Lernbereich</div>
             </a>
-
-            <a href="/admin/quiz-creator.html" style="padding: var(--space-4); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); text-decoration: none; color: inherit; transition: all var(--transition-fast);">
+            <a href="/admin/quiz-creator.html" class="quick-action-card">
                 <div style="font-size: 1.5rem; margin-bottom: var(--space-2);">✏️</div>
-                <div style="font-weight: 600; color: var(--gray-900); margin-bottom: var(--space-1);">
-                    Quiz erstellen
-                </div>
-                <div style="font-size: 0.875rem; color: var(--gray-600);">
-                    Neues Quiz anlegen
-                </div>
+                <div style="font-weight: 600;">Quiz erstellen</div>
             </a>
-
-            <a href="/auth/user-home.html" style="padding: var(--space-4); border: 1px solid var(--gray-200); border-radius: var(--radius-lg); text-decoration: none; color: inherit; transition: all var(--transition-fast);">
+            <a href="/userpages/user-home.html" class="quick-action-card">
                 <div style="font-size: 1.5rem; margin-bottom: var(--space-2);">👁️</div>
-                <div style="font-weight: 600; color: var(--gray-900); margin-bottom: var(--space-1);">
-                    User-Ansicht
-                </div>
-                <div style="font-size: 0.875rem; color: var(--gray-600);">
-                    Plattform ansehen
-                </div>
+                <div style="font-weight: 600;">User-Ansicht</div>
             </a>
         </div>
     </div>
 </div>
 
-<script src="../js/auth.js"></script>
+<style>
+    /* Hilfsklassen für Schnellzugriff */
+    .quick-action-card {
+        padding: var(--space-4);
+        border: 1px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+    .quick-action-card:hover {
+        border-color: var(--primary);
+        background: var(--gray-50);
+        transform: translateY(-2px);
+    }
+</style>
+
+<script src="/js/auth.js"></script>
 <script>
     const API_BASE = 'http://localhost:8080/api';
 
-    // Check admin auth
-    if (!window.auth || !window.auth.isLoggedIn()) {
-        window.location.href = '/login.html';
-    } else if (!window.auth.hasRole('ADMIN')) {
-        window.location.href = '/user-home.html';
-    } else {
+    // Auth-Schutz
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.auth || !window.auth.isLoggedIn()) {
+            window.location.href = '/auth/login.html';
+            return;
+        }
+
+        if (!window.auth.hasRole('ADMIN')) {
+            window.location.href = '/userpages/user-home.html';
+            return;
+        }
+
+        renderUserNav();
+        loadStats();
+    });
+
+    function renderUserNav() {
         const user = window.auth.getUser();
-        const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
+        const displayName = user.fullname ? user.fullname.split(' ')[0] : 'Admin';
 
         document.getElementById('navRight').innerHTML = `
             <div class="nav-profile-dropdown">
                 <button class="nav-profile-btn">
-                    <span>${name}</span>
+                    <span>${displayName} (Admin)</span>
                     <span style="font-size: 0.75rem;">▾</span>
                 </button>
                 <div class="nav-profile-menu">
-                    <a href="/account.html">Mein Account</a>
+                    <a href="/userpages/account.html">Mein Account</a>
                     <div class="divider"></div>
                     <button onclick="window.auth.logout('/index.html')">Abmelden</button>
                 </div>
@@ -185,53 +176,38 @@
         `;
     }
 
-    // Load statistics
     async function loadStats() {
         try {
-            // Load learning areas count
-            const areasResponse = await window.auth.authFetch(`${API_BASE}/admin/learning-areas`);
-            if (areasResponse.ok) {
-                const areas = await areasResponse.json();
+            const [areasRes, quizzesRes] = await Promise.all([
+                window.auth.authFetch(`${API_BASE}/admin/learning-areas`),
+                window.auth.authFetch(`${API_BASE}/secure/admin/quizzes`)
+            ]);
+
+            if (areasRes.ok) {
+                const areas = await areasRes.json();
                 document.getElementById('areasCount').textContent = areas.length;
             }
-
-            // Load quizzes count
-            const quizzesResponse = await window.auth.authFetch(`${API_BASE}/secure/admin/quizzes`);
-            if (quizzesResponse.ok) {
-                const quizzes = await quizzesResponse.json();
+            if (quizzesRes.ok) {
+                const quizzes = await quizzesRes.json();
                 document.getElementById('quizzesCount').textContent = quizzes.length;
             }
         } catch (error) {
-            console.error('Error loading stats:', error);
+            console.error('Fehler beim Laden der Statistiken:', error);
         }
     }
 
-    // Quick create area
     function quickCreateArea() {
-        const name = prompt('Name des Lernbereichs:');
-        if (!name) return;
+        const name = prompt('Name des neuen Lernbereichs:');
+        if (!name || name.trim() === "") return;
 
         const slug = name.toLowerCase()
-            .replace(/ä/g, 'ae')
-            .replace(/ö/g, 'oe')
-            .replace(/ü/g, 'ue')
-            .replace(/ß/g, 'ss')
+            .replace(/[ä]/g, 'ae').replace(/[ö]/g, 'oe').replace(/[ü]/g, 'ue').replace(/[ß]/g, 'ss')
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-|-$/g, '');
 
-        window.location.href = `/admin-learning-areas.html?new=true&name=${encodeURIComponent(name)}&slug=${slug}`;
+        // Weiterleitung zur Editor-Seite mit Parametern für die automatische Anlage
+        window.location.href = `/admin/learning-area-editor.html?new=true&name=${encodeURIComponent(name)}&slug=${slug}`;
     }
-
-    // Quick create quiz
-    function quickCreateQuiz() {
-        window.location.href = '/quiz-creator.html';
-    }
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-        loadStats();
-    });
 </script>
-
 </body>
 </html>

@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Module verwalten - RadBrain Admin</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/dropdown.js"></script>
+    <script src="/js/auth.js"></script>
     <style>
+        /* DASHBOARD STYLES */
         .module-card {
             background: white;
             border: 1px solid var(--gray-200);
@@ -13,20 +16,14 @@
             padding: var(--space-6);
             margin-bottom: var(--space-4);
             transition: all var(--transition-base);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-
         .module-card:hover {
             border-color: var(--primary);
             box-shadow: var(--shadow-md);
         }
-
-        .module-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: var(--space-4);
-        }
-
         .module-number {
             width: 40px;
             height: 40px;
@@ -40,375 +37,227 @@
             margin-right: var(--space-4);
         }
 
-        .module-info {
-            flex: 1;
+        /* ECHTES FULLSCREEN MODAL */
+        #moduleModal {
+            display: none;
+            position: fixed;
+            /* Erzwingt Fullscreen über den gesamten Viewport */
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: #ffffff;
+            z-index: 99999;
+            overflow-y: auto;
+
+            /* Animation von unten */
+            opacity: 0;
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
         }
 
-        .module-actions {
-            display: flex;
-            gap: var(--space-2);
+        #moduleModal.show {
+            display: block !important;
+            opacity: 1 !important;
+            transform: translateY(0) !important;
         }
+
+        .modal-inner-content {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 100px 20px 60px 20px;
+        }
+
+        /* Fixer Schließen-Knopf oben rechts */
+        .close-fullscreen {
+            position: fixed;
+            top: 25px;
+            right: 40px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            font-size: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100000;
+        }
+
+        .form-group { margin-bottom: 25px; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 10px; font-size: 1.1rem; }
+        .input-xl { font-size: 1.2rem !important; padding: 15px !important; }
+
+        body.modal-open { overflow: hidden !important; }
     </style>
 </head>
 <body>
 
-<!-- Navigation -->
 <nav class="navbar">
     <div class="navbar-content">
         <div class="nav-left">
-            <img src="logo.png" alt="RadBrain" class="nav-logo">
+            <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
             <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="/admin-dashboard.html" class="nav-link">Admin</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/admin-learning-areas.html" class="nav-link">Lernbereiche</a>
-                </li>
+                <li class="nav-item"><a href="/admin/admin-dashboard.html" class="nav-link">Dashboard</a></li>
+                <li class="nav-item"><a href="/admin/admin-learning-areas.html" class="nav-link">Lernbereiche</a></li>
             </ul>
         </div>
         <div class="nav-right" id="navRight"></div>
     </div>
 </nav>
 
-<!-- Main Content -->
-<div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
-    <!-- Breadcrumb -->
-    <div style="margin-bottom: var(--space-6);">
-        <a href="/admin-learning-areas.html" style="color: var(--gray-600); text-decoration: none; display: inline-flex; align-items: center; gap: var(--space-2);">
-            ← Zurück zu Lernbereichen
-        </a>
-    </div>
-
-    <!-- Header -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-12);">
+<div class="container" style="padding-top: var(--space-12);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-8);">
         <div>
-            <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-2);" id="pageTitle">
-                Module verwalten
-            </h1>
-            <p style="color: var(--gray-600); font-size: 1.125rem;" id="areaName">
-                Lernbereich
-            </p>
+            <h1 id="areaTitle" style="font-size: 2.5rem;">Module laden...</h1>
+            <p style="color: var(--gray-600);">Verwalte die Kapitel dieses Lernbereichs</p>
         </div>
-        <button onclick="openModuleModal()" class="btn btn-primary">
-            + Neues Modul
-        </button>
+        <button onclick="openModuleModal()" class="btn btn-primary" style="padding: 12px 25px;">+ Neues Modul</button>
     </div>
 
-    <!-- Modules List -->
     <div id="modulesList">
-        <div style="text-align: center; padding: var(--space-12);">
-            <div class="loading" style="width: 40px; height: 40px; margin: 0 auto;"></div>
+        <div style="text-align: center; padding: 50px;"><div class="loading"></div></div>
+    </div>
+</div>
+
+<div id="moduleModal">
+    <button class="close-fullscreen" onclick="closeModuleModal()">&times;</button>
+
+    <div class="modal-inner-content">
+        <h1 id="modalTitle" style="font-size: 2.8rem; margin-bottom: 40px;">Modul bearbeiten</h1>
+
+        <div class="form-group">
+            <label class="form-label">Titel des Moduls</label>
+            <input type="text" id="moduleTitle" class="form-control input-xl" placeholder="z.B. Anatomie des Thorax">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Beschreibung</label>
+            <textarea id="moduleDescription" class="form-control input-xl" rows="6"></textarea>
+        </div>
+
+        <div class="form-group" style="width: 200px;">
+            <label class="form-label">Reihenfolge</label>
+            <input type="number" id="moduleOrder" class="form-control input-xl" value="0">
+        </div>
+
+        <div style="margin-top: 50px; display: flex; gap: 15px;">
+            <button onclick="saveModule()" class="btn btn-primary" style="padding: 15px 45px; font-size: 1.1rem;">Speichern</button>
+            <button onclick="closeModuleModal()" class="btn btn-ghost">Abbrechen</button>
         </div>
     </div>
 </div>
 
-<!-- Module Modal -->
-<div class="modal-overlay" id="moduleModal" style="display: none;">
-    <div class="modal">
-        <div class="modal-header">
-            <h2 class="modal-title" id="modalTitle">Neues Modul</h2>
-            <button class="modal-close" onclick="closeModuleModal()">&times;</button>
-        </div>
-        <form id="moduleForm" onsubmit="saveModule(event)">
-            <div class="modal-body">
-                <input type="hidden" id="moduleId">
-
-                <div class="form-group">
-                    <label class="form-label" for="title">Titel *</label>
-                    <input type="text" id="title" class="form-input" required>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="subtitle">Untertitel</label>
-                    <input type="text" id="subtitle" class="form-input">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="description">Beschreibung</label>
-                    <textarea id="description" class="form-textarea" rows="3"></textarea>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="estimatedDuration">Geschätzte Dauer (Minuten)</label>
-                    <input type="number" id="estimatedDuration" class="form-input" min="1">
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label" for="displayOrder">Reihenfolge</label>
-                    <input type="number" id="displayOrder" class="form-input" value="0" min="0">
-                </div>
-
-                <div id="moduleMessage" class="alert" style="display: none; margin-top: var(--space-4);"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModuleModal()">Abbrechen</button>
-                <button type="submit" class="btn btn-primary" id="saveBtn">Speichern</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script src="auth.js"></script>
-<script src="dropdown.js"></script>
 <script>
     const API_BASE = 'http://localhost:8080/api';
-    let currentAreaId = null;
-    let currentModules = [];
+    const urlParams = new URLSearchParams(window.location.search);
+    const areaId = urlParams.get('areaId');
     let editingModuleId = null;
 
-    // Check admin auth
-    if (!window.auth || !window.auth.isLoggedIn()) {
-        window.location.href = '/login.html';
-    } else if (!window.auth.hasRole('ADMIN')) {
-        window.location.href = '/user-home.html';
-    } else {
-        initializePage();
-    }
-
-    async function initializePage() {
-        const user = window.auth.getUser();
-        const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
-
-        document.getElementById('navRight').innerHTML = `
-            <div class="nav-profile-dropdown">
-                <button class="nav-profile-btn">
-                    <span>${name}</span>
-                    <span style="font-size: 0.75rem;">▾</span>
-                </button>
-                <div class="nav-profile-menu">
-                    <a href="/account.html">Mein Account</a>
-                    <div class="divider"></div>
-                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
-                </div>
-            </div>
-        `;
-
-        // Get area ID from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        currentAreaId = urlParams.get('areaId');
-
-        if (!currentAreaId) {
-            alert('Kein Lernbereich ausgewählt');
-            window.location.href = '/admin-learning-areas.html';
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!window.auth || !window.auth.isLoggedIn()) {
+            window.location.href = '/auth/login.html';
             return;
         }
-
+        if (!areaId) {
+            window.location.href = '/admin/admin-learning-areas.html';
+            return;
+        }
         loadModules();
-    }
+    });
 
     async function loadModules() {
+        const container = document.getElementById('modulesList');
         try {
-            // Load area info
-            const areasResponse = await window.auth.authFetch(`${API_BASE}/secure/admin/learning-areas`);
-            if (areasResponse.ok) {
-                const areas = await areasResponse.json();
-                const area = areas.find(a => a.id == currentAreaId);
-                if (area) {
-                    document.getElementById('areaName').textContent = area.name;
-                    document.getElementById('pageTitle').textContent = `Module: ${area.name}`;
-                }
+            const response = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/${areaId}`);
+            if (response.ok) {
+                const area = await response.json();
+                document.getElementById('areaTitle').textContent = area.name;
+                renderModules(area.modules || []);
             }
-
-            // Load modules
-            const response = await window.auth.authFetch(`${API_BASE}/secure/admin/learning-areas`);
-            if (!response.ok) throw new Error('Failed to load');
-
-            const areas = await response.json();
-            const area = areas.find(a => a.id == currentAreaId);
-
-            if (area && area.slug) {
-                const areaResponse = await fetch(`${API_BASE}/learning-areas/${area.slug}`);
-                if (areaResponse.ok) {
-                    const fullArea = await areaResponse.json();
-                    currentModules = fullArea.modules || [];
-                    renderModules();
-                }
-            }
-        } catch (error) {
-            console.error('Error loading modules:', error);
-            document.getElementById('modulesList').innerHTML = `
-                <p style="text-align: center; color: var(--gray-600);">Fehler beim Laden</p>
-            `;
-        }
+        } catch (error) { console.error(error); }
     }
 
-    function renderModules() {
+    function renderModules(modules) {
         const container = document.getElementById('modulesList');
-
-        if (currentModules.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: var(--space-12);">
-                    <div style="font-size: 3rem; margin-bottom: var(--space-4);">📚</div>
-                    <h3 style="margin-bottom: var(--space-2);">Noch keine Module</h3>
-                    <p style="color: var(--gray-600); margin-bottom: var(--space-6);">
-                        Erstelle das erste Modul für diesen Lernbereich
-                    </p>
-                    <button onclick="openModuleModal()" class="btn btn-primary">
-                        Erstes Modul erstellen
-                    </button>
-                </div>
-            `;
+        if (modules.length === 0) {
+            container.innerHTML = '<div class="card">Keine Module vorhanden.</div>';
             return;
         }
 
-        container.innerHTML = currentModules
-            .sort((a, b) => a.displayOrder - b.displayOrder)
-            .map((module, index) => `
-                <div class="module-card">
-                    <div class="module-header">
-                        <div style="display: flex; align-items: flex-start;">
-                            <div class="module-number">${index + 1}</div>
-                            <div class="module-info">
-                                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: var(--space-2);">
-                                    ${escapeHtml(module.title)}
-                                </h3>
-                                ${module.subtitle ? `
-                                    <p style="color: var(--gray-600); margin-bottom: var(--space-2);">
-                                        ${escapeHtml(module.subtitle)}
-                                    </p>
-                                ` : ''}
-                                <div style="display: flex; gap: var(--space-6); color: var(--gray-500); font-size: 0.9375rem;">
-                                    <span>${module.contentCount || 0} Inhalte</span>
-                                    ${module.estimatedDuration ? `<span>${module.estimatedDuration} Min</span>` : ''}
-                                    <span>Position: ${module.displayOrder}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="module-actions">
-                            <a href="/admin-content.html?moduleId=${module.id}&title=${encodeURIComponent(module.title)}" class="btn btn-sm btn-primary">
-                                Inhalte (${module.contentCount || 0})
-                            </a>
-                            <button onclick="editModule(${module.id})" class="btn btn-sm btn-secondary">
-                                Bearbeiten
-                            </button>
-                            <button onclick="deleteModule(${module.id}, '${escapeHtml(module.title)}')" class="btn btn-sm" style="background: var(--error); color: white;">
-                                Löschen
-                            </button>
-                        </div>
+        container.innerHTML = modules.sort((a,b) => a.displayOrder - b.displayOrder).map(m => `
+            <div class="module-card">
+                <div style="display: flex; align-items: center;">
+                    <div class="module-number">${m.displayOrder}</div>
+                    <div>
+                        <h3 style="margin: 0;">${m.title}</h3>
+                        <p style="color: var(--gray-600); margin: 4px 0 0 0;">${m.description || ''}</p>
                     </div>
                 </div>
-            `)
-            .join('');
+                <div style="display: flex; gap: 10px;">
+                    <a href="/admin/admin-content.html?moduleId=${m.id}" class="btn btn-sm btn-primary">Inhalte</a>
+                    <button onclick="openModuleModal(${m.id}, '${m.title.replace(/'/g, "\\'")}', '${(m.description || '').replace(/'/g, "\\'")}', ${m.displayOrder})" class="btn btn-sm btn-secondary">Edit</button>
+                    <button onclick="deleteModule(${m.id})" class="btn btn-sm" style="color: red; border: 1px solid red;">Löschen</button>
+                </div>
+            </div>
+        `).join('');
     }
 
-    function openModuleModal() {
-        editingModuleId = null;
-        document.getElementById('modalTitle').textContent = 'Neues Modul';
-        document.getElementById('moduleForm').reset();
-        document.getElementById('displayOrder').value = currentModules.length;
-        document.getElementById('moduleModal').style.display = 'flex';
-    }
+    function openModuleModal(id = null, title = '', desc = '', order = 0) {
+        editingModuleId = id;
+        document.getElementById('modalTitle').textContent = id ? 'Modul bearbeiten' : 'Neues Modul';
+        document.getElementById('moduleTitle').value = title;
+        document.getElementById('moduleDescription').value = desc;
+        document.getElementById('moduleOrder').value = order;
 
-    function editModule(moduleId) {
-        const module = currentModules.find(m => m.id === moduleId);
-        if (!module) return;
-
-        editingModuleId = moduleId;
-        document.getElementById('modalTitle').textContent = 'Modul bearbeiten';
-        document.getElementById('moduleId').value = module.id;
-        document.getElementById('title').value = module.title || '';
-        document.getElementById('subtitle').value = module.subtitle || '';
-        document.getElementById('description').value = module.description || '';
-        document.getElementById('estimatedDuration').value = module.estimatedDuration || '';
-        document.getElementById('displayOrder').value = module.displayOrder || 0;
-        document.getElementById('moduleModal').style.display = 'flex';
+        const modal = document.getElementById('moduleModal');
+        modal.style.display = 'block';
+        document.body.classList.add('modal-open');
+        setTimeout(() => modal.classList.add('show'), 10);
     }
 
     function closeModuleModal() {
-        document.getElementById('moduleModal').style.display = 'none';
-        editingModuleId = null;
+        const modal = document.getElementById('moduleModal');
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        setTimeout(() => modal.style.display = 'none', 400);
     }
 
-    async function saveModule(event) {
-        event.preventDefault();
+    async function saveModule() {
+        const title = document.getElementById('moduleTitle').value;
+        const description = document.getElementById('moduleDescription').value;
+        const displayOrder = parseInt(document.getElementById('moduleOrder').value);
 
-        const data = {
-            title: document.getElementById('title').value.trim(),
-            subtitle: document.getElementById('subtitle').value.trim() || null,
-            description: document.getElementById('description').value.trim() || null,
-            estimatedDuration: parseInt(document.getElementById('estimatedDuration').value) || null,
-            displayOrder: parseInt(document.getElementById('displayOrder').value) || 0
-        };
-
-        if (!data.title) {
-            showModuleMessage('Titel ist erforderlich', 'error');
-            return;
-        }
-
-        const saveBtn = document.getElementById('saveBtn');
-        const originalText = saveBtn.textContent;
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<div class="loading"></div>';
+        const url = editingModuleId
+            ? `${API_BASE}/admin/learning-areas/modules/${editingModuleId}`
+            : `${API_BASE}/admin/learning-areas/${areaId}/modules`;
 
         try {
-            const url = editingModuleId
-                ? `${API_BASE}/secure/admin/learning-areas/modules/${editingModuleId}`
-                : `${API_BASE}/secure/admin/learning-areas/${currentAreaId}/modules`;
-
-            const method = editingModuleId ? 'PUT' : 'POST';
-
-            const response = await window.auth.authFetch(url, {
-                method: method,
+            const res = await window.auth.authFetch(url, {
+                method: editingModuleId ? 'PUT' : 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
+                body: JSON.stringify({ title, description, displayOrder, learningAreaId: areaId })
             });
 
-            if (response.ok) {
+            if (res.ok) {
                 closeModuleModal();
                 loadModules();
-            } else {
-                const error = await response.json();
-                showModuleMessage(error.message || 'Fehler beim Speichern', 'error');
             }
-        } catch (error) {
-            console.error('Save error:', error);
-            showModuleMessage('Verbindungsfehler', 'error');
-        } finally {
-            saveBtn.disabled = false;
-            saveBtn.textContent = originalText;
-        }
+        } catch (e) { console.error(e); }
     }
 
-    async function deleteModule(moduleId, title) {
-        if (!confirm(`"${title}" wirklich löschen? Alle Inhalte gehen verloren!`)) return;
-        if (!confirm('Wirklich sicher?')) return;
-
+    async function deleteModule(id) {
+        if (!confirm('Modul wirklich löschen?')) return;
         try {
-            const response = await window.auth.authFetch(`${API_BASE}/secure/admin/learning-areas/modules/${moduleId}`, {
+            const res = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/modules/${id}`, {
                 method: 'DELETE'
             });
-
-            if (response.ok) {
-                loadModules();
-            } else {
-                alert('Fehler beim Löschen');
-            }
-        } catch {
-            alert('Verbindungsfehler');
-        }
+            if (res.ok) loadModules();
+        } catch (e) { console.error(e); }
     }
-
-    function showModuleMessage(message, type) {
-        const div = document.getElementById('moduleMessage');
-        div.className = `alert alert-${type}`;
-        div.textContent = message;
-        div.style.display = 'block';
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // Close modal on background click
-    document.getElementById('moduleModal').addEventListener('click', (e) => {
-        if (e.target.id === 'moduleModal') {
-            closeModuleModal();
-        }
-    });
 </script>
-
 </body>
 </html>

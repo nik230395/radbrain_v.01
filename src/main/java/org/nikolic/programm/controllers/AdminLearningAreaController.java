@@ -33,6 +33,17 @@ public class AdminLearningAreaController {
         }
     }
 
+    @GetMapping("/modules/{moduleId}/contents")
+    public ResponseEntity<List<LearningContentDto>> getModuleContents(@PathVariable Long moduleId) {
+        try {
+            // Wir holen das Modul, um an seine Contents zu kommen
+            List<LearningContentDto> contents = learningAreaService.getContentsByModuleId(moduleId);
+            return ResponseEntity.ok(contents);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     /**
      * Einzelnen Lernbereich abrufen
      * GET /api/admin/learning-areas/{id}

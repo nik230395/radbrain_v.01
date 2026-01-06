@@ -140,6 +140,19 @@ public class LearningAreaService {
     }
 
     /**
+     * Alle Contents eines Moduls abrufen
+     */
+    @Transactional(readOnly = true)
+    public List<LearningContentDto> getContentsByModuleId(Long moduleId) {
+        LearningModule module = moduleRepository.findByIdWithContents(moduleId)
+                .orElseThrow(() -> new RuntimeException("Modul nicht gefunden: " + moduleId));
+
+        return module.getContents().stream()
+                .map(this::convertToContentDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Lernbereich löschen
      */
     @Transactional

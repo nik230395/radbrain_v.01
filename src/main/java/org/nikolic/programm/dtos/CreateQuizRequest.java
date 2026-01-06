@@ -3,14 +3,6 @@ package org.nikolic.programm.dtos;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-/**
- * ✅ FIXED CreateQuizRequest DTO
- *
- * Changes:
- * - Added Jakarta Bean Validation annotations
- * - Added custom validation messages in German
- * - Added field constraints
- */
 public class CreateQuizRequest {
 
     @NotBlank(message = "Quiz-Titel ist erforderlich")
@@ -23,40 +15,33 @@ public class CreateQuizRequest {
     @Size(max = 50, message = "Kategorie darf maximal 50 Zeichen lang sein")
     private String category;
 
-    // Constructors
+    private boolean isPublished;
+
+    // Standard-Konstruktor (wichtig für Jackson/JSON)
     public CreateQuizRequest() {
     }
 
-    public CreateQuizRequest(String title, String description, String category) {
+    // Konstruktor mit Feldern
+    public CreateQuizRequest(String title, String description, String category, boolean isPublished) {
         this.title = title;
         this.description = description;
         this.category = category;
+        this.isPublished = isPublished;
     }
 
-    // Getters and Setters
-    public String getTitle() {
-        return title;
-    }
+    // Getter und Setter
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public String getDescription() {
-        return description;
-    }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
+    // WICHTIG für Jackson: Getter/Setter Namen bei "is"-Booleans
+    public boolean isIsPublished() { return isPublished; }
+    public void setIsPublished(boolean published) { this.isPublished = published; }
 
     @Override
     public String toString() {
@@ -64,6 +49,7 @@ public class CreateQuizRequest {
                 "title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", category='" + category + '\'' +
+                ", isPublished=" + isPublished +
                 '}';
     }
 }

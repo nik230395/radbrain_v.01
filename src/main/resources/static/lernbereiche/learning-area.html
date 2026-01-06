@@ -5,251 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">Lernbereich - RadBrain</title>
     <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/dropdown.js"></script>
     <style>
-        .learning-header {
-            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
-            color: white;
-            padding: var(--space-16) 0;
-            position: relative;
+        .learning-header { background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%); color: white; padding: var(--space-16) 0; position: relative; }
+        .breadcrumb { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4); font-size: 0.9375rem; }
+        .breadcrumb a { color: rgba(255,255,255,0.8); transition: color var(--transition-fast); }
+        .breadcrumb a:hover { color: white; }
+        .breadcrumb span { color: rgba(255,255,255,0.5); }
+        .module-list { display: grid; gap: var(--space-4); }
+        .module-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--space-6); transition: all var(--transition-base); cursor: pointer; }
+        .module-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .module-header { display: flex; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-4); }
+        .module-number { flex-shrink: 0; width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .module-content { flex: 1; }
+        .module-title { font-size: 1.25rem; font-weight: 600; color: var(--gray-900); margin-bottom: var(--space-2); }
+        .module-description { color: var(--gray-600); line-height: 1.6; margin-bottom: var(--space-3); }
+        .module-meta { display: flex; gap: var(--space-6); color: var(--gray-500); font-size: 0.875rem; }
+        .content-viewer { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--space-8); }
+
+        /* Sidebar Styling */
+        .sidebar { position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto; }
+        .sidebar-nav { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--space-4); }
+        .sidebar-title { font-size: 0.875rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; margin-bottom: var(--space-4); }
+        .sidebar-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-1); }
+        .sidebar-list a { display: block; padding: var(--space-2) var(--space-3); color: var(--gray-700); border-radius: var(--radius-md); text-decoration: none; transition: 0.2s; }
+        .sidebar-list a:hover { background: var(--gray-50); color: var(--primary); }
+        .sidebar-list a.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+
+        /* NEUE KREATIVE KLASSEN FÜR INHALTE */
+        .content-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
+        .content-info-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid var(--primary);
+            padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+        .content-info-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: var(--primary); }
+        .content-info-card::before { content: "💡"; position: absolute; right: 10px; top: 10px; opacity: 0.2; font-size: 1.5rem; }
+        .content-text-block { margin-bottom: 1.5rem; line-height: 1.8; color: #334155; font-size: 1.05rem; }
+
+        /* Warning Box für Texte die mit "!" beginnen */
+        .warning-box {
+            background: #fff7ed; border: 1px solid #fed7aa; border-left: 5px solid #f97316;
+            padding: 1.25rem; border-radius: 8px; margin: 1.5rem 0; color: #9a3412; font-weight: 500;
         }
 
-        .breadcrumb {
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-            margin-bottom: var(--space-4);
-            font-size: 0.9375rem;
-        }
-
-        .breadcrumb a {
-            color: rgba(255,255,255,0.8);
-            transition: color var(--transition-fast);
-        }
-
-        .breadcrumb a:hover {
-            color: white;
-        }
-
-        .breadcrumb span {
-            color: rgba(255,255,255,0.5);
-        }
-
-        .module-list {
-            display: grid;
-            gap: var(--space-4);
-        }
-
-        .module-card {
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: var(--space-6);
-            transition: all var(--transition-base);
-            cursor: pointer;
-        }
-
-        .module-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .module-header {
-            display: flex;
-            align-items: flex-start;
-            gap: var(--space-4);
-            margin-bottom: var(--space-4);
-        }
-
-        .module-number {
-            flex-shrink: 0;
-            width: 40px;
-            height: 40px;
-            background: var(--primary-light);
-            color: var(--primary);
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-        }
-
-        .module-content {
-            flex: 1;
-        }
-
-        .module-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: var(--space-2);
-        }
-
-        .module-description {
-            color: var(--gray-600);
-            line-height: 1.6;
-            margin-bottom: var(--space-3);
-        }
-
-        .module-meta {
-            display: flex;
-            gap: var(--space-6);
-            color: var(--gray-500);
-            font-size: 0.875rem;
-        }
-
-        .content-viewer {
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: var(--space-8);
-        }
-
-        .content-viewer h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-top: var(--space-8);
-            margin-bottom: var(--space-4);
-            color: var(--gray-900);
-        }
-
-        .content-viewer h3:first-child {
-            margin-top: 0;
-        }
-
-        .content-viewer h4 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-top: var(--space-6);
-            margin-bottom: var(--space-3);
-            color: var(--gray-900);
-        }
-
-        .content-viewer p {
-            color: var(--gray-700);
-            line-height: 1.8;
-            margin-bottom: var(--space-4);
-        }
-
-        .content-viewer ul,
-        .content-viewer ol {
-            margin: var(--space-4) 0;
-            padding-left: var(--space-8);
-        }
-
-        .content-viewer li {
-            color: var(--gray-700);
-            line-height: 1.8;
-            margin-bottom: var(--space-2);
-        }
-
-        .content-viewer .info-box {
-            background: #eff6ff;
-            border-left: 4px solid var(--primary);
-            border-radius: var(--radius-md);
-            padding: var(--space-4) var(--space-6);
-            margin: var(--space-6) 0;
-        }
-
-        .content-viewer .info-box h4 {
-            color: var(--primary);
-            margin-top: 0;
-        }
-
-        .content-viewer code {
-            background: var(--gray-100);
-            padding: var(--space-1) var(--space-2);
-            border-radius: var(--radius-sm);
-            font-family: var(--font-mono);
-            font-size: 0.9em;
-        }
-
-        .content-viewer pre {
-            background: var(--gray-900);
-            color: white;
-            padding: var(--space-4);
-            border-radius: var(--radius-md);
-            overflow-x: auto;
-            margin: var(--space-4) 0;
-        }
-
-        .content-viewer pre code {
-            background: none;
-            padding: 0;
-            color: white;
-        }
-
-        .sidebar {
-            position: sticky;
-            top: calc(var(--nav-height) + var(--space-4));
-            max-height: calc(100vh - var(--nav-height) - var(--space-8));
-            overflow-y: auto;
-        }
-
-        .sidebar-nav {
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: var(--space-4);
-        }
-
-        .sidebar-title {
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--gray-500);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--space-4);
-            padding: 0 var(--space-2);
-        }
-
-        .sidebar-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-1);
-        }
-
-        .sidebar-list a {
-            display: block;
-            padding: var(--space-2) var(--space-3);
-            color: var(--gray-700);
-            border-radius: var(--radius-md);
-            font-size: 0.9375rem;
-            transition: all var(--transition-fast);
-        }
-
-        .sidebar-list a:hover {
-            background: var(--gray-50);
-            color: var(--primary);
-        }
-
-        .sidebar-list a.active {
-            background: var(--primary-light);
-            color: var(--primary);
-            font-weight: 500;
-        }
+        /* Navbar Profile Dropdown */
+        .nav-profile-dropdown { position: relative; }
+        .nav-profile-btn { background: none; border: 1px solid var(--gray-200); padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .nav-profile-menu { display: none; position: absolute; right: 0; top: 110%; background: white; border: 1px solid var(--gray-200); border-radius: 8px; min-width: 200px; box-shadow: var(--shadow-lg); z-index: 100; }
+        .nav-profile-dropdown.active .nav-profile-menu { display: block; }
+        .nav-profile-menu a, .nav-profile-menu button { display: block; width: 100%; padding: 10px 15px; text-decoration: none; color: var(--gray-700); text-align: left; background: none; border: none; cursor: pointer; }
+        .nav-profile-menu a:hover { background: var(--gray-50); }
+        .divider { height: 1px; background: var(--gray-200); margin: 5px 0; }
     </style>
 </head>
 <body>
-
 
 <nav class="navbar">
     <div class="navbar-content">
         <div class="nav-left">
             <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
             <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="/userpages/user-home.html" class="nav-link">Übersicht</a>
-                </li>
+                <li class="nav-item"><a href="/userpages/user-home.html" class="nav-link">Übersicht</a></li>
                 <li class="nav-item dropdown">
                     <a href="#" class="nav-link">Lernbereiche</a>
-                    <ul class="dropdown-menu" id="learningAreasMenu">
-                    </ul>
+                    <ul class="dropdown-menu" id="learningAreasMenu"></ul>
                 </li>
-                <li class="nav-item">
-                    <a href="/quiz/quizzes.html" class="nav-link">Quizzes</a>
-                </li>
+                <li class="nav-item"><a href="/quiz/quizzes.html" class="nav-link">Quizzes</a></li>
             </ul>
         </div>
         <div class="nav-right" id="navRight">
@@ -258,78 +80,34 @@
     </div>
 </nav>
 
-
-<div id="loadingState" style="padding: var(--space-20); text-align: center;">
-    <div class="loading" style="width: 40px; height: 40px; margin: 0 auto var(--space-4);"></div>
-    <p style="color: var(--gray-600);">Lade Lernbereich...</p>
-</div>
-
-
-<div id="errorState" style="display: none; padding: var(--space-20); text-align: center;">
-    <h2 style="margin-bottom: var(--space-4);">Lernbereich nicht gefunden</h2>
-    <p style="color: var(--gray-600); margin-bottom: var(--space-6);">
-        Der angeforderte Lernbereich konnte nicht geladen werden.
-    </p>
-    <a href="/userpages/user-home.html" class="btn btn-primary">Zurück zur Übersicht</a>
-</div>
-
+<div id="loadingState" style="padding: 100px; text-align: center;">Lade Lernbereich...</div>
+<div id="errorState" style="display: none; padding: 100px; text-align: center;">Bereich nicht gefunden.</div>
 
 <div id="mainContent" style="display: none;">
-
     <header class="learning-header">
         <div class="container">
-            <div class="breadcrumb">
-                <a href="/userpages/user-home.html">Home</a>
-                <span>›</span>
-                <span id="areaNameBreadcrumb">Lernbereich</span>
-            </div>
-            <h1 id="areaTitle" style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-3); color: white;">
-                Lernbereich
-            </h1>
-            <p id="areaSubtitle" style="font-size: 1.125rem; color: rgba(255,255,255,0.9); max-width: 720px;">
-                Beschreibung
-            </p>
-            <div style="margin-top: var(--space-6);">
-                <a href="#" id="quizLink" class="btn btn-primary" style="background: white; color: var(--primary);">
-                    Quiz zu diesem Bereich →
-                </a>
-            </div>
+            <div class="breadcrumb"><a href="/userpages/user-home.html">Home</a><span>›</span><span id="areaNameBreadcrumb"></span></div>
+            <h1 id="areaTitle"></h1>
+            <p id="areaSubtitle"></p>
         </div>
     </header>
 
-
-    <div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
-        <div style="display: grid; grid-template-columns: 280px 1fr; gap: var(--space-8);">
-
+    <div class="container" style="padding: 40px 0;">
+        <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px;">
             <aside class="sidebar">
                 <div class="sidebar-nav">
                     <div class="sidebar-title">Module</div>
-                    <ul class="sidebar-list" id="sidebarModuleList">
-
-                    </ul>
+                    <ul class="sidebar-list" id="sidebarModuleList"></ul>
                 </div>
             </aside>
-
-
             <main>
-
                 <div id="modulesOverview">
-                    <h2 style="font-size: 1.875rem; font-weight: 600; margin-bottom: var(--space-6);">
-                        Module in diesem Bereich
-                    </h2>
-                    <div class="module-list" id="modulesList">
-
-                    </div>
+                    <h2 style="margin-bottom: 30px;">Module in diesem Bereich</h2>
+                    <div class="module-list" id="modulesList"></div>
                 </div>
-
-
                 <div id="moduleContentView" style="display: none;">
-                    <button onclick="showModulesOverview()" class="btn btn-ghost" style="margin-bottom: var(--space-6);">
-                        ← Zurück zur Übersicht
-                    </button>
-                    <div class="content-viewer" id="contentViewer">
-
-                    </div>
+                    <button onclick="showModulesOverview()" class="btn btn-ghost" style="margin-bottom: 20px;">← Zurück</button>
+                    <div class="content-viewer" id="contentViewer"></div>
                 </div>
             </main>
         </div>
@@ -337,277 +115,132 @@
 </div>
 
 <script src="/js/auth.js"></script>
-<script src="/js/dropdown.js"></script>
 <script>
     const API_BASE = 'http://localhost:8080/api';
     let currentArea = null;
     let currentModules = [];
-
-
     const urlParams = new URLSearchParams(window.location.search);
     const areaSlug = urlParams.get('area');
 
-
-    if (window.auth && window.auth.isLoggedIn()) {
-        const user = window.auth.getUser();
-        const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
-
-        let navHtml = `
-            <div class="nav-profile-dropdown">
-                <button class="nav-profile-btn">
-                    <span>${name}</span>
-                    <span style="font-size: 0.75rem;">▾</span>
-                </button>
-                <div class="nav-profile-menu">
-                    <a href="/userpages/account.html">Mein Account</a>
-                    <a href="/userpages/dashboard.html">Dashboard</a>`;
-
-        if (window.auth.hasRole('ADMIN')) {
-            navHtml += `<div class="divider"></div><a href="/admin/admin-dashboard.html">Admin-Bereich</a>`;
+    // NAVBAR AUTH LOGIK
+    function updateNavbar() {
+        const navRight = document.getElementById('navRight');
+        if (window.auth && window.auth.isLoggedIn()) {
+            const user = window.auth.getUser();
+            const name = user.fullname ? user.fullname.split(' ')[0] : "User";
+            navRight.innerHTML = `
+                <div class="nav-profile-dropdown" id="profileDropdown">
+                    <button class="nav-profile-btn" onclick="toggleDropdown()">
+                        <span>${name}</span><span>▾</span>
+                    </button>
+                    <div class="nav-profile-menu">
+                        <a href="/userpages/account.html">Mein Account</a>
+                        <a href="/userpages/dashboard.html">Dashboard</a>
+                        <div class="divider"></div>
+                        <button onclick="window.auth.logout('/index.html')" style="color:red;">Abmelden</button>
+                    </div>
+                </div>`;
         }
-
-        navHtml += `
-                    <div class="divider"></div>
-                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
-                </div>
-            </div>
-        `;
-
-        document.getElementById('navRight').innerHTML = navHtml;
     }
 
-    // Load learning area
-    async function loadLearningArea() {
-        if (!areaSlug) {
-            showError();
-            return;
-        }
+    function toggleDropdown() {
+        document.getElementById('profileDropdown').classList.toggle('active');
+    }
 
+    // CONTENT LOGIK
+    async function loadLearningArea() {
+        if (!areaSlug) { showError(); return; }
         try {
             const response = await fetch(`${API_BASE}/learning-areas/${areaSlug}`);
-            if (!response.ok) throw new Error('Not found');
-
             currentArea = await response.json();
             currentModules = currentArea.modules || [];
-
-            // Load content for all modules
             await Promise.all(currentModules.map(loadModuleContent));
-
             renderPage();
-            loadNavigationAreas();
-        } catch (error) {
-            console.error('Error loading learning area:', error);
-            showError();
-        }
+            updateNavbar();
+
+            const targetId = urlParams.get('moduleId');
+            if (targetId) showModuleContent(parseInt(targetId));
+        } catch (e) { showError(); }
     }
 
     async function loadModuleContent(module) {
-        try {
-            const response = await fetch(`${API_BASE}/learning-areas/modules/${module.id}`);
-            if (!response.ok) return;
-
-            const fullModule = await response.json();
-            module.contents = fullModule.contents || [];
-        } catch (error) {
-            console.error('Error loading module content:', error);
-            module.contents = [];
-        }
-    }
-
-    async function loadNavigationAreas() {
-        try {
-            const response = await fetch(`${API_BASE}/learning-areas`);
-            if (!response.ok) return;
-
-            const areas = await response.json();
-            const menu = document.getElementById('learningAreasMenu');
-            menu.innerHTML = areas
-                .sort((a, b) => a.displayOrder - b.displayOrder)
-                .map(area => `
-                    <li><a href="/lernbereiche/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>
-                `)
-                .join('');
-        } catch (error) {
-            console.error('Error loading navigation areas:', error);
+        const res = await fetch(`${API_BASE}/learning-areas/modules/${module.id}`);
+        if (res.ok) {
+            const data = await res.json();
+            module.contents = data.contents || [];
         }
     }
 
     function renderPage() {
         document.getElementById('loadingState').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
-
-
-        document.getElementById('pageTitle').textContent = `${currentArea.name} - RadBrain`;
         document.getElementById('areaTitle').textContent = currentArea.name;
         document.getElementById('areaNameBreadcrumb').textContent = currentArea.name;
-        document.getElementById('areaSubtitle').textContent = currentArea.subtitle || currentArea.description || '';
-        document.getElementById('quizLink').href = `/quiz/quizzes.html?category=${currentArea.slug}`;
-
-
+        document.getElementById('areaSubtitle').textContent = currentArea.subtitle || '';
         renderModulesList();
         renderSidebarModules();
     }
 
     function renderModulesList() {
-        const container = document.getElementById('modulesList');
-
-        if (currentModules.length === 0) {
-            container.innerHTML = `
-                <p style="color: var(--gray-600); text-align: center; padding: var(--space-8);">
-                    Noch keine Module verfügbar.
-                </p>
-            `;
-            return;
-        }
-
-        container.innerHTML = currentModules
-            .sort((a, b) => a.displayOrder - b.displayOrder)
-            .map((module, index) => `
-                <div class="module-card" onclick="showModuleContent(${module.id})">
-                    <div class="module-header">
-                        <div class="module-number">${index + 1}</div>
-                        <div class="module-content">
-                            <div class="module-title">
-                                ${escapeHtml(module.title)}
-                            </div>
-                            ${module.subtitle ? `
-                                <div class="module-description">${escapeHtml(module.subtitle)}</div>
-                            ` : ''}
-                            <div class="module-meta">
-                                <span>${module.contents ? module.contents.length : 0} Inhalte</span>
-                                ${module.estimatedDuration ? `<span>${module.estimatedDuration} Min</span>` : ''}
-                            </div>
-                        </div>
+        document.getElementById('modulesList').innerHTML = currentModules.map((m, i) => `
+            <div class="module-card" onclick="showModuleContent(${m.id})">
+                <div class="module-header">
+                    <div class="module-number">${i+1}</div>
+                    <div class="module-content">
+                        <div class="module-title">${escapeHtml(m.title)}</div>
+                        <div class="module-meta"><span>${m.contents.length} Lerneinheiten</span></div>
                     </div>
                 </div>
-            `)
-            .join('');
+            </div>`).join('');
     }
 
     function renderSidebarModules() {
-        const container = document.getElementById('sidebarModuleList');
-        container.innerHTML = currentModules
-            .sort((a, b) => a.displayOrder - b.displayOrder)
-            .map(module => `
-                <li>
-                    <a href="#" onclick="event.preventDefault(); showModuleContent(${module.id});" data-module-id="${module.id}">
-                        ${escapeHtml(module.title)}
-                    </a>
-                </li>
-            `)
-            .join('');
+        document.getElementById('sidebarModuleList').innerHTML = currentModules.map(m => `
+            <li><a href="#" onclick="event.preventDefault(); showModuleContent(${m.id});" data-module-id="${m.id}">${escapeHtml(m.title)}</a></li>
+        `).join('');
     }
 
     function showModuleContent(moduleId) {
         const module = currentModules.find(m => m.id === moduleId);
         if (!module) return;
 
-        const contents = module.contents || [];
-
         document.getElementById('modulesOverview').style.display = 'none';
         document.getElementById('moduleContentView').style.display = 'block';
 
-
-        document.querySelectorAll('.sidebar-list a').forEach(link => {
-            link.classList.remove('active');
-            if (link.dataset.moduleId == moduleId) {
-                link.classList.add('active');
-            }
-        });
-
+        // Sidebar aktiv setzen
+        document.querySelectorAll('.sidebar-list a').forEach(a => a.classList.toggle('active', a.dataset.moduleId == moduleId));
 
         const viewer = document.getElementById('contentViewer');
+        let html = `<h2>${escapeHtml(module.title)}</h2>`;
+        if (module.subtitle) html += `<p style="color:var(--gray-500); margin-bottom:2rem;">${escapeHtml(module.subtitle)}</p>`;
 
-        let html = `
-            <h2 style="font-size: 2rem; font-weight: 600; margin-bottom: var(--space-2); color: var(--gray-900);">
-                ${escapeHtml(module.title)}
-            </h2>
-        `;
+        html += (module.contents || []).sort((a,b) => a.displayOrder - b.displayOrder).map(c => {
+            const data = c.contentData.trim();
 
-        if (module.subtitle) {
-            html += `<p style="font-size: 1.125rem; color: var(--gray-600); margin-bottom: var(--space-8);">${escapeHtml(module.subtitle)}</p>`;
-        }
-
-        if (contents.length === 0) {
-            html += `<p style="color: var(--gray-600);">Noch keine Inhalte verfügbar.</p>`;
-        } else {
-            html += contents
-                .sort((a, b) => a.displayOrder - b.displayOrder)
-                .map(content => renderContent(content))
-                .join('');
-        }
-
-        viewer.innerHTML = html;
-
-
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function renderContent(content) {
-        const type = content.contentType;
-        const data = content.contentData;
-        const title = content.title;
-
-        switch (type) {
-            case 'HEADING':
-                return `<h3>${escapeHtml(title || data)}</h3>`;
-
-            case 'TEXT':
-                return `
-                    ${title ? `<h4>${escapeHtml(title)}</h4>` : ''}
-                    <p>${escapeHtml(data)}</p>
-                `;
-
-            case 'LIST':
+            // KREATIVER PARSER
+            if (data.startsWith('[') && data.endsWith(']')) {
                 try {
                     const items = JSON.parse(data);
-                    return `
-                        ${title ? `<h4>${escapeHtml(title)}</h4>` : ''}
-                        <ul>${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
-                    `;
-                } catch {
-                    return `<p>${escapeHtml(data)}</p>`;
-                }
+                    return `<div class="content-card-grid">${items.map(item => `
+                        <div class="content-info-card"><strong>Fokus:</strong><br>${escapeHtml(item)}</div>`).join('')}</div>`;
+                } catch(e) { return `<p class="content-text-block">${escapeHtml(data)}</p>`; }
+            }
 
-            case 'CALLOUT':
-            case 'INFO':
-                return `
-                    <div class="info-box">
-                        ${title ? `<h4>${escapeHtml(title)}</h4>` : ''}
-                        <p style="margin-bottom: 0;">${escapeHtml(data)}</p>
-                    </div>
-                `;
+            if (data.startsWith('!')) {
+                return `<div class="warning-box"><strong>Wichtig:</strong> ${escapeHtml(data.substring(1))}</div>`;
+            }
 
-            case 'CODE':
-                return `
-                    ${title ? `<h4>${escapeHtml(title)}</h4>` : ''}
-                    <pre><code>${escapeHtml(data)}</code></pre>
-                `;
+            return `<p class="content-text-block">${escapeHtml(data)}</p>`;
+        }).join('');
 
-            case 'QUOTE':
-                return `
-                    <blockquote style="border-left: 4px solid var(--gray-300); padding-left: var(--space-4); font-style: italic; color: var(--gray-600); margin: var(--space-6) 0;">
-                        ${escapeHtml(data)}
-                        ${title ? `<br><small style="font-style: normal;">— ${escapeHtml(title)}</small>` : ''}
-                    </blockquote>
-                `;
-
-            default:
-                return `<p>${escapeHtml(data)}</p>`;
-        }
+        viewer.innerHTML = html;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function showModulesOverview() {
         document.getElementById('modulesOverview').style.display = 'block';
         document.getElementById('moduleContentView').style.display = 'none';
-
-        // Remove active state
-        document.querySelectorAll('.sidebar-list a').forEach(link => {
-            link.classList.remove('active');
-        });
-
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.querySelectorAll('.sidebar-list a').forEach(a => a.classList.remove('active'));
     }
 
     function showError() {
@@ -615,16 +248,23 @@
         document.getElementById('errorState').style.display = 'block';
     }
 
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+    function escapeHtml(t) {
+        const d = document.createElement('div'); d.textContent = t; return d.innerHTML;
     }
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', loadLearningArea);
-</script>
+    async function loadNavigationAreas() {
+        const res = await fetch(`${API_BASE}/learning-areas`);
+        if (res.ok) {
+            const areas = await res.json();
+            document.getElementById('learningAreasMenu').innerHTML = areas.map(a =>
+                `<li><a href="/lernbereiche/learning-area.html?area=${a.slug}">${escapeHtml(a.name)}</a></li>`).join('');
+        }
+    }
 
+    document.addEventListener('DOMContentLoaded', () => {
+        loadLearningArea();
+        loadNavigationAreas();
+    });
+</script>
 </body>
 </html>

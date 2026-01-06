@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lernbereiche verwalten - RadBrain Admin</title>
-    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/dropdown.js"></script>
 </head>
 <body>
 
@@ -12,10 +13,10 @@
 <nav class="navbar">
     <div class="navbar-content">
         <div class="nav-left">
-            <img src="../Bilder/logo.png" alt="RadBrain" class="nav-logo">
+            <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="/auth/user-home.html" class="nav-link">Übersicht</a>
+                    <a href="/userpages/user-home.html" class="nav-link">Übersicht</a>
                 </li>
                 <li class="nav-item">
                     <a href="/admin/admin-dashboard.html" class="nav-link">Admin</a>
@@ -54,16 +55,16 @@
     </div>
 </div>
 
-<script src="../js/auth.js"></script>
-<script src="../js/dropdown.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/dropdown.js"></script>
 <script>
     const API_BASE = 'http://localhost:8080/api';
 
     // Check admin auth
     if (!window.auth || !window.auth.isLoggedIn()) {
-        window.location.href = '/login.html';
+        window.location.href = '/auth/login.html';
     } else if (!window.auth.hasRole('ADMIN')) {
-        window.location.href = '/user-home.html';
+        window.location.href = '/userpages/user-home.html';
     } else {
         initializePage();
     }
@@ -79,7 +80,7 @@
                     <span style="font-size: 0.75rem;">▾</span>
                 </button>
                 <div class="nav-profile-menu">
-                    <a href="/account.html">Mein Account</a>
+                    <a href="/userpages/account.html">Mein Account</a>
                     <div class="divider"></div>
                     <button onclick="window.auth.logout('/index.html')">Abmelden</button>
                 </div>
@@ -91,18 +92,18 @@
 
     async function loadAreas() {
         try {
-            const response = await window.auth.authFetch(`${API_BASE}/secure/admin/learning-areas`);
-            if (!response.ok) throw new Error('Failed to load');
+            // Sicherstellen, dass der Pfad exakt so aussieht:
+            const response = await window.auth.authFetch(`${API_BASE}/admin/learning-areas`);
 
-            const areas = await response.json();
-            renderAreas(areas);
+            if (response.ok) {
+                const areas = await response.json();
+                renderAreas(areas);
+            } else {
+                console.error("Server antwortete mit Status:", response.status);
+                if(response.status === 403) alert("Zugriff verweigert: Du bist kein Admin.");
+            }
         } catch (error) {
-            console.error('Error:', error);
-            document.getElementById('areasList').innerHTML = `
-                <p style="text-align: center; color: var(--gray-600);">
-                    Fehler beim Laden der Lernbereiche
-                </p>
-            `;
+            console.error("Ladefehler:", error);
         }
     }
 
@@ -125,7 +126,7 @@
 
         container.innerHTML = areas.sort((a, b) => a.displayOrder - b.displayOrder).map(area => `
             <div class="card">
-                <div style="display: flex; justify-content: between; align-items: flex-start; gap: var(--space-6);">
+                <div style="display: flex; align-items: flex-start; gap: var(--space-6);">
                     <div style="flex: 1;">
                         <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-2);">
                             <h3 style="font-size: 1.5rem; font-weight: 600; margin: 0;">
@@ -135,73 +136,74 @@
                                 ${area.isPublished ? 'Veröffentlicht' : 'Entwurf'}
                             </span>
                         </div>
-                        ${area.subtitle ? `
-                            <p style="color: var(--gray-700); margin-bottom: var(--space-2);">
-                                ${escapeHtml(area.subtitle)}
-                            </p>
-                        ` : ''}
-                        ${area.description ? `
-                            <p style="color: var(--gray-600); font-size: 0.9375rem; margin-bottom: var(--space-4);">
-                                ${escapeHtml(area.description)}
-                            </p>
-                        ` : ''}
-                        <div style="display: flex; gap: var(--space-6); color: var(--gray-500); font-size: 0.9375rem;">
+                        ${area.subtitle ? `<p style="color: var(--gray-700);">${escapeHtml(area.subtitle)}</p>` : ''}
+                        <div style="display: flex; gap: var(--space-6); color: var(--gray-500); font-size: 0.875rem; margin-top: 10px;">
                             <span>Slug: ${area.slug}</span>
                             <span>${area.moduleCount || 0} Module</span>
-                            <span>Position: ${area.displayOrder}</span>
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: var(--space-2);">
-                        <a href="/admin-modules.html?areaId=${area.id}" class="btn btn-sm btn-primary">
-                            Module (${area.moduleCount || 0})
-                        </a>
-                        <button onclick="editArea(${area.id})" class="btn btn-sm btn-secondary">
-                            Bearbeiten
-                        </button>
-                        <button onclick="togglePublish(${area.id}, ${!area.isPublished})" class="btn btn-sm btn-outline">
+                        <a href="/admin/admin-modules.html?areaId=${area.id}" class="btn btn-sm btn-primary">Module</a>
+                        <button onclick="editArea(${area.id})" class="btn btn-sm btn-secondary">Bearbeiten</button>
+
+                        <button onclick="togglePublish(${area.id}, ${area.isPublished})" class="btn btn-sm btn-outline">
                             ${area.isPublished ? 'Verstecken' : 'Veröffentlichen'}
                         </button>
-                        <button onclick="deleteArea(${area.id}, '${escapeHtml(area.name)}')" class="btn btn-sm" style="background: var(--error); color: white;">
-                            Löschen
-                        </button>
+
+                        <button onclick="deleteArea(${area.id}, '${escapeHtml(area.name)}')" class="btn btn-sm" style="background: var(--error); color: white;">Löschen</button>
                     </div>
                 </div>
             </div>
         `).join('');
     }
 
+    async function togglePublish(id, currentStatus) {
+        console.log("Versuche Status zu ändern für ID:", id); // Schau in die F12 Konsole!
+        const targetUrl = `${API_BASE}/admin/learning-areas/${id}`;
+        console.log("Ziel-URL:", targetUrl);
+
+        try {
+            const getRes = await window.auth.authFetch(targetUrl);
+            if (!getRes.ok) throw new Error("Bereich konnte nicht geladen werden");
+
+            const area = await getRes.json();
+
+            // 2. Status umkehren
+            area.isPublished = !isCurrentlyPublished;
+
+            // 3. Zurückspeichern
+            const res = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(area)
+            });
+
+            if (res.ok) {
+                // FIX 2: Richtige Funktion aufrufen (loadAreas statt loadLearningAreas)
+                loadAreas();
+            } else {
+                const err = await res.json();
+                alert("Fehler: " + (err.message || "Status konnte nicht geändert werden"));
+            }
+        } catch (error) {
+            console.error("Fehler:", error);
+            alert("Verbindung fehlgeschlagen");
+        }
+    }
+
     function createArea() {
-        window.location.href = '/learning-area-editor.html';
+        window.location.href = '/admin/learning-area-editor.html';
     }
 
     function editArea(id) {
-        window.location.href = `/learning-area-editor.html?id=${id}`;
-    }
-
-    async function togglePublish(id, publish) {
-        try {
-            const response = await window.auth.authFetch(`${API_BASE}/secure/admin/learning-areas/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isPublished: publish })
-            });
-
-            if (response.ok) {
-                loadAreas();
-            } else {
-                alert('Fehler beim Aktualisieren');
-            }
-        } catch {
-            alert('Verbindungsfehler');
-        }
+        window.location.href = `/admin/learning-area-editor.html?id=${id}`;
     }
 
     async function deleteArea(id, name) {
         if (!confirm(`"${name}" wirklich löschen? Alle Module und Inhalte gehen verloren!`)) return;
-        if (!confirm('Wirklich sicher? Diese Aktion kann nicht rückgängig gemacht werden!')) return;
 
         try {
-            const response = await window.auth.authFetch(`${API_BASE}/secure/admin/learning-areas/${id}`, {
+            const response = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/${id}`, {
                 method: 'DELETE'
             });
 

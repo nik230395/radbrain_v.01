@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Creator - RadBrain Admin</title>
     <script src="/js/auth.js"></script>
+    <script src="/js/dropdown.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -229,8 +230,8 @@
 <body>
 <div class="container">
     <div class="header">
-        <a href="/admin-dashboard.html" class="back-link">← Zurück</a>
-        <h1>🎓 Quiz Creator</h1>
+        <a href="/admin/admin-dashboard.html" class="back-link">← Zurück</a>
+        <h1>Quiz Creator</h1>
         <p>Erstelle professionelle Radiologie-Quizzes</p>
     </div>
 
@@ -238,7 +239,7 @@
         <div id="alertContainer"></div>
 
         <div class="section">
-            <h2>➕ Neues Quiz erstellen</h2>
+            <h2>Neues Quiz erstellen</h2>
 
             <div class="form-group">
                 <label for="quizTitle">Titel <span class="required">*</span></label>
@@ -248,6 +249,10 @@
             <div class="form-group">
                 <label for="quizDesc">Beschreibung</label>
                 <textarea id="quizDesc" rows="3" placeholder="Beschreibung..."></textarea>
+            </div>
+            <div class="form-group" style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="isPublished" style="width: 20px; height: 20px;" checked>
+                <label for="isPublished" style="font-weight: 600; cursor: pointer;">Quiz sofort veröffentlichen</label>
             </div>
 
             <div class="form-group">
@@ -270,10 +275,10 @@
 
             <div style="margin-top: 30px; display: flex; gap: 12px;">
                 <button class="btn btn-success" onclick="saveQuiz()" id="saveBtn">
-                    💾 Quiz speichern
+                    Quiz speichern
                 </button>
                 <button class="btn btn-secondary" onclick="resetForm()">
-                    🔄 Zurücksetzen
+                    Zurücksetzen?
                 </button>
             </div>
         </div>
@@ -300,7 +305,7 @@
         }
 
         if (!window.auth.hasRole('ADMIN')) {
-            showAlert('⛔ Nur für Administratoren!', 'error');
+            showAlert('Nur für Administratoren!', 'error');
             setTimeout(() => window.location.href = '/dashboard.html', 2000);
             return;
         }
@@ -357,7 +362,7 @@
         if (questions.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">📝</div>
+                    <div class="empty-state-icon"></div>
                     <p>Noch keine Fragen</p>
                 </div>
             `;
@@ -427,51 +432,52 @@
         const title = document.getElementById('quizTitle').value.trim();
         const description = document.getElementById('quizDesc').value.trim();
         const category = document.getElementById('quizCategory').value;
+        const isPublished = document.getElementById('isPublished').checked; // Checkbox auslesen
         const saveBtn = document.getElementById('saveBtn');
 
+        // 1. Validierung
         if (!title) {
-            showAlert('❌ Titel erforderlich!', 'error');
+            showAlert('Titel erforderlich!', 'error');
             return;
         }
-
         if (questions.length === 0) {
-            showAlert('❌ Mindestens eine Frage!', 'error');
+            showAlert('Mindestens eine Frage!', 'error');
             return;
         }
 
+        // Validierung der Fragen und Antworten
         for (let i = 0; i < questions.length; i++) {
             const q = questions[i];
             if (!q.text.trim()) {
-                showAlert(`❌ Frage ${i + 1} hat keinen Text!`, 'error');
+                showAlert(`Frage ${i + 1} hat keinen Text!`, 'error');
                 return;
             }
             if (q.qtype !== 'SHORT_TEXT') {
                 if (q.choices.length === 0) {
-                    showAlert(`❌ Frage ${i + 1} hat keine Antworten!`, 'error');
+                    showAlert(`Frage ${i + 1} hat keine Antworten!`, 'error');
                     return;
                 }
                 if (!q.choices.some(c => c.isCorrect)) {
-                    showAlert(`❌ Frage ${i + 1}: Mindestens eine richtige Antwort!`, 'error');
+                    showAlert(`Frage ${i + 1}: Mindestens eine richtige Antwort!`, 'error');
                     return;
-                }
-                for (let j = 0; j < q.choices.length; j++) {
-                    if (!q.choices[j].text.trim()) {
-                        showAlert(`❌ Frage ${i + 1}, Antwort ${j + 1} ist leer!`, 'error');
-                        return;
-                    }
                 }
             }
         }
 
+        // 2. UI Status ändern
         saveBtn.disabled = true;
         saveBtn.innerHTML = '<span class="spinner"></span> Speichere...';
 
         try {
-            // Create Quiz
-            const quizPayload = { title, description };
-            if (category) quizPayload.category = category;
+            // 3. Quiz Header erstellen (jetzt mit isPublished und korrektem Admin-Pfad)
+            const quizPayload = {
+                title,
+                description,
+                category,
+                isPublished // Der Status wird hier mitgesendet
+            };
 
-            const quizRes = await authFetch(`${API_BASE}/quizzes`, {
+            const quizRes = await window.auth.authFetch(`${API_BASE}/secure/admin/quizzes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(quizPayload)
@@ -482,31 +488,30 @@
             const quiz = await quizRes.json();
             const quizId = quiz.id;
 
-            // Create Questions
+            // 4. Fragen nacheinander erstellen
             for (let i = 0; i < questions.length; i++) {
                 const q = questions[i];
 
-                const questionRes = await authFetch(`${API_BASE}/questions`, {
+                const questionRes = await window.auth.authFetch(`${API_BASE}/secure/admin/questions`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         quizId: quizId,
-                        qtype: q.qtype.toUpperCase(),  // ✅ FIX: UPPERCASE!
+                        qtype: q.qtype.toUpperCase(),
                         text: q.text,
                         auxText: ''
                     })
                 });
 
                 if (!questionRes.ok) throw new Error(`Frage ${i + 1} erstellen fehlgeschlagen`);
-
                 const question = await questionRes.json();
 
-                // Create Choices
+                // 5. Antworten erstellen (Choices)
                 if (q.qtype !== 'SHORT_TEXT') {
                     for (let j = 0; j < q.choices.length; j++) {
                         const choice = q.choices[j];
 
-                        const choiceRes = await authFetch(`${API_BASE}/choices`, {
+                        const choiceRes = await window.auth.authFetch(`${API_BASE}/secure/admin/choices`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -521,7 +526,7 @@
                 }
             }
 
-            showAlert('✅ Quiz erfolgreich erstellt!', 'success');
+            showAlert(isPublished ? '✅ Quiz veröffentlicht!' : '✅ Quiz als Entwurf gespeichert!', 'success');
             resetForm();
 
         } catch (error) {
@@ -529,7 +534,7 @@
             showAlert('❌ Fehler: ' + error.message, 'error');
         } finally {
             saveBtn.disabled = false;
-            saveBtn.innerHTML = '💾 Quiz speichern';
+            saveBtn.innerHTML = 'Quiz speichern';
         }
     }
 
