@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quizzes - RadBrain</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
         .quiz-header {
             background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
@@ -154,33 +154,33 @@
 </head>
 <body>
 
-<!-- Navigation -->
+
 <nav class="navbar">
     <div class="navbar-content">
         <div class="nav-left">
-            <img src="logo.png" alt="RadBrain" class="nav-logo">
+            <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="/user-home.html" class="nav-link">Übersicht</a>
+                    <a href="/userpages/user-home.html" class="nav-link">Übersicht</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a href="#" class="nav-link">Lernbereiche</a>
                     <ul class="dropdown-menu" id="learningAreasMenu">
-                        <!-- Dynamisch geladen -->
+
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="/quizzes.html" class="nav-link active">Quizzes</a>
+                    <a href="/quiz/quizzes.html" class="nav-link active">Quizzes</a>
                 </li>
             </ul>
         </div>
         <div class="nav-right" id="navRight">
-            <a href="/login.html" class="btn-login">Anmelden</a>
+            <a href="/auth/login.html" class="btn-login">Anmelden</a>
         </div>
     </div>
 </nav>
 
-<!-- Header -->
+
 <header class="quiz-header">
     <div class="container">
         <div style="max-width: 720px;">
@@ -194,9 +194,9 @@
     </div>
 </header>
 
-<!-- Main Content -->
+
 <div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
-    <!-- Statistics -->
+
     <div class="stats-grid" id="statsGrid">
         <div class="stat-card">
             <div class="stat-value" id="totalQuizzes">0</div>
@@ -212,7 +212,7 @@
         </div>
     </div>
 
-    <!-- Filter Bar -->
+
     <div class="filter-bar">
         <div class="filter-group">
             <input
@@ -242,7 +242,7 @@
         </div>
     </div>
 
-    <!-- Quiz Grid -->
+
     <div id="quizContainer">
         <div style="text-align: center; padding: var(--space-12);">
             <div class="loading" style="width: 40px; height: 40px; margin: 0 auto var(--space-4);"></div>
@@ -251,13 +251,13 @@
     </div>
 </div>
 
-<script src="auth.js"></script>
+<script src="/js/auth.js"></script>
 <script>
     const API_BASE = 'http://localhost:8080/api';
     let allQuizzes = [];
     let currentCategory = 'ALL';
 
-    // Check authentication
+
     if (!window.auth || !window.auth.isLoggedIn()) {
         window.location.href = '/login.html';
     } else {
@@ -271,11 +271,11 @@
                     <span style="font-size: 0.75rem;">▾</span>
                 </button>
                 <div class="nav-profile-menu">
-                    <a href="/account.html">Mein Account</a>
-                    <a href="/dashboard.html">Dashboard</a>`;
+                    <a href="/userpages/account.html">Mein Account</a>
+                    <a href="/auth/dashboard.html">Dashboard</a>`;
 
         if (window.auth.hasRole('ADMIN')) {
-            navHtml += `<div class="divider"></div><a href="/admin-dashboard.html">Admin-Bereich</a>`;
+            navHtml += `<div class="divider"></div><a href="/admin/admin-dashboard.html">Admin-Bereich</a>`;
         }
 
         navHtml += `
@@ -288,7 +288,7 @@
         document.getElementById('navRight').innerHTML = navHtml;
     }
 
-    // Load quizzes
+
     async function loadQuizzes() {
         try {
             const response = await window.auth.authFetch(`${API_BASE}/quizzes/published`);
@@ -360,7 +360,7 @@
     function filterCategory(event, category) {
         currentCategory = category;
 
-        // Update button states
+
         document.querySelectorAll('.category-btn').forEach(btn => {
             btn.classList.remove('active');
         });
@@ -391,7 +391,7 @@
     }
 
     function startQuiz(id) {
-        window.location.href = `/quiz.html?id=${id}`;
+        window.location.href = `/quiz/quiz.html?id=${id}`;
     }
 
     function getCategoryLabel(category) {
@@ -422,7 +422,7 @@
             menu.innerHTML = areas
                 .sort((a, b) => a.displayOrder - b.displayOrder)
                 .map(area => `
-                    <li><a href="/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>
+                    <li><a href="/lernbereiche/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>
                 `)
                 .join('');
         } catch (error) {

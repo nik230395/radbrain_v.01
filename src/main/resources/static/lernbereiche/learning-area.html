@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">Lernbereich - RadBrain</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
         .learning-header {
             background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
@@ -233,54 +233,53 @@
 </head>
 <body>
 
-<!-- Navigation -->
+
 <nav class="navbar">
     <div class="navbar-content">
         <div class="nav-left">
-            <img src="logo.png" alt="RadBrain" class="nav-logo">
+            <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="/user-home.html" class="nav-link">Übersicht</a>
+                    <a href="/userpages/user-home.html" class="nav-link">Übersicht</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a href="#" class="nav-link">Lernbereiche</a>
                     <ul class="dropdown-menu" id="learningAreasMenu">
-                        <!-- Dynamisch geladen -->
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="/quizzes.html" class="nav-link">Quizzes</a>
+                    <a href="/quiz/quizzes.html" class="nav-link">Quizzes</a>
                 </li>
             </ul>
         </div>
         <div class="nav-right" id="navRight">
-            <a href="/login.html" class="btn-login">Anmelden</a>
+            <a href="/auth/login.html" class="btn-login">Anmelden</a>
         </div>
     </div>
 </nav>
 
-<!-- Loading State -->
+
 <div id="loadingState" style="padding: var(--space-20); text-align: center;">
     <div class="loading" style="width: 40px; height: 40px; margin: 0 auto var(--space-4);"></div>
     <p style="color: var(--gray-600);">Lade Lernbereich...</p>
 </div>
 
-<!-- Error State -->
+
 <div id="errorState" style="display: none; padding: var(--space-20); text-align: center;">
     <h2 style="margin-bottom: var(--space-4);">Lernbereich nicht gefunden</h2>
     <p style="color: var(--gray-600); margin-bottom: var(--space-6);">
         Der angeforderte Lernbereich konnte nicht geladen werden.
     </p>
-    <a href="/user-home.html" class="btn btn-primary">Zurück zur Übersicht</a>
+    <a href="/userpages/user-home.html" class="btn btn-primary">Zurück zur Übersicht</a>
 </div>
 
-<!-- Main Content -->
+
 <div id="mainContent" style="display: none;">
-    <!-- Header -->
+
     <header class="learning-header">
         <div class="container">
             <div class="breadcrumb">
-                <a href="/user-home.html">Home</a>
+                <a href="/userpages/user-home.html">Home</a>
                 <span>›</span>
                 <span id="areaNameBreadcrumb">Lernbereich</span>
             </div>
@@ -298,38 +297,38 @@
         </div>
     </header>
 
-    <!-- Content Area -->
+
     <div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
         <div style="display: grid; grid-template-columns: 280px 1fr; gap: var(--space-8);">
-            <!-- Sidebar -->
+
             <aside class="sidebar">
                 <div class="sidebar-nav">
                     <div class="sidebar-title">Module</div>
                     <ul class="sidebar-list" id="sidebarModuleList">
-                        <!-- Dynamisch geladen -->
+
                     </ul>
                 </div>
             </aside>
 
-            <!-- Main Content -->
+
             <main>
-                <!-- Modules Overview -->
+
                 <div id="modulesOverview">
                     <h2 style="font-size: 1.875rem; font-weight: 600; margin-bottom: var(--space-6);">
                         Module in diesem Bereich
                     </h2>
                     <div class="module-list" id="modulesList">
-                        <!-- Dynamisch geladen -->
+
                     </div>
                 </div>
 
-                <!-- Module Content View -->
+
                 <div id="moduleContentView" style="display: none;">
                     <button onclick="showModulesOverview()" class="btn btn-ghost" style="margin-bottom: var(--space-6);">
                         ← Zurück zur Übersicht
                     </button>
                     <div class="content-viewer" id="contentViewer">
-                        <!-- Dynamisch geladen -->
+
                     </div>
                 </div>
             </main>
@@ -337,17 +336,18 @@
     </div>
 </div>
 
-<script src="auth.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/dropdown.js"></script>
 <script>
     const API_BASE = 'http://localhost:8080/api';
     let currentArea = null;
     let currentModules = [];
 
-    // Get area slug from URL
+
     const urlParams = new URLSearchParams(window.location.search);
     const areaSlug = urlParams.get('area');
 
-    // Check authentication
+
     if (window.auth && window.auth.isLoggedIn()) {
         const user = window.auth.getUser();
         const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
@@ -359,11 +359,11 @@
                     <span style="font-size: 0.75rem;">▾</span>
                 </button>
                 <div class="nav-profile-menu">
-                    <a href="/account.html">Mein Account</a>
-                    <a href="/dashboard.html">Dashboard</a>`;
+                    <a href="/userpages/account.html">Mein Account</a>
+                    <a href="/userpages/dashboard.html">Dashboard</a>`;
 
         if (window.auth.hasRole('ADMIN')) {
-            navHtml += `<div class="divider"></div><a href="/admin-dashboard.html">Admin-Bereich</a>`;
+            navHtml += `<div class="divider"></div><a href="/admin/admin-dashboard.html">Admin-Bereich</a>`;
         }
 
         navHtml += `
@@ -424,7 +424,7 @@
             menu.innerHTML = areas
                 .sort((a, b) => a.displayOrder - b.displayOrder)
                 .map(area => `
-                    <li><a href="/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>
+                    <li><a href="/lernbereiche/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>
                 `)
                 .join('');
         } catch (error) {
@@ -436,14 +436,14 @@
         document.getElementById('loadingState').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
 
-        // Set page title
+
         document.getElementById('pageTitle').textContent = `${currentArea.name} - RadBrain`;
         document.getElementById('areaTitle').textContent = currentArea.name;
         document.getElementById('areaNameBreadcrumb').textContent = currentArea.name;
         document.getElementById('areaSubtitle').textContent = currentArea.subtitle || currentArea.description || '';
-        document.getElementById('quizLink').href = `/quizzes.html?category=${currentArea.slug}`;
+        document.getElementById('quizLink').href = `/quiz/quizzes.html?category=${currentArea.slug}`;
 
-        // Render modules
+
         renderModulesList();
         renderSidebarModules();
     }
@@ -468,7 +468,7 @@
                         <div class="module-number">${index + 1}</div>
                         <div class="module-content">
                             <div class="module-title">
-                                ${module.icon ? module.icon + ' ' : ''}${escapeHtml(module.title)}
+                                ${escapeHtml(module.title)}
                             </div>
                             ${module.subtitle ? `
                                 <div class="module-description">${escapeHtml(module.subtitle)}</div>
@@ -507,7 +507,7 @@
         document.getElementById('modulesOverview').style.display = 'none';
         document.getElementById('moduleContentView').style.display = 'block';
 
-        // Update sidebar active state
+
         document.querySelectorAll('.sidebar-list a').forEach(link => {
             link.classList.remove('active');
             if (link.dataset.moduleId == moduleId) {
@@ -515,12 +515,12 @@
             }
         });
 
-        // Render content
+
         const viewer = document.getElementById('contentViewer');
 
         let html = `
             <h2 style="font-size: 2rem; font-weight: 600; margin-bottom: var(--space-2); color: var(--gray-900);">
-                ${module.icon ? module.icon + ' ' : ''}${escapeHtml(module.title)}
+                ${escapeHtml(module.title)}
             </h2>
         `;
 
@@ -539,7 +539,7 @@
 
         viewer.innerHTML = html;
 
-        // Scroll to top
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 

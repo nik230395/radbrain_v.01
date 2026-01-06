@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mein Account - RadBrain</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    :root {
+      --sidebar-width: 280px;
+    }
+    body { background-color: var(--gray-50); }
+    .account-layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-width) 1fr;
+      gap: var(--space-8);
+      align-items: start;
+    }
+    .account-nav {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      padding: var(--space-4);
+      position: sticky;
+      top: calc(var(--nav-height) + var(--space-8));
+    }
+    .account-nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      color: var(--gray-600);
+      text-decoration: none;
+      border-radius: var(--radius-lg);
+      transition: all var(--transition-base);
+      font-weight: 500;
+    }
+    .account-nav-item:hover {
+      background: var(--gray-50);
+      color: var(--primary);
+    }
+    .account-nav-item.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-6);
+      margin-bottom: var(--space-10);
+      padding: var(--space-6);
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+    }
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2rem;
+      font-weight: 700;
+      box-shadow: var(--shadow-md);
+    }
+    .section-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      margin-bottom: var(--space-8);
+      box-shadow: var(--shadow-sm);
+    }
+    .section-header {
+      padding: var(--space-6) var(--space-8);
+      border-bottom: 1px solid var(--gray-100);
+    }
+    .section-body { padding: var(--space-8); }
+    .section-footer {
+      padding: var(--space-4) var(--space-8);
+      background: var(--gray-50);
+      display: flex;
+      justify-content: flex-end;
+    }
+    .danger-zone { border: 1px solid #fee2e2; }
+    .danger-header { background: #fef2f2; border-bottom: 1px solid #fee2e2; }
+
+    @media (max-width: 992px) {
+      .account-layout { grid-template-columns: 1fr; }
+      .account-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-content">
+    <div class="nav-left">
+      <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
+      <ul class="nav-menu">
+        <li class="nav-item"><a href="/userpages/user-home.html" class="nav-link">Übersicht</a></li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link">Lernbereiche</a>
+          <ul class="dropdown-menu" id="learningAreasMenu"></ul>
+        </li>
+        <li class="nav-item"><a href="/quiz/quizzes.html" class="nav-link">Quizzes</a></li>
+      </ul>
+    </div>
+    <div class="nav-right" id="navRight"></div>
+  </div>
+</nav>
+
+<div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
+  <div class="account-layout">
+
+    <aside class="account-nav">
+      <a href="#profile" class="account-nav-item active">Profil</a>
+      <a href="#security" class="account-nav-item">Sicherheit</a>
+      <a href="#danger" class="account-nav-item" style="color: var(--error);">Account löschen</a>
+    </aside>
+
+    <main>
+      <header class="profile-header">
+        <div class="profile-avatar" id="avatarCircle">?</div>
+        <div>
+          <h1 style="font-size: 1.875rem; font-weight: 700; margin: 0;" id="welcomeName">Mein Account</h1>
+          <p style="color: var(--gray-500); margin-top: var(--space-1);" id="userBadge">Student</p>
+        </div>
+      </header>
+
+      <section id="profile" class="section-card">
+        <div class="section-header">
+          <h2 style="font-size: 1.25rem; font-weight: 600;">Persönliche Informationen</h2>
+        </div>
+        <div class="section-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+            <div class="form-group">
+              <label class="form-label">Vollständiger Name</label>
+              <input type="text" id="fullname" class="form-input" placeholder="Name eingeben">
+            </div>
+            <div class="form-group">
+              <label class="form-label">E-Mail-Adresse</label>
+              <input type="email" id="email" class="form-input" disabled style="background: var(--gray-50); cursor: not-allowed;">
+            </div>
+          </div>
+          <div id="accountMessage" class="alert" style="display: none; margin-top: var(--space-4);"></div>
+        </div>
+        <div class="section-footer">
+          <button onclick="updateProfile()" class="btn btn-primary">Speichern</button>
+        </div>
+      </section>
+
+      <section id="security" class="section-card">
+        <div class="section-header">
+          <h2 style="font-size: 1.25rem; font-weight: 600;">Passwort & Sicherheit</h2>
+        </div>
+        <div class="section-body">
+          <div class="form-group">
+            <label class="form-label">Aktuelles Passwort</label>
+            <input type="password" id="currentPassword" class="form-input">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-top: var(--space-4);">
+            <div class="form-group">
+              <label class="form-label">Neues Passwort</label>
+              <input type="password" id="newPassword" class="form-input" placeholder="••••••••">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Passwort bestätigen</label>
+              <input type="password" id="confirmNewPassword" class="form-input" placeholder="••••••••">
+            </div>
+          </div>
+          <div id="passwordMessage" class="alert" style="display: none; margin-top: var(--space-4);"></div>
+        </div>
+        <div class="section-footer">
+          <button onclick="changePassword()" class="btn btn-primary">Passwort aktualisieren</button>
+        </div>
+      </section>
+
+      <section id="danger" class="section-card danger-zone">
+        <div class="section-header danger-header">
+          <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--error);">Account löschen</h2>
+        </div>
+        <div class="section-body">
+          <p style="color: var(--gray-600);">
+            Sobald du deinen Account löschst, werden alle deine Lernfortschritte, Quiz-Ergebnisse und persönlichen Daten unwiderruflich entfernt.
+          </p>
+        </div>
+        <div class="section-footer">
+          <button onclick="deleteAccount()" class="btn" style="background: var(--error); color: white;">Endgültig löschen</button>
+        </div>
+      </section>
+    </main>
+
+  </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script>
+  const API_BASE = 'http://localhost:8080/api';
+
+  if (!window.auth || !window.auth.isLoggedIn()) {
+    window.location.href = '/login.html';
+  } else {
+    initializePage();
+  }
+
+  async function initializePage() {
+    const user = window.auth.getUser();
+    const firstName = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
+
+    document.getElementById('avatarCircle').textContent = firstName.charAt(0).toUpperCase();
+    document.getElementById('welcomeName').textContent = user.fullname || 'Mein Account';
+    document.getElementById('userBadge').textContent = window.auth.hasRole('ADMIN') ? 'Administrator' : 'RadBrain Mitglied';
+
+    document.getElementById('navRight').innerHTML = `
+      <div class="nav-profile-dropdown">
+        <button class="nav-profile-btn">
+          <span>${firstName}</span>
+          <span>▾</span>
+        </button>
+        <div class="nav-profile-menu">
+          <a href="/userpages/account.html">Mein Account</a>
+          <a href="/userpages/dashboard.html">Dashboard</a>
+          ${window.auth.hasRole('ADMIN') ? '<div class="divider"></div><a href="/admin-dashboard.html">Admin-Bereich</a>' : ''}
+          <div class="divider"></div>
+          <button onclick="window.auth.logout('/index.html')">Abmelden</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('fullname').value = user.fullname || '';
+    document.getElementById('email').value = user.email || '';
+
+    loadNavigationAreas();
+  }
+
+  async function loadNavigationAreas() {
+    try {
+      const response = await fetch(`${API_BASE}/learning-areas`);
+      if (!response.ok) return;
+      const areas = await response.json();
+      const menu = document.getElementById('learningAreasMenu');
+      menu.innerHTML = areas
+              .sort((a, b) => a.displayOrder - b.displayOrder)
+              .map(area => `<li><a href="/lernbereiche/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>`)
+              .join('');
+    } catch (error) { console.error(error); }
+  }
+
+  async function updateProfile() {
+    const fullname = document.getElementById('fullname').value.trim();
+    if (!fullname) {
+      showMessage('accountMessage', 'Bitte Namen eingeben.', 'error');
+      return;
+    }
+
+    try {
+      const response = await window.auth.authFetch(`${API_BASE}/users/me`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullname })
+      });
+
+      if (response.ok) {
+        showMessage('accountMessage', 'Profil gespeichert!', 'success');
+        document.getElementById('welcomeName').textContent = fullname;
+        document.getElementById('avatarCircle').textContent = fullname.charAt(0).toUpperCase();
+        localStorage.setItem('userFullname', fullname);
+      } else {
+        showMessage('accountMessage', 'Fehler beim Speichern', 'error');
+      }
+    } catch (e) { showMessage('accountMessage', 'Verbindungsfehler', 'error'); }
+  }
+
+  async function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      showMessage('passwordMessage', 'Alle Felder ausfüllen.', 'error');
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      showMessage('passwordMessage', 'Passwörter nicht identisch.', 'error');
+      return;
+    }
+
+    try {
+      const response = await window.auth.authFetch(`${API_BASE}/users/change-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+
+      if (response.ok) {
+        showMessage('passwordMessage', 'Passwort geändert!', 'success');
+        document.querySelectorAll('#security input').forEach(i => i.value = '');
+      } else {
+        showMessage('passwordMessage', 'Aktuelles Passwort falsch.', 'error');
+      }
+    } catch (e) { showMessage('passwordMessage', 'Verbindungsfehler', 'error'); }
+  }
+
+  async function deleteAccount() {
+    if (!confirm('Account endgültig löschen?')) return;
+    try {
+      const response = await window.auth.authFetch(`${API_BASE}/users/me`, { method: 'DELETE' });
+      if (response.ok) {
+        alert('Account gelöscht.');
+        window.auth.logout('/index.html');
+      }
+    } catch (e) { alert('Fehler'); }
+  }
+
+  function showMessage(elementId, message, type) {
+    const div = document.getElementById(elementId);
+    div.className = `alert alert-${type}`;
+    div.textContent = message;
+    div.style.display = 'block';
+    setTimeout(() => { div.style.display = 'none'; }, 5000);
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+</script>
+</body>
+</html>

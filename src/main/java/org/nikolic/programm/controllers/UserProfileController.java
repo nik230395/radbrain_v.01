@@ -58,10 +58,7 @@ public class UserProfileController {
         }
     }
 
-    /**
-     * PUT /api/users/me/change-password
-     * Change user's password
-     */
+
     @PutMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request, Authentication auth) {
         if (auth == null) {

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Mail verifizieren - RadBrain</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--gray-50);
+      padding: var(--space-8) var(--space-4);
+    }
+
+    .auth-container {
+      width: 100%;
+      max-width: 440px;
+    }
+
+    .auth-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-xl);
+      padding: var(--space-10);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: var(--space-8);
+    }
+
+    .auth-logo {
+      height: 48px;
+      margin-bottom: var(--space-6);
+    }
+
+    .auth-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin-bottom: var(--space-2);
+    }
+
+    .auth-subtitle {
+      color: var(--gray-600);
+      margin-bottom: var(--space-4);
+    }
+
+    .email-display {
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      padding: var(--space-2) var(--space-4);
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: var(--space-6);
+    }
+
+    .code-input-group {
+      display: flex;
+      gap: var(--space-2);
+      justify-content: center;
+      margin-bottom: var(--space-6);
+    }
+
+
+    .verification-code {
+      letter-spacing: 0.5rem;
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <img src="/Bilder/logo.png" alt="RadBrain" class="auth-logo">
+        <h1 class="auth-title">Code verifizieren</h1>
+        <p class="auth-subtitle">Wir haben einen Bestätigungscode an folgende Adresse gesendet:</p>
+        <div id="displayEmail" class="email-display">Lade E-Mail...</div>
+      </div>
+
+      <form id="verifyForm">
+        <div class="form-group">
+          <label class="form-label" for="verificationCode">6-stelliger Code</label>
+          <input
+                  type="text"
+                  id="verificationCode"
+                  class="form-input verification-code"
+                  placeholder="000000"
+                  maxlength="6"
+                  required
+                  autocomplete="one-time-code">
+        </div>
+
+        <div id="verifyMessage" class="alert" style="display: none; margin-bottom: var(--space-4);"></div>
+
+        <button type="submit" class="btn btn-primary btn-lg" id="verifyBtn" style="width: 100%;">
+          Konto bestätigen
+        </button>
+      </form>
+
+      <p style="text-align: center; margin-top: var(--space-6); font-size: 0.875rem; color: var(--gray-600);">
+        Keinen Code erhalten?
+        <a href="#" id="resendBtn" style="color: var(--primary); font-weight: 600; text-decoration: none;">Erneut senden</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script>
+  const form = document.getElementById('verifyForm');
+  const codeInput = document.getElementById('verificationCode');
+  const verifyBtn = document.getElementById('verifyBtn');
+  const resendBtn = document.getElementById('resendBtn');
+  const messageDiv = document.getElementById('verifyMessage');
+  const displayEmail = document.getElementById('displayEmail');
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const email = urlParams.get('email') || localStorage.getItem('registrationEmail');
+
+  if (email) {
+    displayEmail.textContent = email;
+  } else {
+    window.location.href = '/auth/register.html';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = codeInput.value.trim();
+
+    if (code.length < 6) {
+      showMessage('Bitte gib den vollständigen Code ein.', 'error');
+      return;
+    }
+
+    const originalText = verifyBtn.textContent;
+    verifyBtn.disabled = true;
+    verifyBtn.innerHTML = '<div class="loading"></div>';
+
+    try {
+      const response = await fetch('/api/users/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code })
+      });
+
+      if (response.ok) {
+        showMessage('Konto erfolgreich verifiziert!', 'success');
+        localStorage.removeItem('registrationEmail'); // Cleanup
+        setTimeout(() => {
+          window.location.href = '/auth/login.html';
+        }, 2000);
+      } else {
+        const result = await response.json();
+        showMessage(result.error || 'Ungültiger Code', 'error');
+      }
+    } catch (error) {
+      showMessage('Verbindungsfehler.', 'error');
+    } finally {
+      verifyBtn.disabled = false;
+      verifyBtn.textContent = originalText;
+    }
+  });
+
+  resendBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/users/resend-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      if (response.ok) {
+        showMessage('Neuer Code wurde gesendet!', 'success');
+      }
+    } catch (error) {
+      showMessage('Fehler beim Senden.', 'error');
+    }
+  });
+
+  function showMessage(message, type) {
+    messageDiv.className = `alert alert-${type}`;
+    messageDiv.textContent = message;
+    messageDiv.style.display = 'block';
+  }
+
+  codeInput.focus();
+</script>
+
+</body>
+</html>

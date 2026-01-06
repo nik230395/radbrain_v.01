@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz - RadBrain</title>
-    <script src="/auth.js"></script>
+    <script src="/js/auth.js"></script>
     <style>
         * {
             margin: 0;
@@ -261,7 +261,7 @@
 </head>
 <body>
 <div class="container">
-    <a href="/quizzes.html" class="back-link">← Zurück zur Übersicht</a>
+    <a href="/quiz/quizzes.html" class="back-link">← Zurück zur Übersicht</a>
 
     <div id="quizContent">
         <div class="loading">Quiz wird geladen...</div>
@@ -277,7 +277,7 @@
 
     (async function() {
         if (!window.auth || !window.auth.isLoggedIn()) {
-            window.location.href = '/login.html';
+            window.location.href = '/auth/login.html';
             return;
         }
 
@@ -286,7 +286,7 @@
 
         if (!quizId) {
             alert('Keine Quiz-ID angegeben!');
-            window.location.href = '/quizzes.html';
+            window.location.href = '/quiz/quizzes.html';
             return;
         }
 
@@ -317,7 +317,7 @@
             console.error('Error loading quiz:', error);
             document.getElementById('quizContent').innerHTML = `
                     <div class="results-card">
-                        <h2>❌ Fehler</h2>
+                        <h2>Fehler</h2>
                         <p>Quiz konnte nicht geladen werden.</p>
                     </div>
                 `;
@@ -353,10 +353,10 @@
                 let isSelected = false;
 
                 if (isMultiple) {
-                    // Multiple: userAnswer ist Array
+
                     isSelected = userAnswer && userAnswer.includes(choice.id);
                 } else {
-                    // Single: userAnswer ist einzelne ID
+
                     isSelected = userAnswer === choice.id;
                 }
 
@@ -524,7 +524,7 @@
 
         // Generate review section
         let reviewHtml = '<div style="margin-top: 40px; text-align: left;">';
-        reviewHtml += '<h3 style="margin-bottom: 20px; color: #333;">📋 Fragen-Übersicht</h3>';
+        reviewHtml += '<h3 style="margin-bottom: 20px; color: #333;">Fragen-Übersicht</h3>';
 
         questions.forEach((question, index) => {
             const userAnswer = answers[question.id];
@@ -620,7 +620,7 @@
 
                     <div style="display: flex; gap: 15px; justify-content: center; margin-top: 30px;">
                         <button class="btn btn-prev" onclick="window.location.reload()">Nochmal versuchen</button>
-                        <button class="btn btn-next" onclick="window.location.href='/quizzes.html'">Zurück zur Übersicht</button>
+                        <button class="btn btn-next" onclick="window.location.href='/quiz/quizzes.html'">Zurück zur Übersicht</button>
                     </div>
                 </div>
             `;

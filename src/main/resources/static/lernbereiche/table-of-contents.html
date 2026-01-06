@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inhaltsverzeichnis - RadBrain</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/css/style.css">
   <style>
     .search-bar {
       background: white;
@@ -202,30 +202,34 @@
 </head>
 <body>
 
-<!-- Navigation -->
 <nav class="navbar">
   <div class="navbar-content">
     <div class="nav-left">
-      <img src="logo.png" alt="RadBrain" class="nav-logo">
+      <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
       <ul class="nav-menu">
         <li class="nav-item">
-          <a href="/user-home.html" class="nav-link">Übersicht</a>
+          <a href="/userpages/user-home.html" class="nav-link">Home</a>
         </li>
         <li class="nav-item">
-          <a href="/table-of-contents.html" class="nav-link active">Inhaltsverzeichnis</a>
+          <a href="/lernbereiche/table-of-contents.html" class="nav-link active">Inhaltsverzeichnis</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link">Lernbereiche</a>
+          <ul class="dropdown-menu" id="learningAreasDropdown"></ul>
         </li>
         <li class="nav-item">
-          <a href="/quizzes.html" class="nav-link">Quizzes</a>
+          <a href="/quiz/quizzes.html" class="nav-link">Quizzes</a>
         </li>
       </ul>
     </div>
-    <div class="nav-right" id="navRight"></div>
+    <div class="nav-right" id="navRight">
+      <a href="/auth/login.html" class="btn btn-ghost">Anmelden</a>
+      <a href="/auth/register.html" class="btn btn-primary">Registrieren</a>
+    </div>
   </div>
 </nav>
 
-<!-- Main Content -->
 <div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
-  <!-- Header -->
   <div style="margin-bottom: var(--space-12);">
     <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-2);">
       Inhaltsverzeichnis
@@ -235,7 +239,6 @@
     </p>
   </div>
 
-  <!-- Statistics -->
   <div class="stats-row" id="statsRow">
     <div class="stat-card">
       <div class="stat-value" id="totalAreas">0</div>
@@ -251,10 +254,8 @@
     </div>
   </div>
 
-  <!-- Search & Filter -->
   <div class="search-bar">
     <div class="search-input-wrapper">
-      <span class="search-icon">🔍</span>
       <input
               type="text"
               id="searchInput"
@@ -270,7 +271,6 @@
     </div>
   </div>
 
-  <!-- Table of Contents Tree -->
   <div id="tocContainer">
     <div style="text-align: center; padding: var(--space-12);">
       <div class="loading" style="width: 40px; height: 40px; margin: 0 auto;"></div>
@@ -278,41 +278,33 @@
   </div>
 </div>
 
-<script src="auth.js"></script>
+<script src="/js/auth.js"></script>
 <script>
   const API_BASE = 'http://localhost:8080/api';
   let allAreas = [];
   let currentFilter = 'ALL';
 
-  // Check auth
   if (window.auth && window.auth.isLoggedIn()) {
-    initializePage();
-  } else {
-    window.location.href = '/login.html';
-  }
-
-  async function initializePage() {
     const user = window.auth.getUser();
     const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
 
     document.getElementById('navRight').innerHTML = `
-            <div class="nav-profile-dropdown">
-                <button class="nav-profile-btn">
-                    <span>${name}</span>
-                    <span style="font-size: 0.75rem;">▾</span>
-                </button>
-                <div class="nav-profile-menu">
-                    <a href="/account.html">Mein Account</a>
-                    <a href="/dashboard.html">Dashboard</a>
-                    ${window.auth.hasRole('ADMIN') ? '<div class="divider"></div><a href="/admin-dashboard.html">Admin-Bereich</a>' : ''}
-                    <div class="divider"></div>
-                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
-                </div>
-            </div>
-        `;
-
-    await loadAllContent();
+      <div class="nav-profile-dropdown">
+        <button class="nav-profile-btn">
+          <span>${name}</span>
+          <span style="font-size: 0.75rem;">▾</span>
+        </button>
+        <div class="nav-profile-menu">
+          <a href="/userpages/account.html">Mein Account</a>
+          ${window.auth.hasRole('ADMIN') ? '<div class="divider"></div><a href="/admin/admin-dashboard.html">Admin-Bereich</a>' : ''}
+          <div class="divider"></div>
+          <button onclick="window.auth.logout('/index.html')">Abmelden</button>
+        </div>
+      </div>
+    `;
   }
+
+  loadAllContent();
 
   async function loadAllContent() {
     try {
@@ -321,14 +313,12 @@
 
       allAreas = await response.json();
 
-      // Load modules for each area
       for (const area of allAreas) {
         const areaResponse = await fetch(`${API_BASE}/learning-areas/${area.slug}`);
         if (areaResponse.ok) {
           const fullArea = await areaResponse.json();
           area.modules = fullArea.modules || [];
 
-          // Load contents for each module
           for (const module of area.modules) {
             const moduleResponse = await fetch(`${API_BASE}/learning-areas/modules/${module.id}`);
             if (moduleResponse.ok) {
@@ -340,15 +330,16 @@
       }
 
       renderFilterButtons();
+      renderNavigationDropdown();
       renderContent();
       updateStats();
     } catch (error) {
       console.error('Error loading content:', error);
       document.getElementById('tocContainer').innerHTML = `
-                <div class="empty-state">
-                    <p style="color: var(--gray-600);">Fehler beim Laden der Inhalte</p>
-                </div>
-            `;
+        <div class="empty-state">
+          <p style="color: var(--gray-600);">Fehler beim Laden der Inhalte</p>
+        </div>
+      `;
     }
   }
 
@@ -357,10 +348,20 @@
     container.innerHTML = allAreas
             .sort((a, b) => a.displayOrder - b.displayOrder)
             .map(area => `
-                <button class="filter-tag" onclick="filterByArea(event, '${area.slug}')">
-                    ${escapeHtml(area.name)}
-                </button>
-            `)
+        <button class="filter-tag" onclick="filterByArea(event, '${area.slug}')">
+          ${escapeHtml(area.name)}
+        </button>
+      `)
+            .join('');
+  }
+
+  function renderNavigationDropdown() {
+    const dropdown = document.getElementById('learningAreasDropdown');
+    dropdown.innerHTML = allAreas
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map(area => `
+        <li><a href="/lernbereiche/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>
+      `)
             .join('');
   }
 
@@ -370,100 +371,91 @@
 
     let filteredAreas = allAreas;
 
-    // Filter by area
     if (currentFilter !== 'ALL') {
       filteredAreas = allAreas.filter(area => area.slug === currentFilter);
     }
 
-    // Filter by search
     if (searchTerm) {
       filteredAreas = filteredAreas.map(area => {
         const matchingModules = area.modules.filter(module =>
                 module.title.toLowerCase().includes(searchTerm) ||
                 (module.subtitle && module.subtitle.toLowerCase().includes(searchTerm)) ||
-                (module.description && module.description.toLowerCase().includes(searchTerm)) ||
-                (module.contents && module.contents.some(content =>
-                        (content.title && content.title.toLowerCase().includes(searchTerm)) ||
-                        (content.contentData && content.contentData.toLowerCase().includes(searchTerm))
-                ))
+                (module.description && module.description.toLowerCase().includes(searchTerm))
         );
 
         if (matchingModules.length > 0) {
           return { ...area, modules: matchingModules };
         }
-
         return null;
       }).filter(area => area !== null);
     }
 
     if (filteredAreas.length === 0) {
       container.innerHTML = `
-                <div class="empty-state">
-                    <div style="font-size: 3rem; margin-bottom: var(--space-4);">🔍</div>
-                    <h3 style="margin-bottom: var(--space-2);">Keine Ergebnisse</h3>
-                    <p style="color: var(--gray-600);">
-                        Versuche einen anderen Suchbegriff oder Filter
-                    </p>
-                </div>
-            `;
+        <div class="empty-state">
+          <h3 style="margin-bottom: var(--space-2);">Keine Ergebnisse</h3>
+          <p style="color: var(--gray-600);">
+            Versuche einen anderen Suchbegriff oder Filter
+          </p>
+        </div>
+      `;
       return;
     }
 
     container.innerHTML = `
-            <div class="toc-tree">
-                ${filteredAreas
+      <div class="toc-tree">
+        ${filteredAreas
             .sort((a, b) => a.displayOrder - b.displayOrder)
             .map(area => renderArea(area))
             .join('')}
-            </div>
-        `;
+      </div>
+    `;
   }
 
   function renderArea(area) {
     const totalContents = area.modules.reduce((sum, m) => sum + (m.contents ? m.contents.length : 0), 0);
 
     return `
-            <div class="toc-area" id="area-${area.id}">
-                <div class="toc-area-header" onclick="toggleArea(${area.id})">
-                    <div>
-                        <div class="toc-area-title">${escapeHtml(area.name)}</div>
-                        <div class="toc-area-meta">
-                            <span>${area.modules.length} Module</span>
-                            <span>${totalContents} Inhalte</span>
-                        </div>
-                    </div>
-                    <span class="toggle-icon">▼</span>
-                </div>
-                <div class="toc-modules">
-                    ${area.modules
+      <div class="toc-area" id="area-${area.id}">
+        <div class="toc-area-header" onclick="toggleArea(${area.id})">
+          <div>
+            <div class="toc-area-title">${escapeHtml(area.name)}</div>
+            <div class="toc-area-meta">
+              <span>${area.modules.length} Module</span>
+              <span>${totalContents} Inhalte</span>
+            </div>
+          </div>
+          <span class="toggle-icon">▼</span>
+        </div>
+        <div class="toc-modules">
+          ${area.modules
             .sort((a, b) => a.displayOrder - b.displayOrder)
             .map((module, index) => renderModule(area, module, index + 1))
             .join('')}
-                </div>
-            </div>
-        `;
+        </div>
+      </div>
+    `;
   }
 
   function renderModule(area, module, number) {
     return `
-            <div class="toc-module" onclick="openModule('${area.slug}', ${module.id})">
-                <div class="toc-module-header">
-                    <div class="toc-module-number">${number}</div>
-                    <div style="flex: 1;">
-                        <div class="toc-module-title">${escapeHtml(module.title)}</div>
-                        ${module.subtitle ? `
-                            <div style="color: var(--gray-600); font-size: 0.9375rem; margin-top: var(--space-1);">
-                                ${escapeHtml(module.subtitle)}
-                            </div>
-                        ` : ''}
-                        <div class="toc-module-meta">
-                            <span>${module.contents ? module.contents.length : 0} Inhalte</span>
-                            ${module.estimatedDuration ? `<span>${module.estimatedDuration} Min</span>` : ''}
-                        </div>
-                    </div>
-                </div>
+      <div class="toc-module" onclick="openModule('${area.slug}', ${module.id})">
+        <div class="toc-module-header">
+          <div class="toc-module-number">${number}</div>
+          <div style="flex: 1;">
+            <div class="toc-module-title">${escapeHtml(module.title)}</div>
+            ${module.subtitle ? `
+              <div style="color: var(--gray-600); font-size: 0.9375rem; margin-top: var(--space-1);">
+                ${escapeHtml(module.subtitle)}
+              </div>
+            ` : ''}
+            <div class="toc-module-meta">
+              <span>${module.contents ? module.contents.length : 0} Inhalte</span>
             </div>
-        `;
+          </div>
+        </div>
+      </div>
+    `;
   }
 
   function toggleArea(areaId) {
@@ -474,7 +466,6 @@
   function filterByArea(event, slug) {
     currentFilter = slug;
 
-    // Update button states
     document.querySelectorAll('.filter-tag').forEach(btn => {
       btn.classList.remove('active');
     });
@@ -488,7 +479,7 @@
   }
 
   function openModule(areaSlug, moduleId) {
-    window.location.href = `/learning-area.html?area=${areaSlug}#module-${moduleId}`;
+    window.location.href = `/lernbereiche/learning-area.html?area=${areaSlug}#module-${moduleId}`;
   }
 
   function updateStats() {
@@ -509,7 +500,6 @@
     return div.innerHTML;
   }
 
-  // Expand all areas on load
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       document.querySelectorAll('.toc-area').forEach(area => {

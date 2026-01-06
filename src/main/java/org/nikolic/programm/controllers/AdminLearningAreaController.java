@@ -23,10 +23,6 @@ public class AdminLearningAreaController {
     @Autowired
     private LearningAreaService learningAreaService;
 
-    /**
-     * Alle Lernbereiche für Admin abrufen (inkl. unveröffentlichte)
-     * GET /api/admin/learning-areas
-     */
     @GetMapping
     public ResponseEntity<List<LearningAreaDto>> getAllAreas() {
         try {
