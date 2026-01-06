@@ -3,353 +3,312 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alle Quizzes - RadBrain</title>
-    <script src="/auth.js"></script>
+    <title>Quizzes - RadBrain</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        .quiz-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+            color: white;
+            padding: var(--space-16) 0;
         }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
+        .filter-bar {
             background: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-            text-align: center;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            margin-bottom: var(--space-8);
         }
 
-        .header h1 {
-            font-size: 2.5em;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            color: #666;
-            font-size: 1.1em;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 8px;
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .back-link:hover {
-            background: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .filters {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            margin-bottom: 30px;
-        }
-
-        .filter-row {
+        .filter-group {
             display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+            gap: var(--space-4);
             align-items: center;
+            flex-wrap: wrap;
         }
 
-        .search-box {
+        .search-input {
             flex: 1;
             min-width: 250px;
         }
 
-        .search-box input {
-            width: 100%;
-            padding: 14px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-
-        .search-box input:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
         .category-filters {
             display: flex;
-            gap: 10px;
+            gap: var(--space-2);
             flex-wrap: wrap;
         }
 
         .category-btn {
-            padding: 10px 20px;
-            border: 2px solid #e0e0e0;
+            padding: var(--space-2) var(--space-4);
             background: white;
-            border-radius: 8px;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            color: var(--gray-700);
+            font-weight: 500;
+            font-size: 0.9375rem;
             cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-            color: #666;
+            transition: all var(--transition-fast);
         }
 
         .category-btn:hover {
-            border-color: #667eea;
-            color: #667eea;
+            border-color: var(--primary);
+            color: var(--primary);
         }
 
         .category-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-color: #667eea;
+            background: var(--primary);
+            border-color: var(--primary);
             color: white;
         }
 
         .quiz-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
-            margin-top: 20px;
+            gap: var(--space-6);
         }
 
         .quiz-card {
             background: white;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            transition: all 0.3s;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            transition: all var(--transition-base);
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .quiz-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            transform: scaleX(0);
-            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
         }
 
         .quiz-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-        }
-
-        .quiz-card:hover::before {
-            transform: scaleX(1);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
         }
 
         .quiz-category {
             display: inline-block;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.85em;
-            font-weight: 600;
-            margin-bottom: 15px;
+            padding: var(--space-1) var(--space-3);
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: var(--space-4);
+            width: fit-content;
         }
 
-        .cat-roentgen { background: #e3f2fd; color: #1976d2; }
-        .cat-ct { background: #f3e5f5; color: #7b1fa2; }
-        .cat-mrt { background: #e8f5e9; color: #388e3c; }
-        .cat-ultraschall { background: #fff3e0; color: #f57c00; }
-
         .quiz-title {
-            font-size: 1.4em;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 10px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--space-2);
         }
 
         .quiz-description {
-            color: #666;
-            margin-bottom: 20px;
+            color: var(--gray-600);
+            font-size: 0.9375rem;
             line-height: 1.6;
+            margin-bottom: var(--space-4);
+            flex: 1;
         }
 
         .quiz-meta {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding-top: 15px;
-            border-top: 1px solid #f0f0f0;
+            justify-content: space-between;
+            padding-top: var(--space-4);
+            border-top: 1px solid var(--gray-200);
         }
 
         .quiz-questions {
-            color: #999;
-            font-size: 0.9em;
+            color: var(--gray-500);
+            font-size: 0.875rem;
         }
 
-        .quiz-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
         }
 
-        .quiz-btn:hover {
-            transform: translateX(5px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
-            color: white;
-        }
-
-        .empty-state-icon {
-            font-size: 4em;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px;
-            color: white;
-            font-size: 1.2em;
-        }
-
-        .stats-bar {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            padding: 20px;
-            background: rgba(255,255,255,0.9);
-            border-radius: 12px;
-        }
-
-        .stat-item {
-            flex: 1;
+        .stat-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
             text-align: center;
         }
 
         .stat-value {
-            font-size: 2em;
+            font-size: 2.5rem;
             font-weight: 700;
-            color: #667eea;
+            color: var(--primary);
+            margin-bottom: var(--space-2);
         }
 
         .stat-label {
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-
-        @media (max-width: 768px) {
-            .filter-row {
-                flex-direction: column;
-            }
-            .quiz-grid {
-                grid-template-columns: 1fr;
-            }
+            color: var(--gray-600);
+            font-size: 0.9375rem;
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <a href="/dashboard.html" class="back-link">← Zurück zum Dashboard</a>
 
-    <div class="header">
-        <h1>🎓 Alle Quizzes</h1>
-        <p>Wähle ein Quiz und teste dein Wissen!</p>
-    </div>
-
-    <div class="stats-bar" id="statsBar">
-        <div class="stat-item">
-            <div class="stat-value" id="totalQuizzes">0</div>
-            <div class="stat-label">Quizzes verfügbar</div>
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="navbar-content">
+        <div class="nav-left">
+            <img src="logo.png" alt="RadBrain" class="nav-logo">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/user-home.html" class="nav-link">Übersicht</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link">Lernbereiche</a>
+                    <ul class="dropdown-menu" id="learningAreasMenu">
+                        <!-- Dynamisch geladen -->
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="/quizzes.html" class="nav-link active">Quizzes</a>
+                </li>
+            </ul>
         </div>
-        <div class="stat-item">
+        <div class="nav-right" id="navRight">
+            <a href="/login.html" class="btn-login">Anmelden</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Header -->
+<header class="quiz-header">
+    <div class="container">
+        <div style="max-width: 720px;">
+            <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-3); color: white;">
+                Quizzes
+            </h1>
+            <p style="font-size: 1.125rem; color: rgba(255,255,255,0.9);">
+                Teste dein Wissen mit praxisnahen Fragen und erhalte direktes Feedback
+            </p>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
+    <!-- Statistics -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <div class="stat-value" id="totalQuizzes">0</div>
+            <div class="stat-label">Verfügbare Quizzes</div>
+        </div>
+        <div class="stat-card">
             <div class="stat-value" id="totalQuestions">0</div>
             <div class="stat-label">Fragen insgesamt</div>
         </div>
-        <div class="stat-item">
+        <div class="stat-card">
             <div class="stat-value" id="avgQuestions">0</div>
             <div class="stat-label">Ø Fragen pro Quiz</div>
         </div>
     </div>
 
-    <div class="filters">
-        <div class="filter-row">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 Quiz suchen..." onkeyup="filterQuizzes()">
-            </div>
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <input
+                    type="text"
+                    id="searchInput"
+                    class="form-input search-input"
+                    placeholder="Quiz suchen..."
+                    onkeyup="filterQuizzes()">
+
             <div class="category-filters">
-                <button class="category-btn active" onclick="filterCategory('ALL')">Alle</button>
-                <button class="category-btn" onclick="filterCategory('ROENTGEN')">Röntgen</button>
-                <button class="category-btn" onclick="filterCategory('CT')">CT</button>
-                <button class="category-btn" onclick="filterCategory('MRT')">MRT</button>
-                <button class="category-btn" onclick="filterCategory('ULTRASCHALL')">Ultraschall</button>
+                <button class="category-btn active" onclick="filterCategory(event, 'ALL')">
+                    Alle
+                </button>
+                <button class="category-btn" onclick="filterCategory(event, 'ROENTGEN')">
+                    Röntgen
+                </button>
+                <button class="category-btn" onclick="filterCategory(event, 'CT')">
+                    CT
+                </button>
+                <button class="category-btn" onclick="filterCategory(event, 'MRT')">
+                    MRT
+                </button>
+                <button class="category-btn" onclick="filterCategory(event, 'ULTRASCHALL')">
+                    Ultraschall
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- Quiz Grid -->
     <div id="quizContainer">
-        <div class="loading">Lade Quizzes...</div>
+        <div style="text-align: center; padding: var(--space-12);">
+            <div class="loading" style="width: 40px; height: 40px; margin: 0 auto var(--space-4);"></div>
+            <p style="color: var(--gray-600);">Lade Quizzes...</p>
+        </div>
     </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
+    const API_BASE = 'http://localhost:8080/api';
     let allQuizzes = [];
     let currentCategory = 'ALL';
 
-    (async function() {
-        if (!window.auth || !window.auth.isLoggedIn()) {
-            window.location.href = '/login.html';
-            return;
+    // Check authentication
+    if (!window.auth || !window.auth.isLoggedIn()) {
+        window.location.href = '/login.html';
+    } else {
+        const user = window.auth.getUser();
+        const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
+
+        let navHtml = `
+            <div class="nav-profile-dropdown">
+                <button class="nav-profile-btn">
+                    <span>${name}</span>
+                    <span style="font-size: 0.75rem;">▾</span>
+                </button>
+                <div class="nav-profile-menu">
+                    <a href="/account.html">Mein Account</a>
+                    <a href="/dashboard.html">Dashboard</a>`;
+
+        if (window.auth.hasRole('ADMIN')) {
+            navHtml += `<div class="divider"></div><a href="/admin-dashboard.html">Admin-Bereich</a>`;
         }
 
-        await loadQuizzes();
-    })();
+        navHtml += `
+                    <div class="divider"></div>
+                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
+                </div>
+            </div>
+        `;
 
+        document.getElementById('navRight').innerHTML = navHtml;
+    }
+
+    // Load quizzes
     async function loadQuizzes() {
         try {
-            const res = await window.auth.authFetch('/api/quizzes/published');
-            if (!res.ok) throw new Error('Failed to load quizzes');
+            const response = await window.auth.authFetch(`${API_BASE}/quizzes/published`);
+            if (!response.ok) throw new Error('Failed to load quizzes');
 
-            allQuizzes = await res.json();
+            allQuizzes = await response.json();
             updateStats();
             displayQuizzes(allQuizzes);
-
         } catch (error) {
             console.error('Error loading quizzes:', error);
             document.getElementById('quizContainer').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">❌</div>
-                        <h2>Fehler beim Laden</h2>
-                        <p>Quizzes konnten nicht geladen werden.</p>
-                    </div>
-                `;
+                <div style="text-align: center; padding: var(--space-12);">
+                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">
+                        Quizzes konnten nicht geladen werden.
+                    </p>
+                    <button class="btn btn-primary" onclick="loadQuizzes()">
+                        Erneut versuchen
+                    </button>
+                </div>
+            `;
         }
     }
 
@@ -367,47 +326,38 @@
 
         if (quizzes.length === 0) {
             container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📝</div>
-                        <h2>Keine Quizzes gefunden</h2>
-                        <p>Versuche einen anderen Filter oder Suchbegriff.</p>
-                    </div>
-                `;
+                <div style="text-align: center; padding: var(--space-12);">
+                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">
+                        Keine Quizzes gefunden.
+                    </p>
+                    <p style="color: var(--gray-500); font-size: 0.9375rem;">
+                        Versuche einen anderen Filter oder Suchbegriff.
+                    </p>
+                </div>
+            `;
             return;
         }
 
-        let html = '<div class="quiz-grid">';
-
-        quizzes.forEach(quiz => {
-            const category = quiz.category || 'ROENTGEN';
-            const categoryClass = `cat-${category.toLowerCase()}`;
-            const categoryName = {
-                'ROENTGEN': 'Röntgen',
-                'CT': 'CT',
-                'MRT': 'MRT',
-                'ULTRASCHALL': 'Ultraschall'
-            }[category] || category;
-
-            html += `
+        container.innerHTML = `
+            <div class="quiz-grid">
+                ${quizzes.map(quiz => `
                     <div class="quiz-card" onclick="startQuiz(${quiz.id})">
-                        <span class="quiz-category ${categoryClass}">${categoryName}</span>
-                        <h3 class="quiz-title">${quiz.title}</h3>
-                        <p class="quiz-description">${quiz.description || 'Teste dein Wissen!'}</p>
+                        <div class="quiz-category">${getCategoryLabel(quiz.category || 'ROENTGEN')}</div>
+                        <div class="quiz-title">${escapeHtml(quiz.title)}</div>
+                        <div class="quiz-description">${escapeHtml(quiz.description || 'Teste dein Wissen!')}</div>
                         <div class="quiz-meta">
-                            <span class="quiz-questions">📋 ${quiz.questionCount || 0} Fragen</span>
-                            <button class="quiz-btn" onclick="event.stopPropagation(); startQuiz(${quiz.id})">
+                            <span class="quiz-questions">${quiz.questionCount || 0} Fragen</span>
+                            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); startQuiz(${quiz.id})">
                                 Starten →
                             </button>
                         </div>
                     </div>
-                `;
-        });
-
-        html += '</div>';
-        container.innerHTML = html;
+                `).join('')}
+            </div>
+        `;
     }
 
-    function filterCategory(category) {
+    function filterCategory(event, category) {
         currentCategory = category;
 
         // Update button states
@@ -443,6 +393,49 @@
     function startQuiz(id) {
         window.location.href = `/quiz.html?id=${id}`;
     }
+
+    function getCategoryLabel(category) {
+        const labels = {
+            'ROENTGEN': 'Röntgen',
+            'CT': 'CT',
+            'MRT': 'MRT',
+            'ULTRASCHALL': 'Ultraschall'
+        };
+        return labels[category] || category;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Load navigation areas
+    async function loadNavigationAreas() {
+        try {
+            const response = await fetch(`${API_BASE}/learning-areas`);
+            if (!response.ok) return;
+
+            const areas = await response.json();
+            const menu = document.getElementById('learningAreasMenu');
+            menu.innerHTML = areas
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .map(area => `
+                    <li><a href="/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>
+                `)
+                .join('');
+        } catch (error) {
+            console.error('Error loading navigation areas:', error);
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        loadQuizzes();
+        loadNavigationAreas();
+    });
 </script>
+
 </body>
 </html>

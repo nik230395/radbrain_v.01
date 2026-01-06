@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lernbereich bearbeiten - RadBrain Admin</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .editor-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .color-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+      gap: var(--space-2);
+      margin-top: var(--space-2);
+    }
+
+    .color-option {
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: var(--radius-md);
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+
+    .color-option.selected {
+      border-color: var(--gray-900);
+      box-shadow: var(--shadow-lg);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+  <div class="navbar-content">
+    <div class="nav-left">
+      <img src="logo.png" alt="RadBrain" class="nav-logo">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="/admin-dashboard.html" class="nav-link">Admin</a>
+        </li>
+        <li class="nav-item">
+          <a href="/admin-learning-areas.html" class="nav-link">Lernbereiche</a>
+        </li>
+      </ul>
+    </div>
+    <div class="nav-right" id="navRight"></div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
+  <div class="editor-container">
+    <!-- Header -->
+    <div style="margin-bottom: var(--space-8);">
+      <a href="/admin-learning-areas.html" style="color: var(--gray-600); text-decoration: none; display: inline-flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4);">
+        ← Zurück zur Übersicht
+      </a>
+      <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-2);" id="pageTitle">
+        Lernbereich bearbeiten
+      </h1>
+      <p style="color: var(--gray-600); font-size: 1.125rem;">
+        Konfiguriere den Lernbereich und seine Eigenschaften
+      </p>
+    </div>
+
+    <!-- Editor Form -->
+    <form id="editorForm" onsubmit="saveArea(event)">
+      <!-- Basic Info Card -->
+      <div class="card" style="margin-bottom: var(--space-6);">
+        <div class="card-header">
+          <h2 class="card-title">Grundinformationen</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label" for="name">Name *</label>
+            <input
+                    type="text"
+                    id="name"
+                    class="form-input"
+                    placeholder="z.B. Röntgen"
+                    required>
+            <div class="form-helper">Der Haupttitel des Lernbereichs</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="slug">URL-Slug *</label>
+            <input
+                    type="text"
+                    id="slug"
+                    class="form-input"
+                    placeholder="z.B. roentgen"
+                    pattern="[a-z0-9-]+"
+                    required>
+            <div class="form-helper">Nur Kleinbuchstaben, Zahlen und Bindestriche</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="subtitle">Untertitel</label>
+            <input
+                    type="text"
+                    id="subtitle"
+                    class="form-input"
+                    placeholder="Kurzer beschreibender Text">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="description">Beschreibung</label>
+            <textarea
+                    id="description"
+                    class="form-textarea"
+                    rows="4"
+                    placeholder="Detaillierte Beschreibung des Lernbereichs"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appearance Card -->
+      <div class="card" style="margin-bottom: var(--space-6);">
+        <div class="card-header">
+          <h2 class="card-title">Darstellung</h2>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label" for="colorTheme">Farbschema</label>
+            <input
+                    type="color"
+                    id="colorTheme"
+                    class="form-input"
+                    value="#2563eb"
+                    style="height: 60px;">
+            <div class="form-helper">Primärfarbe für diesen Lernbereich</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Schnellauswahl Farben</label>
+            <div class="color-picker-grid">
+              <button type="button" class="color-option" style="background: #2563eb;" onclick="selectColor('#2563eb')"></button>
+              <button type="button" class="color-option" style="background: #7c3aed;" onclick="selectColor('#7c3aed')"></button>
+              <button type="button" class="color-option" style="background: #db2777;" onclick="selectColor('#db2777')"></button>
+              <button type="button" class="color-option" style="background: #dc2626;" onclick="selectColor('#dc2626')"></button>
+              <button type="button" class="color-option" style="background: #ea580c;" onclick="selectColor('#ea580c')"></button>
+              <button type="button" class="color-option" style="background: #ca8a04;" onclick="selectColor('#ca8a04')"></button>
+              <button type="button" class="color-option" style="background: #65a30d;" onclick="selectColor('#65a30d')"></button>
+              <button type="button" class="color-option" style="background: #059669;" onclick="selectColor('#059669')"></button>
+              <button type="button" class="color-option" style="background: #0891b2;" onclick="selectColor('#0891b2')"></button>
+              <button type="button" class="color-option" style="background: #0284c7;" onclick="selectColor('#0284c7')"></button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="displayOrder">Anzeigereihenfolge</label>
+            <input
+                    type="number"
+                    id="displayOrder"
+                    class="form-input"
+                    value="0"
+                    min="0">
+            <div class="form-helper">Niedrigere Zahlen erscheinen zuerst</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Publishing Card -->
+      <div class="card" style="margin-bottom: var(--space-6);">
+        <div class="card-header">
+          <h2 class="card-title">Veröffentlichung</h2>
+        </div>
+        <div class="card-body">
+          <div style="display: flex; align-items: center; gap: var(--space-3);">
+            <label style="display: flex; align-items: center; gap: var(--space-3); cursor: pointer;">
+              <input
+                      type="checkbox"
+                      id="isPublished"
+                      style="width: 20px; height: 20px; cursor: pointer;">
+              <div>
+                <div style="font-weight: 600; color: var(--gray-900);">Lernbereich veröffentlichen</div>
+                <div style="color: var(--gray-600); font-size: 0.9375rem;">
+                  Wenn aktiviert, ist der Lernbereich für alle Benutzer sichtbar
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message -->
+      <div id="message" class="alert" style="display: none; margin-bottom: var(--space-6);"></div>
+
+      <!-- Actions -->
+      <div style="display: flex; gap: var(--space-4); justify-content: flex-end;">
+        <a href="/admin-learning-areas.html" class="btn btn-secondary">
+          Abbrechen
+        </a>
+        <button type="submit" class="btn btn-primary" id="saveBtn">
+          Speichern
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+  const API_BASE = 'http://localhost:8080/api';
+  let areaId = null;
+  let isEditMode = false;
+
+  // Check admin auth
+  if (!window.auth || !window.auth.isLoggedIn()) {
+    window.location.href = '/login.html';
+  } else if (!window.auth.hasRole('ADMIN')) {
+    window.location.href = '/user-home.html';
+  } else {
+    initializePage();
+  }
+
+  async function initializePage() {
+    const user = window.auth.getUser();
+    const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
+
+    document.getElementById('navRight').innerHTML = `
+            <div class="nav-profile-dropdown">
+                <button class="nav-profile-btn">
+                    <span>${name}</span>
+                    <span style="font-size: 0.75rem;">▾</span>
+                </button>
+                <div class="nav-profile-menu">
+                    <a href="/account.html">Mein Account</a>
+                    <div class="divider"></div>
+                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
+                </div>
+            </div>
+        `;
+
+    // Check if editing existing area
+    const urlParams = new URLSearchParams(window.location.search);
+    areaId = urlParams.get('id');
+
+    if (areaId) {
+      isEditMode = true;
+      document.getElementById('pageTitle').textContent = 'Lernbereich bearbeiten';
+      loadArea();
+    } else {
+      document.getElementById('pageTitle').textContent = 'Neuer Lernbereich';
+    }
+
+    // Auto-generate slug from name
+    document.getElementById('name').addEventListener('input', (e) => {
+      if (!isEditMode) {
+        const slug = e.target.value
+                .toLowerCase()
+                .replace(/ä/g, 'ae')
+                .replace(/ö/g, 'oe')
+                .replace(/ü/g, 'ue')
+                .replace(/ß/g, 'ss')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '');
+        document.getElementById('slug').value = slug;
+      }
+    });
+  }
+
+  async function loadArea() {
+    try {
+      const response = await window.auth.authFetch(`${API_BASE}/secure/admin/learning-areas`);
+      if (!response.ok) throw new Error('Failed to load');
+
+      const areas = await response.json();
+      const area = areas.find(a => a.id == areaId);
+
+      if (!area) {
+        showMessage('Lernbereich nicht gefunden', 'error');
+        return;
+      }
+
+      // Fill form
+      document.getElementById('name').value = area.name || '';
+      document.getElementById('slug').value = area.slug || '';
+      document.getElementById('subtitle').value = area.subtitle || '';
+      document.getElementById('description').value = area.description || '';
+      document.getElementById('colorTheme').value = area.colorTheme || '#2563eb';
+      document.getElementById('displayOrder').value = area.displayOrder || 0;
+      document.getElementById('isPublished').checked = area.isPublished || false;
+    } catch (error) {
+      console.error('Error loading area:', error);
+      showMessage('Fehler beim Laden', 'error');
+    }
+  }
+
+  async function saveArea(event) {
+    event.preventDefault();
+
+    const data = {
+      name: document.getElementById('name').value.trim(),
+      slug: document.getElementById('slug').value.trim(),
+      subtitle: document.getElementById('subtitle').value.trim() || null,
+      description: document.getElementById('description').value.trim() || null,
+      colorTheme: document.getElementById('colorTheme').value,
+      displayOrder: parseInt(document.getElementById('displayOrder').value) || 0,
+      isPublished: document.getElementById('isPublished').checked
+    };
+
+    if (!data.name || !data.slug) {
+      showMessage('Name und Slug sind erforderlich', 'error');
+      return;
+    }
+
+    const saveBtn = document.getElementById('saveBtn');
+    const originalText = saveBtn.textContent;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<div class="loading"></div>';
+
+    try {
+      const url = isEditMode
+              ? `${API_BASE}/secure/admin/learning-areas/${areaId}`
+              : `${API_BASE}/secure/admin/learning-areas`;
+
+      const method = isEditMode ? 'PUT' : 'POST';
+
+      const response = await window.auth.authFetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      if (response.ok) {
+        showMessage('Lernbereich erfolgreich gespeichert!', 'success');
+        setTimeout(() => {
+          window.location.href = '/admin-learning-areas.html';
+        }, 1500);
+      } else {
+        const error = await response.json();
+        showMessage(error.message || 'Fehler beim Speichern', 'error');
+      }
+    } catch (error) {
+      console.error('Save error:', error);
+      showMessage('Verbindungsfehler', 'error');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = originalText;
+    }
+  }
+
+  function selectColor(color) {
+    document.getElementById('colorTheme').value = color;
+
+    // Update selected state
+    document.querySelectorAll('.color-option').forEach(btn => {
+      btn.classList.remove('selected');
+      if (btn.style.background === color) {
+        btn.classList.add('selected');
+      }
+    });
+  }
+
+  function showMessage(message, type) {
+    const div = document.getElementById('message');
+    div.className = `alert alert-${type}`;
+    div.textContent = message;
+    div.style.display = 'block';
+
+    if (type === 'success') {
+      setTimeout(() => {
+        div.style.display = 'none';
+      }, 5000);
+    }
+  }
+</script>
+
+</body>
+</html>

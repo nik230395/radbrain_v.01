@@ -3,755 +3,280 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Account Einstellungen - RadBrain</title>
-  <script src="auth.js"></script>
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root {
-      --primary: #667eea;
-      --primary-dark: #5568d3;
-      --success: #10b981;
-      --danger: #ef4444;
-      --text: #1f2937;
-      --text-light: #6b7280;
-      --bg: #f9fafb;
-      --border: #e5e7eb;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
-
-    .navbar {
-      background: white;
-      border-bottom: 1px solid var(--border);
-      padding: 0 32px;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .navbar-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--primary);
-      text-decoration: none;
-    }
-
-    .navbar-links {
-      display: flex;
-      gap: 24px;
-    }
-
-    .navbar-link {
-      color: var(--text);
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s;
-    }
-
-    .navbar-link:hover {
-      color: var(--primary);
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 40px 32px;
-    }
-
-    .settings-layout {
-      display: grid;
-      grid-template-columns: 250px 1fr;
-      gap: 32px;
-    }
-
-    .settings-nav {
-      background: white;
-      border-radius: 12px;
-      padding: 8px;
-      height: fit-content;
-      border: 1px solid var(--border);
-      position: sticky;
-      top: 88px;
-    }
-
-    .settings-nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      border-radius: 8px;
-      color: var(--text);
-      font-weight: 500;
-      font-size: 14px;
-      transition: all 0.2s;
-      cursor: pointer;
-      border: none;
-      background: none;
-      width: 100%;
-      text-align: left;
-    }
-
-    .settings-nav-item:hover {
-      background: var(--bg);
-    }
-
-    .settings-nav-item.active {
-      background: #ede9fe;
-      color: var(--primary);
-    }
-
-    .settings-section {
-      background: white;
-      border-radius: 12px;
-      padding: 32px;
-      border: 1px solid var(--border);
-    }
-
-    .settings-section.hidden {
-      display: none;
-    }
-
-    .section-header {
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .section-title {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .section-description {
-      color: var(--text-light);
-      font-size: 14px;
-    }
-
-    .profile-header {
-      display: flex;
-      align-items: center;
-      gap: 24px;
-      margin-bottom: 32px;
-    }
-
-    .profile-avatar-large {
-      width: 96px;
-      height: 96px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), #a084dc);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 40px;
-      font-weight: 700;
-    }
-
-    .profile-info h2 {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .profile-info p {
-      color: var(--text-light);
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .info-card {
-      padding: 20px;
-      background: var(--bg);
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-
-    .info-card-label {
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--text-light);
-      margin-bottom: 8px;
-    }
-
-    .info-card-value {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .info-card-badge {
-      display: inline-block;
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .info-card-badge.admin {
-      background: #ede9fe;
-      color: #6b21a8;
-    }
-
-    .info-card-badge.user {
-      background: #dbeafe;
-      color: #1e40af;
-    }
-
-    .form-group {
-      margin-bottom: 24px;
-    }
-
-    .form-label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 8px;
-      font-size: 14px;
-    }
-
-    .form-input {
-      width: 100%;
-      padding: 12px 16px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 15px;
-      transition: all 0.2s;
-    }
-
-    .form-input:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .form-input:disabled {
-      background: var(--bg);
-      color: var(--text-light);
-      cursor: not-allowed;
-    }
-
-    .form-help {
-      font-size: 13px;
-      color: var(--text-light);
-      margin-top: 6px;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 20px;
-      border-radius: 8px;
-      border: none;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      background: white;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn-secondary:hover {
-      background: var(--bg);
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
-
-    .btn-danger:hover {
-      background: #dc2626;
-    }
-
-    .btn-group {
-      display: flex;
-      gap: 12px;
-      margin-top: 24px;
-    }
-
-    .alert {
-      padding: 16px;
-      border-radius: 8px;
-      margin-bottom: 24px;
-      display: none;
-    }
-
-    .alert.show {
-      display: block;
-    }
-
-    .alert-success {
-      background: #d1fae5;
-      color: #065f46;
-      border: 1px solid #10b981;
-    }
-
-    .alert-error {
-      background: #fee2e2;
-      color: #991b1b;
-      border: 1px solid #ef4444;
-    }
-
-    .danger-zone {
-      border: 2px solid var(--danger);
-      border-radius: 12px;
-      padding: 24px;
-      margin-top: 32px;
-    }
-
-    .danger-zone-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--danger);
-      margin-bottom: 16px;
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .modal-overlay.show {
-      display: flex;
-    }
-
-    .modal {
-      background: white;
-      border-radius: 16px;
-      max-width: 500px;
-      width: 90%;
-      padding: 32px;
-    }
-
-    .modal-title {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 20px;
-    }
-
-    .modal-footer {
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      margin-top: 24px;
-    }
-
-    @media (max-width: 768px) {
-      .settings-layout {
-        grid-template-columns: 1fr;
-      }
-      .settings-nav {
-        position: static;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .profile-header {
-        flex-direction: column;
-        text-align: center;
-      }
-    }
-  </style>
+  <title>Mein Account - RadBrain</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<!-- Navigation -->
 <nav class="navbar">
-  <a href="index.html" class="navbar-brand">
-    <img src="logo.png" alt="RadBrain" style="height: 28px;">
-  </a>
-  <div class="navbar-links">
-    <a href="dashboard.html" class="navbar-link">Dashboard</a>
-    <a href="quizzes.html" class="navbar-link">Quizzes</a>
-    <a href="account.html" class="navbar-link" style="color: var(--primary);">Account</a>
+  <div class="navbar-content">
+    <div class="nav-left">
+      <img src="logo.png" alt="RadBrain" class="nav-logo">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="/user-home.html" class="nav-link">Übersicht</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="#" class="nav-link">Lernbereiche</a>
+          <ul class="dropdown-menu" id="learningAreasMenu"></ul>
+        </li>
+        <li class="nav-item">
+          <a href="/quizzes.html" class="nav-link">Quizzes</a>
+        </li>
+      </ul>
+    </div>
+    <div class="nav-right" id="navRight"></div>
   </div>
 </nav>
 
-<div class="container">
-  <div class="settings-layout">
-    <nav class="settings-nav">
-      <button class="settings-nav-item active" onclick="showSection('profile')">
-        Profil
-      </button>
-      <button class="settings-nav-item" onclick="showSection('security')">
-        Sicherheit
-      </button>
-      <button class="settings-nav-item" onclick="showSection('account')">
-        Account
-      </button>
-    </nav>
+<!-- Main Content -->
+<div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
+  <div style="margin-bottom: var(--space-12);">
+    <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-2);">
+      Mein Account
+    </h1>
+    <p style="color: var(--gray-600); font-size: 1.125rem;">
+      Verwalte deine Kontoinformationen
+    </p>
+  </div>
 
-    <div class="settings-content">
-      <section id="section-profile" class="settings-section">
-        <div class="section-header">
-          <h1 class="section-title">Profil</h1>
-          <p class="section-description">Verwalte deine persönlichen Informationen</p>
+  <div style="max-width: 720px;">
+    <!-- Account Info Card -->
+    <div class="card" style="margin-bottom: var(--space-6);">
+      <div class="card-header">
+        <h2 class="card-title">Profil-Informationen</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" id="fullname" class="form-input" placeholder="Wird geladen...">
         </div>
-
-        <div class="profile-header">
-          <div class="profile-avatar-large" id="profileAvatar">U</div>
-          <div class="profile-info">
-            <h2 id="profileName">Laden...</h2>
-            <p id="profileEmail">user@example.com</p>
-          </div>
+        <div class="form-group">
+          <label class="form-label">E-Mail-Adresse</label>
+          <input type="email" id="email" class="form-input" disabled style="background: var(--gray-50);">
         </div>
+        <div id="accountMessage" class="alert" style="display: none; margin-top: var(--space-4);"></div>
+      </div>
+      <div class="card-footer">
+        <button onclick="updateProfile()" class="btn btn-primary">
+          Änderungen speichern
+        </button>
+      </div>
+    </div>
 
-        <div class="info-grid">
-          <div class="info-card">
-            <div class="info-card-label">Rolle</div>
-            <div class="info-card-value">
-              <span class="info-card-badge" id="roleBadge">USER</span>
-            </div>
-          </div>
-          <div class="info-card">
-            <div class="info-card-label">Mitglied seit</div>
-            <div class="info-card-value" id="memberSince">-</div>
-          </div>
-          <div class="info-card">
-            <div class="info-card-label">Status</div>
-            <div class="info-card-value" id="accountStatus" style="color: var(--success);">✓ Aktiv</div>
-          </div>
+    <!-- Password Change Card -->
+    <div class="card" style="margin-bottom: var(--space-6);">
+      <div class="card-header">
+        <h2 class="card-title">Passwort ändern</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label">Aktuelles Passwort</label>
+          <input type="password" id="currentPassword" class="form-input">
         </div>
-
-        <div id="profileAlert" class="alert"></div>
-
-        <form id="profileForm">
-          <div class="form-group">
-            <label class="form-label">Name</label>
-            <input type="text" class="form-input" id="fullnameInput" placeholder="Max Mustermann">
-            <p class="form-help">Dein vollständiger Name</p>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">E-Mail</label>
-            <input type="email" class="form-input" id="emailInput" disabled>
-            <p class="form-help">E-Mail kann nicht geändert werden</p>
-          </div>
-
-          <div class="btn-group">
-            <button type="submit" class="btn btn-primary">Speichern</button>
-            <button type="button" class="btn btn-secondary" onclick="loadUserData()">Zurücksetzen</button>
-          </div>
-        </form>
-      </section>
-
-      <section id="section-security" class="settings-section hidden">
-        <div class="section-header">
-          <h1 class="section-title">Sicherheit</h1>
-          <p class="section-description">Passwort ändern</p>
+        <div class="form-group">
+          <label class="form-label">Neues Passwort</label>
+          <input type="password" id="newPassword" class="form-input">
         </div>
-
-        <div id="securityAlert" class="alert"></div>
-
-        <form id="passwordForm">
-          <div class="form-group">
-            <label class="form-label">Aktuelles Passwort</label>
-            <input type="password" class="form-input" id="currentPassword">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Neues Passwort</label>
-            <input type="password" class="form-input" id="newPassword">
-            <p class="form-help">Mindestens 8 Zeichen</p>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Bestätigen</label>
-            <input type="password" class="form-input" id="confirmPassword">
-          </div>
-          <button type="submit" class="btn btn-primary">Passwort ändern</button>
-        </form>
-      </section>
-
-      <section id="section-account" class="settings-section hidden">
-        <div class="section-header">
-          <h1 class="section-title">Account</h1>
-          <p class="section-description">Verwaltung</p>
+        <div class="form-group">
+          <label class="form-label">Neues Passwort bestätigen</label>
+          <input type="password" id="confirmNewPassword" class="form-input">
         </div>
+        <div id="passwordMessage" class="alert" style="display: none; margin-top: var(--space-4);"></div>
+      </div>
+      <div class="card-footer">
+        <button onclick="changePassword()" class="btn btn-primary">
+          Passwort ändern
+        </button>
+      </div>
+    </div>
 
-        <div class="info-grid">
-          <div class="info-card">
-            <div class="info-card-label">User ID</div>
-            <div class="info-card-value" id="userId">-</div>
-          </div>
-          <div class="info-card">
-            <div class="info-card-label">Letztes Update</div>
-            <div class="info-card-value" id="lastUpdate">-</div>
-          </div>
-        </div>
-
-        <div style="margin-top: 32px;">
-          <h3 style="margin-bottom: 16px;">Schnellzugriff</h3>
-          <div style="display: flex; flex-direction: column; gap: 12px;">
-            <button class="btn btn-secondary" onclick="window.location.href='dashboard.html'">Dashboard</button>
-            <button class="btn btn-secondary" onclick="window.location.href='quizzes.html'">Quizzes</button>
-            <button class="btn btn-danger" onclick="showLogoutModal()">Abmelden</button>
-          </div>
-        </div>
-
-        <div class="danger-zone">
-          <h3 class="danger-zone-title">Achtung:</h3>
-          <p style="margin-bottom: 16px; color: var(--text-light);">Diese Aktion ist permanent</p>
-          <button class="btn btn-danger" onclick="showDeleteModal()">Account löschen</button>
-        </div>
-      </section>
+    <!-- Danger Zone -->
+    <div class="card" style="border-color: var(--error);">
+      <div class="card-header">
+        <h2 class="card-title" style="color: var(--error);">Gefahrenzone</h2>
+      </div>
+      <div class="card-body">
+        <p style="color: var(--gray-600); margin-bottom: var(--space-4);">
+          Das Löschen deines Accounts ist permanent und kann nicht rückgängig gemacht werden.
+        </p>
+      </div>
+      <div class="card-footer">
+        <button onclick="deleteAccount()" class="btn" style="background: var(--error); color: white;">
+          Account löschen
+        </button>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="modal-overlay" id="logoutModal">
-  <div class="modal">
-    <h2 class="modal-title">Abmelden?</h2>
-    <p>Möchtest du dich wirklich abmelden?</p>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="hideLogoutModal()">Abbrechen</button>
-      <button class="btn btn-danger" onclick="logout()">Abmelden</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="deleteModal">
-  <div class="modal">
-    <h2 class="modal-title">Account löschen?</h2>
-    <p><strong>Warnung:</strong> Alle Daten werden gelöscht!</p>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="hideDeleteModal()">Abbrechen</button>
-      <button class="btn btn-danger" onclick="deleteAccount()">Löschen</button>
-    </div>
-  </div>
-</div>
-
+<script src="auth.js"></script>
 <script>
+  const API_BASE = 'http://localhost:8080/api';
+
+  // Check auth
   if (!window.auth || !window.auth.isLoggedIn()) {
-    window.location.href = 'login.html';
+    window.location.href = '/login.html';
+  } else {
+    initializePage();
   }
 
-  let currentUser = null;
+  async function initializePage() {
+    const user = window.auth.getUser();
+    const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
 
-  (async function init() {
+    document.getElementById('navRight').innerHTML = `
+            <div class="nav-profile-dropdown">
+                <button class="nav-profile-btn">
+                    <span>${name}</span>
+                    <span style="font-size: 0.75rem;">▾</span>
+                </button>
+                <div class="nav-profile-menu">
+                    <a href="/account.html">Mein Account</a>
+                    <a href="/dashboard.html">Dashboard</a>
+                    ${window.auth.hasRole('ADMIN') ? '<div class="divider"></div><a href="/admin-dashboard.html">Admin-Bereich</a>' : ''}
+                    <div class="divider"></div>
+                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
+                </div>
+            </div>
+        `;
+
+    // Load user data
+    document.getElementById('fullname').value = user.fullname || '';
+    document.getElementById('email').value = user.email || '';
+
+    loadNavigationAreas();
+  }
+
+  async function loadNavigationAreas() {
     try {
-      const userRes = await window.auth.authFetch('/api/users/me');
-      if (userRes.ok) {
-        currentUser = await userRes.json();
-      } else {
-        currentUser = window.auth.getUser();
-      }
-      loadUserData();
+      const response = await fetch(`${API_BASE}/learning-areas`);
+      if (!response.ok) return;
+
+      const areas = await response.json();
+      const menu = document.getElementById('learningAreasMenu');
+      menu.innerHTML = areas
+              .sort((a, b) => a.displayOrder - b.displayOrder)
+              .map(area => `<li><a href="/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>`)
+              .join('');
     } catch (error) {
-      console.error('Error:', error);
-      currentUser = window.auth.getUser();
-      loadUserData();
-    }
-  })();
-
-  function loadUserData() {
-    const initials = getInitials(currentUser.fullname || currentUser.email);
-
-    document.getElementById('profileAvatar').textContent = initials;
-    document.getElementById('profileName').textContent = currentUser.fullname || 'Unbekannt';
-    document.getElementById('profileEmail').textContent = currentUser.email;
-    document.getElementById('fullnameInput').value = currentUser.fullname || '';
-    document.getElementById('emailInput').value = currentUser.email;
-
-    const roleBadge = document.getElementById('roleBadge');
-    const role = currentUser.role || 'USER';
-    roleBadge.textContent = role;
-    roleBadge.className = `info-card-badge ${role.toLowerCase()}`;
-
-    if (currentUser.createdAt) {
-      document.getElementById('memberSince').textContent = formatDate(new Date(currentUser.createdAt));
-    }
-
-    document.getElementById('accountStatus').textContent = currentUser.isActive ? '✓ Aktiv' : '✗ Inaktiv';
-    document.getElementById('userId').textContent = `#${currentUser.id || '?'}`;
-
-    if (currentUser.updatedAt) {
-      document.getElementById('lastUpdate').textContent = formatDate(new Date(currentUser.updatedAt));
+      console.error('Error loading navigation:', error);
     }
   }
 
-  document.getElementById('profileForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fullname = document.getElementById('fullnameInput').value.trim();
+  async function updateProfile() {
+    const fullname = document.getElementById('fullname').value.trim();
 
     if (!fullname) {
-      showAlert('profileAlert', 'Name erforderlich', 'error');
+      showMessage('accountMessage', 'Bitte gib deinen Namen ein.', 'error');
       return;
     }
 
     try {
-      const res = await window.auth.authFetch('/api/users/me/update', {
+      const response = await window.auth.authFetch(`${API_BASE}/users/me`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fullname })
       });
 
-      if (res.ok) {
-        const updated = await res.json();
-        currentUser.fullname = updated.fullname;
-        localStorage.setItem('userFullname', updated.fullname);
-        loadUserData();
-        showAlert('profileAlert', 'Gespeichert!', 'success');
+      if (response.ok) {
+        showMessage('accountMessage', 'Profil erfolgreich aktualisiert!', 'success');
+        // Update stored user data
+        const user = window.auth.getUser();
+        user.fullname = fullname;
+        localStorage.setItem('userFullname', fullname);
       } else {
-        showAlert('profileAlert', 'Fehler', 'error');
+        showMessage('accountMessage', 'Fehler beim Aktualisieren', 'error');
       }
     } catch (error) {
-      showAlert('profileAlert', 'Netzwerkfehler', 'error');
+      showMessage('accountMessage', 'Verbindungsfehler', 'error');
     }
-  });
+  }
 
-  document.getElementById('passwordForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
+  async function changePassword() {
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
 
-    const current = document.getElementById('currentPassword').value;
-    const newPass = document.getElementById('newPassword').value;
-    const confirm = document.getElementById('confirmPassword').value;
-
-    if (!current || !newPass || !confirm) {
-      showAlert('securityAlert', 'Alle Felder ausfüllen', 'error');
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+      showMessage('passwordMessage', 'Bitte fülle alle Felder aus.', 'error');
       return;
     }
 
-    if (newPass !== confirm) {
-      showAlert('securityAlert', 'Passwörter nicht identisch', 'error');
+    if (newPassword.length < 8) {
+      showMessage('passwordMessage', 'Neues Passwort muss mindestens 8 Zeichen lang sein.', 'error');
       return;
     }
 
-    if (newPass.length < 8) {
-      showAlert('securityAlert', 'Mindestens 8 Zeichen', 'error');
+    if (newPassword !== confirmNewPassword) {
+      showMessage('passwordMessage', 'Passwörter stimmen nicht überein.', 'error');
       return;
     }
 
     try {
-      const res = await window.auth.authFetch('/api/users/me/change-password', {
-        method: 'PUT',
+      const response = await window.auth.authFetch(`${API_BASE}/users/change-password`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword: current, newPassword: newPass })
+        body: JSON.stringify({ currentPassword, newPassword })
       });
 
-      if (res.ok) {
-        showAlert('securityAlert', 'Passwort geändert!', 'success');
-        document.getElementById('passwordForm').reset();
+      if (response.ok) {
+        showMessage('passwordMessage', 'Passwort erfolgreich geändert!', 'success');
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmNewPassword').value = '';
       } else {
-        showAlert('securityAlert', 'Falsches Passwort', 'error');
+        showMessage('passwordMessage', 'Aktuelles Passwort ist falsch', 'error');
       }
     } catch (error) {
-      showAlert('securityAlert', 'Fehler', 'error');
+      showMessage('passwordMessage', 'Verbindungsfehler', 'error');
     }
-  });
-
-  function showSection(section) {
-    document.querySelectorAll('.settings-nav-item').forEach(item => item.classList.remove('active'));
-    event.target.classList.add('active');
-    document.querySelectorAll('.settings-section').forEach(sec => sec.classList.add('hidden'));
-    document.getElementById(`section-${section}`).classList.remove('hidden');
-  }
-
-  function showAlert(id, message, type) {
-    const alert = document.getElementById(id);
-    alert.className = `alert alert-${type} show`;
-    alert.textContent = message;
-    setTimeout(() => alert.classList.remove('show'), 5000);
-  }
-
-  function getInitials(name) {
-    if (!name) return 'U';
-    if (name.includes('@')) return name.charAt(0).toUpperCase();
-    const parts = name.split(' ');
-    return parts.length >= 2 ?
-            (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase() :
-            parts[0].charAt(0).toUpperCase();
-  }
-
-  function formatDate(date) {
-    return date.toLocaleDateString('de-DE', { year: 'numeric', month: 'long', day: 'numeric' });
-  }
-
-  function showLogoutModal() {
-    document.getElementById('logoutModal').classList.add('show');
-  }
-
-  function hideLogoutModal() {
-    document.getElementById('logoutModal').classList.remove('show');
-  }
-
-  function showDeleteModal() {
-    document.getElementById('deleteModal').classList.add('show');
-  }
-
-  function hideDeleteModal() {
-    document.getElementById('deleteModal').classList.remove('show');
-  }
-
-  function logout() {
-    window.auth.logout();
-    window.location.href = 'index.html';
   }
 
   async function deleteAccount() {
+    if (!confirm('Bist du sicher, dass du deinen Account löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden!')) {
+      return;
+    }
+
+    if (!confirm('Wirklich sicher? Alle deine Daten werden permanent gelöscht!')) {
+      return;
+    }
+
     try {
-      const res = await window.auth.authFetch('/api/users/me/delete', { method: 'DELETE' });
-      if (res.ok) {
-        alert('Account gelöscht');
-        window.auth.logout();
-        window.location.href = 'index.html';
+      const response = await window.auth.authFetch(`${API_BASE}/users/me`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        alert('Account wurde gelöscht.');
+        window.auth.logout('/index.html');
       } else {
-        alert('Fehler');
+        alert('Fehler beim Löschen des Accounts');
       }
     } catch (error) {
-      alert('Fehler');
+      alert('Verbindungsfehler');
     }
   }
 
-  document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) {
-        overlay.classList.remove('show');
-      }
-    });
-  });
+  function showMessage(elementId, message, type) {
+    const div = document.getElementById(elementId);
+    div.className = `alert alert-${type}`;
+    div.textContent = message;
+    div.style.display = 'block';
+
+    setTimeout(() => {
+      div.style.display = 'none';
+    }, 5000);
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
 </script>
+
 </body>
 </html>

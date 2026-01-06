@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inhaltsverzeichnis - RadBrain</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .search-bar {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      margin-bottom: var(--space-8);
+    }
+
+    .search-input-wrapper {
+      position: relative;
+      margin-bottom: var(--space-4);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: var(--space-4);
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gray-400);
+    }
+
+    .search-input {
+      padding-left: var(--space-10);
+    }
+
+    .filter-tags {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+
+    .filter-tag {
+      padding: var(--space-2) var(--space-4);
+      background: white;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      color: var(--gray-700);
+      font-size: 0.9375rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .filter-tag:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .filter-tag.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .toc-tree {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .toc-area {
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .toc-area:last-child {
+      border-bottom: none;
+    }
+
+    .toc-area-header {
+      padding: var(--space-6);
+      background: var(--gray-50);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background var(--transition-fast);
+    }
+
+    .toc-area-header:hover {
+      background: var(--gray-100);
+    }
+
+    .toc-area-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--gray-900);
+    }
+
+    .toc-area-meta {
+      display: flex;
+      gap: var(--space-6);
+      color: var(--gray-600);
+      font-size: 0.9375rem;
+    }
+
+    .toggle-icon {
+      color: var(--gray-400);
+      transition: transform var(--transition-fast);
+    }
+
+    .toc-area.expanded .toggle-icon {
+      transform: rotate(180deg);
+    }
+
+    .toc-modules {
+      display: none;
+      padding: 0 var(--space-6) var(--space-6) var(--space-6);
+    }
+
+    .toc-area.expanded .toc-modules {
+      display: block;
+    }
+
+    .toc-module {
+      padding: var(--space-4);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-3);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+
+    .toc-module:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .toc-module-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: var(--space-2);
+    }
+
+    .toc-module-number {
+      flex-shrink: 0;
+      width: 32px;
+      height: 32px;
+      background: var(--gray-100);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-right: var(--space-3);
+    }
+
+    .toc-module-title {
+      font-weight: 600;
+      color: var(--gray-900);
+      flex: 1;
+    }
+
+    .toc-module-meta {
+      display: flex;
+      gap: var(--space-4);
+      color: var(--gray-600);
+      font-size: 0.875rem;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-6);
+      margin-bottom: var(--space-8);
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: var(--space-6);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: var(--space-2);
+    }
+
+    .stat-label {
+      color: var(--gray-600);
+      font-size: 0.9375rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: var(--space-16);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+  <div class="navbar-content">
+    <div class="nav-left">
+      <img src="logo.png" alt="RadBrain" class="nav-logo">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <a href="/user-home.html" class="nav-link">Übersicht</a>
+        </li>
+        <li class="nav-item">
+          <a href="/table-of-contents.html" class="nav-link active">Inhaltsverzeichnis</a>
+        </li>
+        <li class="nav-item">
+          <a href="/quizzes.html" class="nav-link">Quizzes</a>
+        </li>
+      </ul>
+    </div>
+    <div class="nav-right" id="navRight"></div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
+  <!-- Header -->
+  <div style="margin-bottom: var(--space-12);">
+    <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-2);">
+      Inhaltsverzeichnis
+    </h1>
+    <p style="color: var(--gray-600); font-size: 1.125rem;">
+      Übersicht aller Lernbereiche, Module und Inhalte
+    </p>
+  </div>
+
+  <!-- Statistics -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card">
+      <div class="stat-value" id="totalAreas">0</div>
+      <div class="stat-label">Lernbereiche</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="totalModules">0</div>
+      <div class="stat-label">Module</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="totalContents">0</div>
+      <div class="stat-label">Lerninhalte</div>
+    </div>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="search-bar">
+    <div class="search-input-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+              type="text"
+              id="searchInput"
+              class="form-input search-input"
+              placeholder="Suche nach Themen, Modulen oder Inhalten..."
+              onkeyup="filterContent()">
+    </div>
+    <div class="filter-tags">
+      <button class="filter-tag active" onclick="filterByArea(event, 'ALL')">
+        Alle Bereiche
+      </button>
+      <div id="filterButtons"></div>
+    </div>
+  </div>
+
+  <!-- Table of Contents Tree -->
+  <div id="tocContainer">
+    <div style="text-align: center; padding: var(--space-12);">
+      <div class="loading" style="width: 40px; height: 40px; margin: 0 auto;"></div>
+    </div>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+  const API_BASE = 'http://localhost:8080/api';
+  let allAreas = [];
+  let currentFilter = 'ALL';
+
+  // Check auth
+  if (window.auth && window.auth.isLoggedIn()) {
+    initializePage();
+  } else {
+    window.location.href = '/login.html';
+  }
+
+  async function initializePage() {
+    const user = window.auth.getUser();
+    const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
+
+    document.getElementById('navRight').innerHTML = `
+            <div class="nav-profile-dropdown">
+                <button class="nav-profile-btn">
+                    <span>${name}</span>
+                    <span style="font-size: 0.75rem;">▾</span>
+                </button>
+                <div class="nav-profile-menu">
+                    <a href="/account.html">Mein Account</a>
+                    <a href="/dashboard.html">Dashboard</a>
+                    ${window.auth.hasRole('ADMIN') ? '<div class="divider"></div><a href="/admin-dashboard.html">Admin-Bereich</a>' : ''}
+                    <div class="divider"></div>
+                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
+                </div>
+            </div>
+        `;
+
+    await loadAllContent();
+  }
+
+  async function loadAllContent() {
+    try {
+      const response = await fetch(`${API_BASE}/learning-areas`);
+      if (!response.ok) throw new Error('Failed to load');
+
+      allAreas = await response.json();
+
+      // Load modules for each area
+      for (const area of allAreas) {
+        const areaResponse = await fetch(`${API_BASE}/learning-areas/${area.slug}`);
+        if (areaResponse.ok) {
+          const fullArea = await areaResponse.json();
+          area.modules = fullArea.modules || [];
+
+          // Load contents for each module
+          for (const module of area.modules) {
+            const moduleResponse = await fetch(`${API_BASE}/learning-areas/modules/${module.id}`);
+            if (moduleResponse.ok) {
+              const fullModule = await moduleResponse.json();
+              module.contents = fullModule.contents || [];
+            }
+          }
+        }
+      }
+
+      renderFilterButtons();
+      renderContent();
+      updateStats();
+    } catch (error) {
+      console.error('Error loading content:', error);
+      document.getElementById('tocContainer').innerHTML = `
+                <div class="empty-state">
+                    <p style="color: var(--gray-600);">Fehler beim Laden der Inhalte</p>
+                </div>
+            `;
+    }
+  }
+
+  function renderFilterButtons() {
+    const container = document.getElementById('filterButtons');
+    container.innerHTML = allAreas
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map(area => `
+                <button class="filter-tag" onclick="filterByArea(event, '${area.slug}')">
+                    ${escapeHtml(area.name)}
+                </button>
+            `)
+            .join('');
+  }
+
+  function renderContent() {
+    const container = document.getElementById('tocContainer');
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+
+    let filteredAreas = allAreas;
+
+    // Filter by area
+    if (currentFilter !== 'ALL') {
+      filteredAreas = allAreas.filter(area => area.slug === currentFilter);
+    }
+
+    // Filter by search
+    if (searchTerm) {
+      filteredAreas = filteredAreas.map(area => {
+        const matchingModules = area.modules.filter(module =>
+                module.title.toLowerCase().includes(searchTerm) ||
+                (module.subtitle && module.subtitle.toLowerCase().includes(searchTerm)) ||
+                (module.description && module.description.toLowerCase().includes(searchTerm)) ||
+                (module.contents && module.contents.some(content =>
+                        (content.title && content.title.toLowerCase().includes(searchTerm)) ||
+                        (content.contentData && content.contentData.toLowerCase().includes(searchTerm))
+                ))
+        );
+
+        if (matchingModules.length > 0) {
+          return { ...area, modules: matchingModules };
+        }
+
+        return null;
+      }).filter(area => area !== null);
+    }
+
+    if (filteredAreas.length === 0) {
+      container.innerHTML = `
+                <div class="empty-state">
+                    <div style="font-size: 3rem; margin-bottom: var(--space-4);">🔍</div>
+                    <h3 style="margin-bottom: var(--space-2);">Keine Ergebnisse</h3>
+                    <p style="color: var(--gray-600);">
+                        Versuche einen anderen Suchbegriff oder Filter
+                    </p>
+                </div>
+            `;
+      return;
+    }
+
+    container.innerHTML = `
+            <div class="toc-tree">
+                ${filteredAreas
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map(area => renderArea(area))
+            .join('')}
+            </div>
+        `;
+  }
+
+  function renderArea(area) {
+    const totalContents = area.modules.reduce((sum, m) => sum + (m.contents ? m.contents.length : 0), 0);
+
+    return `
+            <div class="toc-area" id="area-${area.id}">
+                <div class="toc-area-header" onclick="toggleArea(${area.id})">
+                    <div>
+                        <div class="toc-area-title">${escapeHtml(area.name)}</div>
+                        <div class="toc-area-meta">
+                            <span>${area.modules.length} Module</span>
+                            <span>${totalContents} Inhalte</span>
+                        </div>
+                    </div>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="toc-modules">
+                    ${area.modules
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map((module, index) => renderModule(area, module, index + 1))
+            .join('')}
+                </div>
+            </div>
+        `;
+  }
+
+  function renderModule(area, module, number) {
+    return `
+            <div class="toc-module" onclick="openModule('${area.slug}', ${module.id})">
+                <div class="toc-module-header">
+                    <div class="toc-module-number">${number}</div>
+                    <div style="flex: 1;">
+                        <div class="toc-module-title">${escapeHtml(module.title)}</div>
+                        ${module.subtitle ? `
+                            <div style="color: var(--gray-600); font-size: 0.9375rem; margin-top: var(--space-1);">
+                                ${escapeHtml(module.subtitle)}
+                            </div>
+                        ` : ''}
+                        <div class="toc-module-meta">
+                            <span>${module.contents ? module.contents.length : 0} Inhalte</span>
+                            ${module.estimatedDuration ? `<span>${module.estimatedDuration} Min</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+  }
+
+  function toggleArea(areaId) {
+    const area = document.getElementById(`area-${areaId}`);
+    area.classList.toggle('expanded');
+  }
+
+  function filterByArea(event, slug) {
+    currentFilter = slug;
+
+    // Update button states
+    document.querySelectorAll('.filter-tag').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+
+    renderContent();
+  }
+
+  function filterContent() {
+    renderContent();
+  }
+
+  function openModule(areaSlug, moduleId) {
+    window.location.href = `/learning-area.html?area=${areaSlug}#module-${moduleId}`;
+  }
+
+  function updateStats() {
+    const totalModules = allAreas.reduce((sum, area) => sum + area.modules.length, 0);
+    const totalContents = allAreas.reduce((sum, area) =>
+            sum + area.modules.reduce((moduleSum, module) =>
+                    moduleSum + (module.contents ? module.contents.length : 0), 0), 0);
+
+    document.getElementById('totalAreas').textContent = allAreas.length;
+    document.getElementById('totalModules').textContent = totalModules;
+    document.getElementById('totalContents').textContent = totalContents;
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Expand all areas on load
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      document.querySelectorAll('.toc-area').forEach(area => {
+        area.classList.add('expanded');
+      });
+    }, 500);
+  });
+</script>
+
+</body>
+</html>

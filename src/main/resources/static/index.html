@@ -3,11 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="RadBrain - Die revolutionäre Lernplattform für Radiologie. Interaktive Quizzes, moderne Bildgebung und KI-gestütztes Lernen.">
-    <title>RadBrain - Radiologie einfach lernen</title>
+    <title>RadBrain - Radiologie lernen</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -15,206 +12,138 @@
 <nav class="navbar">
     <div class="navbar-content">
         <div class="nav-left">
-            <img src="logo.png" alt="RadBrain Logo" class="nav-logo">
+            <img src="logo.png" alt="RadBrain" class="nav-logo">
         </div>
-
-        <ul class="nav-menu">
-            <li class="nav-item"><a href="#home" class="nav-link">Home</a></li>
-            <li class="nav-item dropdown">
-                <a href="#lernbereiche" class="nav-link">Lernbereiche</a>
-                <ul class="dropdown-menu">
-                    <li><a href="roentgen.html">Röntgen</a></li>
-                    <li><a href="ct.html">CT</a></li>
-                    <li><a href="mrt.html">MRT</a></li>
-                    <li><a href="ultraschall.html">Ultraschall</a></li>
-                </ul>
-            </li>
-            <li class="nav-item"><a href="#quiz" class="nav-link">Quiz</a></li>
-            <li class="nav-item"><a href="#faq" class="nav-link">FAQ</a></li>
-        </ul>
-
-        <div id="navAuthSection" style="display: flex; gap: 0.75rem; margin-left: auto;">
-            <a href="login.html" class="btn btn-ghost" style="padding: 0.625rem 1.25rem;">Anmelden</a>
-            <a href="register.html" class="btn btn-primary" style="padding: 0.625rem 1.25rem;">Registrieren</a>
+        <div class="nav-right">
+            <a href="/login.html" class="btn btn-ghost">Anmelden</a>
+            <a href="/register.html" class="btn btn-primary">Registrieren</a>
         </div>
     </div>
 </nav>
 
 <!-- Hero Section -->
-<section id="home" class="hero">
-    <div id="heroParticles" style="position: absolute; inset: 0; pointer-events: none;"></div>
-
-    <div class="hero-content">
-        <h1 class="hero-title">Radiologie neu gedacht</h1>
-        <p class="hero-subtitle">
-            Lernen Sie Radiologie auf eine völlig neue Art mit interaktiven Quizzes.
-        </p>
-        <div class="hero-actions">
-            <a href="#" id="heroCTAStart" class="btn btn-primary btn-lg" style="background: white; color: var(--primary-600);">
-                Kostenlos starten
-            </a>
-            <a href="#lernbereiche" class="btn btn-outline btn-lg" style="border-color: white; color: white;">
-                Mehr erfahren
-            </a>
+<section style="background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%); color: white; padding: calc(var(--nav-height) + var(--space-20)) 0 var(--space-20);">
+    <div class="container">
+        <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+            <h1 style="font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 700; margin-bottom: var(--space-6); color: white; line-height: 1.1;">
+                Radiologie professionell lernen
+            </h1>
+            <p style="font-size: clamp(1.125rem, 2vw, 1.375rem); margin-bottom: var(--space-10); color: rgba(255,255,255,0.9); line-height: 1.6; max-width: 600px; margin-left: auto; margin-right: auto;">
+                Die moderne Lernplattform für Radiologie mit strukturierten Modulen, interaktiven Quizzes und umfassenden Materialien
+            </p>
+            <div style="display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap;">
+                <a href="/register.html" class="btn btn-lg" style="background: white; color: var(--primary);">
+                    Kostenlos starten
+                </a>
+                <a href="#features" class="btn btn-lg btn-outline" style="border-color: white; color: white;">
+                    Mehr erfahren
+                </a>
+            </div>
         </div>
-    </div>
-
-    <div class="hero-wave">
-        <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="height: 80px;">
-            <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="white"/>
-        </svg>
     </div>
 </section>
 
 <!-- Features Section -->
-<section class="section" style="background: white;">
+<section id="features" class="section" style="background: white;">
     <div class="container">
-        <h2 class="section-title">Warum RadBrain?</h2>
-        <p class="section-subtitle">
-            Moderne Technologie trifft auf medizinische Expertise
-        </p>
+        <div style="text-align: center; margin-bottom: var(--space-16);">
+            <h2 style="font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 700; margin-bottom: var(--space-4);">
+                Effektives Lernen für deine Ausbildung
+            </h2>
+            <p style="font-size: 1.125rem; color: var(--gray-600); max-width: 600px; margin: 0 auto;">
+                Alles was du brauchst, um Radiologie zu meistern
+            </p>
+        </div>
 
         <div class="grid grid-3">
-            <div class="card">
-                <h3>Adaptive Quizzes</h3>
-                <p>Intelligente Quizzes passen sich automatisch Ihrem Wissensstand an und fördern gezieltes Lernen.</p>
+            <div style="text-align: center; padding: var(--space-8) var(--space-4);">
+                <div style="width: 80px; height: 80px; background: var(--primary-light); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-6); font-size: 2.5rem;">
+                    📚
+                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: var(--space-3);">
+                    Strukturierte Lernbereiche
+                </h3>
+                <p style="color: var(--gray-600); line-height: 1.7; font-size: 1rem;">
+                    Umfassende Module zu Röntgen, CT, MRT und Ultraschall mit logischem Aufbau und praxisnahen Inhalten
+                </p>
             </div>
 
-            <div class="card">
-                <h3>Fortschritts-Tracking</h3>
-                <p>Detaillierte Statistiken zeigen Ihnen genau, wo Sie stehen und was Sie noch lernen können.</p>
+            <div style="text-align: center; padding: var(--space-8) var(--space-4);">
+                <div style="width: 80px; height: 80px; background: #ecfdf5; border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-6); font-size: 2.5rem;">
+                    ✓
+                </div>
+                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: var(--space-3);">
+                    Interaktive Quizzes
+                </h3>
+                <p style="color: var(--gray-600); line-height: 1.7; font-size: 1rem;">
+                    Teste dein Wissen mit praxisorientierten Fragen und erhalte direktes Feedback zu deinen Antworten
+                </p>
             </div>
 
-            <div class="card">
-                <h3>Expertenwissen</h3>
-                <p>Alle Inhalte werden von erfahrenen Radiologen erstellt und regelmäßig aktualisiert.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Learning Areas Section -->
-<section id="lernbereiche" class="section" style="background: var(--gray-50);">
-    <div class="container">
-        <h2 class="section-title">Unsere Lernbereiche</h2>
-        <p class="section-subtitle">
-            Wählen Sie Ihren Schwerpunkt und starten Sie Ihre Lernreise
-        </p>
-
-        <div class="areas-grid">
-            <a href="roentgen.html" class="area-card">
-                <div class="area-icon">
-                    <svg viewBox="0 0 100 100" width="50" height="50">
-                        <rect x="30" y="20" width="40" height="60" rx="5" fill="white" opacity="0.9"/>
-                        <circle cx="50" cy="50" r="15" fill="white" opacity="0.7"/>
-                    </svg>
+            <div style="text-align: center; padding: var(--space-8) var(--space-4);">
+                <div style="width: 80px; height: 80px; background: #fffbeb; border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-6); font-size: 2.5rem;">
+                    🎯
                 </div>
-                <h3>Röntgen</h3>
-                <p>Grundlagen der konventionellen Radiologie mit modernen Diagnosetechniken.</p>
-                <span class="card-arrow">→</span>
-            </a>
-
-            <a href="ct.html" class="area-card" style="background: linear-gradient(135deg, #7c3aed, #a78bfa);">
-                <div class="area-icon">
-                    <svg viewBox="0 0 100 100" width="50" height="50">
-                        <circle cx="50" cy="50" r="25" fill="none" stroke="white" stroke-width="4" opacity="0.9"/>
-                        <circle cx="50" cy="50" r="15" fill="white" opacity="0.7"/>
-                    </svg>
-                </div>
-                <h3>CT</h3>
-                <p>3D-Rekonstruktionen, Kontrastmittel und KI-unterstützte Auswertung.</p>
-                <span class="card-arrow">→</span>
-            </a>
-
-            <a href="mrt.html" class="area-card" style="background: linear-gradient(135deg, #A084DC, #BFACE2);">
-                <div class="area-icon">
-                    <svg viewBox="0 0 100 100" width="50" height="50">
-                        <path d="M 30 50 Q 50 30 70 50 Q 50 70 30 50" fill="white" opacity="0.9"/>
-                        <circle cx="50" cy="50" r="8" fill="white" opacity="0.7"/>
-                    </svg>
-                </div>
-                <h3>MRT</h3>
-                <p>MRT-Sequenzen, Anatomie und Pathologie in einer innovativen Lernumgebung.</p>
-                <span class="card-arrow">→</span>
-            </a>
-
-            <a href="ultraschall.html" class="area-card" style="background: linear-gradient(135deg, #8b5cf6, #c084fc);">
-                <div class="area-icon">
-                    <svg viewBox="0 0 100 100" width="50" height="50">
-                        <path d="M 50 30 L 50 70 M 35 40 Q 50 50 35 60 M 65 40 Q 50 50 65 60" stroke="white" stroke-width="4" fill="none" opacity="0.9"/>
-                    </svg>
-                </div>
-                <h3>Ultraschall</h3>
-                <p>Von Doppler-Techniken bis zur interventionellen Sonographie.</p>
-                <span class="card-arrow">→</span>
-            </a>
-        </div>
-    </div>
-</section>
-
-<!-- Quiz Section -->
-<section id="quiz" class="section" style="background: white;">
-    <div class="container">
-        <h2 class="section-title">Wissens-Challenges</h2>
-        <p class="section-subtitle">
-            Interaktive Quizzes, die sich Ihrem Können anpassen
-        </p>
-
-        <div id="quizContainer" class="grid grid-auto">
-            <div class="card" style="text-align: center; padding: 3rem;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
-                <p style="color: var(--gray-600);">Quizzes werden geladen...</p>
+                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: var(--space-3);">
+                    Praxisorientiert
+                </h3>
+                <p style="color: var(--gray-600); line-height: 1.7; font-size: 1rem;">
+                    Lerne mit realen Fallbeispielen und Szenarien aus dem radiologischen Alltag
+                </p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- FAQ Section -->
-<section id="faq" class="section" style="background: var(--gray-50);">
+<!-- Content Preview -->
+<section class="section" style="background: var(--gray-50);">
     <div class="container">
-        <h2 class="section-title">Häufig gestellte Fragen</h2>
-        <p class="section-subtitle">
-            Alles was Sie über RadBrain wissen müssen
-        </p>
-
-        <div style="max-width: 800px; margin: 0 auto;">
-            <div class="faq-item" style="background: white; margin-bottom: 1rem; border-radius: 1rem; overflow: hidden; border: 1px solid var(--gray-200);">
-                <div class="faq-question" style="padding: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; font-size: 1.125rem;">Für wen ist RadBrain geeignet?</h3>
-                    <span style="font-size: 1.5rem; color: var(--primary-600);">+</span>
-                </div>
-                <div class="faq-answer" style="padding: 0 1.5rem; max-height: 0; overflow: hidden; transition: all 0.3s;">
-                    <p style="padding-bottom: 1.5rem;">RadBrain richtet sich primär an Medizinstudierende und Assistenzärzte, die sich in der Radiologie weiterbilden möchten. Unsere Inhalte sind so gestaltet, dass sie von Anfängern bis zu fortgeschrittenen Lernenden genutzt werden können.</p>
-                </div>
-            </div>
-
-            <div class="faq-item" style="background: white; margin-bottom: 1rem; border-radius: 1rem; overflow: hidden; border: 1px solid var(--gray-200);">
-                <div class="faq-question" style="padding: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; font-size: 1.125rem;">Ist RadBrain kostenlos?</h3>
-                    <span style="font-size: 1.5rem; color: var(--primary-600);">+</span>
-                </div>
-                <div class="faq-answer" style="padding: 0 1.5rem; max-height: 0; overflow: hidden; transition: all 0.3s;">
-                    <p style="padding-bottom: 1.5rem;">Ja, alle grundlegenden Inhalte und Quizzes sind vollständig kostenlos verfügbar. Wir glauben an zugängliches Wissen für alle Interessenten der Radiologie.</p>
-                </div>
-            </div>
-
-            <div class="faq-item" style="background: white; margin-bottom: 1rem; border-radius: 1rem; overflow: hidden; border: 1px solid var(--gray-200);">
-                <div class="faq-question" style="padding: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; font-size: 1.125rem;">Wie sind die Inhalte strukturiert?</h3>
-                    <span style="font-size: 1.5rem; color: var(--primary-600);">+</span>
-                </div>
-                <div class="faq-answer" style="padding: 0 1.5rem; max-height: 0; overflow: hidden; transition: all 0.3s;">
-                    <p style="padding-bottom: 1.5rem;">Jeder Lernbereich ist systematisch in Kapitel unterteilt, gefolgt von interaktiven Quizzes zur Selbstüberprüfung. Die Inhalte bauen aufeinander auf und führen Sie schrittweise zur Expertise.</p>
+        <div class="grid grid-2" style="gap: var(--space-12); align-items: center;">
+            <div>
+                <h2 style="font-size: clamp(1.875rem, 4vw, 2.5rem); font-weight: 700; margin-bottom: var(--space-6);">
+                    Lernbereiche für alle Modalitäten
+                </h2>
+                <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+                    <div class="card" style="padding: var(--space-5);">
+                        <h4 style="font-weight: 600; margin-bottom: var(--space-2);">Röntgen</h4>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9375rem;">
+                            Grundlagen der Radiologie und Bildinterpretation
+                        </p>
+                    </div>
+                    <div class="card" style="padding: var(--space-5);">
+                        <h4 style="font-weight: 600; margin-bottom: var(--space-2);">CT</h4>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9375rem;">
+                            Computertomographie und Schnittbilddiagnostik
+                        </p>
+                    </div>
+                    <div class="card" style="padding: var(--space-5);">
+                        <h4 style="font-weight: 600; margin-bottom: var(--space-2);">MRT</h4>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9375rem;">
+                            Magnetresonanztomographie und Sequenzen
+                        </p>
+                    </div>
+                    <div class="card" style="padding: var(--space-5);">
+                        <h4 style="font-weight: 600; margin-bottom: var(--space-2);">Ultraschall</h4>
+                        <p style="color: var(--gray-600); margin: 0; font-size: 0.9375rem;">
+                            Sonographie und Doppler-Untersuchungen
+                        </p>
+                    </div>
                 </div>
             </div>
-
-            <div class="faq-item" style="background: white; margin-bottom: 1rem; border-radius: 1rem; overflow: hidden; border: 1px solid var(--gray-200);">
-                <div class="faq-question" style="padding: 1.5rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin: 0; font-size: 1.125rem;">Kann ich meinen Lernfortschritt verfolgen?</h3>
-                    <span style="font-size: 1.5rem; color: var(--primary-600);">+</span>
-                </div>
-                <div class="faq-answer" style="padding: 0 1.5rem; max-height: 0; overflow: hidden; transition: all 0.3s;">
-                    <p style="padding-bottom: 1.5rem;">Absolut! Nach der Registrierung haben Sie Zugang zu einem personalisierten Dashboard, das Ihren kompletten Lernfortschritt, Statistiken und Empfehlungen anzeigt.</p>
+            <div>
+                <div style="background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-xl); padding: var(--space-8); box-shadow: var(--shadow-lg);">
+                    <div style="text-align: center;">
+                        <div style="font-size: 4rem; margin-bottom: var(--space-4);">🧠</div>
+                        <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: var(--space-3);">
+                            Jederzeit verfügbar
+                        </h3>
+                        <p style="color: var(--gray-600); margin-bottom: var(--space-6);">
+                            Lerne wann und wo du möchtest - auf allen Geräten
+                        </p>
+                        <a href="/register.html" class="btn btn-primary btn-lg" style="width: 100%;">
+                            Jetzt registrieren
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -222,237 +151,54 @@
 </section>
 
 <!-- CTA Section -->
-<section class="section" style="background: linear-gradient(135deg, var(--primary-600), var(--secondary)); color: white; text-align: center;">
+<section class="section" style="background: white;">
     <div class="container">
-        <h2 style="color: white; margin-bottom: 1rem;">Bereit für die Radiologie-Revolution?</h2>
-        <p style="font-size: 1.25rem; margin-bottom: 2rem; color: rgba(255,255,255,0.9);">
-            Starten Sie noch heute und revolutionieren Sie Ihr medizinisches Lernen
-        </p>
-        <a href="#" id="ctaRegister" class="btn btn-lg" style="background: white; color: var(--primary-600);">
-            ✨ Kostenlos registrieren
-        </a>
+        <div style="background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%); border-radius: var(--radius-xl); padding: var(--space-16); text-align: center; color: white;">
+            <h2 style="font-size: clamp(2rem, 4vw, 2.5rem); font-weight: 700; margin-bottom: var(--space-4); color: white;">
+                Bereit, mit dem Lernen zu beginnen?
+            </h2>
+            <p style="font-size: 1.125rem; margin-bottom: var(--space-8); color: rgba(255,255,255,0.9); max-width: 600px; margin-left: auto; margin-right: auto;">
+                Erstelle jetzt dein kostenloses Konto und erhalte Zugriff auf alle Lernmaterialien
+            </p>
+            <div style="display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap;">
+                <a href="/register.html" class="btn btn-lg" style="background: white; color: var(--primary);">
+                    Kostenlos registrieren
+                </a>
+                <a href="/login.html" class="btn btn-lg btn-outline" style="border-color: white; color: white;">
+                    Bereits registriert? Anmelden
+                </a>
+            </div>
+        </div>
     </div>
 </section>
 
 <!-- Footer -->
-<footer class="footer">
+<footer style="background: var(--gray-900); color: white; padding: var(--space-12) 0;">
     <div class="container">
-        <div class="footer-grid">
-            <div class="footer-col">
-                <h4>RadBrain</h4>
-                <p>Die revolutionäre Plattform für radiologisches Lernen</p>
+        <div style="text-align: center;">
+            <div style="margin-bottom: var(--space-4);">
+                <img src="logo.png" alt="RadBrain" style="height: 40px; filter: brightness(0) invert(1);">
             </div>
-            <div class="footer-col">
-                <h4>Lernbereiche</h4>
-                <ul>
-                    <li><a href="roentgen.html">Röntgen</a></li>
-                    <li><a href="ct.html">CT</a></li>
-                    <li><a href="mrt.html">MRT</a></li>
-                    <li><a href="ultraschall.html">Ultraschall</a></li>
-                </ul>
+            <p style="color: var(--gray-400); margin-bottom: var(--space-6);">
+                Die moderne Lernplattform für Radiologie
+            </p>
+            <div style="display: flex; gap: var(--space-8); justify-content: center; flex-wrap: wrap; margin-bottom: var(--space-6);">
+                <a href="/login.html" style="color: var(--gray-400); text-decoration: none;">Anmelden</a>
+                <a href="/register.html" style="color: var(--gray-400); text-decoration: none;">Registrieren</a>
             </div>
-            <div class="footer-col">
-                <h4>Über uns</h4>
-                <ul>
-                    <li><a href="#faq">FAQ</a></li>
-                    <li><a href="#kontakt">Kontakt</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Rechtliches</h4>
-                <ul>
-                    <li><a href="#impressum">Impressum</a></li>
-                    <li><a href="dsgvo/datenschutz.html">Datenschutz</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <div id="impressum" style="margin-bottom: 2rem; padding-top: 2rem; border-top: 1px solid var(--gray-800);">
-                <h3 style="color: white; margin-bottom: 1rem;">Impressum</h3>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
-                    <div>
-                        <p><strong style="color: white;">Team Dynamik</strong></p>
-                        <p>HTL Spengergasse<br>1050 Wien<br>Österreich</p>
-                    </div>
-                    <div>
-                        <p><strong style="color: white;">Kontakt</strong></p>
-                        <p>E-Mail: info@radbrain.de</p>
-                    </div>
-                </div>
-            </div>
-            <p style="margin: 0;">© 2025 RadBrain. Alle Rechte vorbehalten.</p>
+            <p style="color: var(--gray-500); font-size: 0.875rem;">
+                © 2025 RadBrain. Alle Rechte vorbehalten.
+            </p>
         </div>
     </div>
 </footer>
 
 <script src="auth.js"></script>
 <script>
-    (function() {
-        'use strict';
-
-        // Create hero particles
-        function createParticles() {
-            const container = document.getElementById('heroParticles');
-            if (!container) return;
-
-            for (let i = 0; i < 20; i++) {
-                const particle = document.createElement('div');
-                particle.style.cssText = `
-                position: absolute;
-                width: 4px;
-                height: 4px;
-                background: rgba(255,255,255,0.6);
-                border-radius: 50%;
-                left: ${Math.random() * 100}%;
-                animation: float ${15 + Math.random() * 10}s linear infinite;
-                animation-delay: ${Math.random() * 20}s;
-            `;
-                container.appendChild(particle);
-            }
-
-            const style = document.createElement('style');
-            style.textContent = `
-            @keyframes float {
-                0% { transform: translateY(100vh) translateX(0); opacity: 0; }
-                10% { opacity: 1; }
-                90% { opacity: 1; }
-                100% { transform: translateY(-100px) translateX(${Math.random() * 200 - 100}px); opacity: 0; }
-            }
-        `;
-            document.head.appendChild(style);
-        }
-
-        // Load quizzes
-        async function loadQuizzes() {
-            const container = document.getElementById('quizContainer');
-            try {
-                const response = await fetch('/api/quizzes/published');
-                if (response.ok) {
-                    const quizzes = await response.json();
-                    displayQuizzes(quizzes);
-                } else {
-                    container.innerHTML = '<div class="card"><p style="text-align: center;">Keine Quizzes verfügbar.</p></div>';
-                }
-            } catch (error) {
-                console.error('Error loading quizzes:', error);
-                container.innerHTML = '<div class="card"><p style="text-align: center;">Quizzes werden bald verfügbar sein!</p></div>';
-            }
-        }
-
-        function displayQuizzes(quizzes) {
-            const container = document.getElementById('quizContainer');
-
-            if (!quizzes || quizzes.length === 0) {
-                container.innerHTML = '<div class="card"><p style="text-align: center;">Noch keine Quizzes verfügbar.</p></div>';
-                return;
-            }
-
-            container.innerHTML = quizzes.slice(0, 6).map(quiz => `
-            <div class="card">
-                <div style="text-align: center; margin-bottom: 1.5rem;">
-                    <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary-600), var(--secondary)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">🎯</div>
-                    <h3 style="margin-bottom: 0.5rem;">${quiz.title}</h3>
-                    <span style="display: inline-block; padding: 0.25rem 0.75rem; background: var(--primary-50); color: var(--primary-600); border-radius: 1rem; font-size: 0.875rem; font-weight: 600;">
-                        ${quiz.questions?.length || 0} Fragen
-                    </span>
-                </div>
-                <p style="text-align: center; margin-bottom: 1.5rem; color: var(--gray-600);">
-                    ${quiz.description || 'Testen Sie Ihr Wissen in diesem Quiz.'}
-                </p>
-                <a href="quiz.html?id=${quiz.id}" class="btn btn-primary" style="width: 100%; justify-content: center;">
-                    Quiz starten
-                </a>
-            </div>
-        `).join('');
-        }
-
-        // Setup FAQ accordion
-        function setupFAQ() {
-            document.querySelectorAll('.faq-question').forEach(question => {
-                question.addEventListener('click', function() {
-                    const item = this.parentElement;
-                    const answer = item.querySelector('.faq-answer');
-                    const icon = this.querySelector('span');
-                    const isOpen = answer.style.maxHeight && answer.style.maxHeight !== '0px';
-
-                    // Close all
-                    document.querySelectorAll('.faq-answer').forEach(a => a.style.maxHeight = '0');
-                    document.querySelectorAll('.faq-question span').forEach(i => i.textContent = '+');
-
-                    // Open this one if it was closed
-                    if (!isOpen) {
-                        answer.style.maxHeight = answer.scrollHeight + 'px';
-                        icon.textContent = '−';
-                    }
-                });
-            });
-        }
-
-        // Initialize navigation
-        function initNavigation() {
-            console.log('🔍 Checking auth status...');
-
-            // Check if auth.js is loaded
-            if (!window.auth) {
-                console.log('⚠️ auth.js not loaded yet');
-                return;
-            }
-
-            const isLoggedIn = window.auth.isLoggedIn();
-            console.log('🔐 User logged in:', isLoggedIn);
-
-            if (isLoggedIn) {
-                console.log('✅ User is logged in, redirecting to dashboard...');
-                // Use dashboard.html instead of user-home.html
-                window.location.href = '/dashboard.html';
-            } else {
-                console.log('👤 User not logged in, staying on landing page');
-            }
-        }
-
-        // CTA handlers
-        function setupCTAs() {
-            const ctas = ['heroCTAStart', 'ctaRegister'];
-            ctas.forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        window.location.href = 'register.html';
-                    });
-                }
-            });
-        }
-
-        // Smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                const href = this.getAttribute('href');
-                if (href === '#') return;
-
-                e.preventDefault();
-                const target = document.querySelector(href);
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        });
-
-        // Initialize everything
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Page loaded');
-            createParticles();
-            loadQuizzes();
-            setupFAQ();
-            setupCTAs();
-
-            // Wait for auth.js to load before checking
-            setTimeout(() => {
-                initNavigation();
-            }, 100);
-        });
-    })();
+    // Redirect if already logged in
+    if (window.auth && window.auth.isLoggedIn()) {
+        window.location.href = '/user-home.html';
+    }
 </script>
 
 </body>

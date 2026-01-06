@@ -1,4 +1,4 @@
-package org.nikolic.programm. dtos;
+package org.nikolic.programm.dtos;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

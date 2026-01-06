@@ -1,7 +1,7 @@
 package org.nikolic.programm.repositories;
 
 import org.nikolic.programm.entities.PasswordResetCode;
-import org.nikolic. programm.entities.User;
+import org.nikolic.programm.entities.User;
 import org.springframework.data.jpa.repository. JpaRepository;
 import org. springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa. repository.Query;

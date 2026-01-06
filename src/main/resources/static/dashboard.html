@@ -2,944 +2,440 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard - RadBrain</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="auth.js"></script>
-
+    <title>Quizzes - RadBrain</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        .quiz-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+            color: white;
+            padding: var(--space-16) 0;
         }
 
-        :root {
-            --primary: #667eea;
-            --primary-dark: #5568d3;
-            --primary-light: #a084dc;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --text: #1f2937;
-            --text-light: #6b7280;
-            --bg: #f9fafb;
-            --border: #e5e7eb;
-            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-            --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-        }
-
-        /* Modern Navbar */
-        .navbar {
+        .filter-bar {
             background: white;
-            border-bottom: 1px solid var(--border);
-            padding: 0 32px;
-            height: 64px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: var(--space-4);
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .category-filters {
+            display: flex;
+            gap: var(--space-2);
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            padding: var(--space-2) var(--space-4);
+            background: white;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            color: var(--gray-700);
+            font-weight: 500;
+            font-size: 0.9375rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .category-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .category-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: var(--space-6);
+        }
+
+        .quiz-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            transition: all var(--transition-base);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .quiz-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .quiz-category {
+            display: inline-block;
+            padding: var(--space-1) var(--space-3);
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: var(--space-4);
+            width: fit-content;
+        }
+
+        .quiz-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--space-2);
+        }
+
+        .quiz-description {
+            color: var(--gray-600);
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            margin-bottom: var(--space-4);
+            flex: 1;
+        }
+
+        .quiz-meta {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            padding-top: var(--space-4);
+            border-top: 1px solid var(--gray-200);
         }
 
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--primary);
-            text-decoration: none;
+        .quiz-questions {
+            color: var(--gray-500);
+            font-size: 0.875rem;
         }
 
-        .navbar-menu {
-            display: flex;
-            align-items: center;
-            gap: 32px;
-            list-style: none;
-        }
-
-        .navbar-link {
-            color: var(--text);
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 15px;
-            transition: color 0.2s;
-            padding: 8px 0;
-            border-bottom: 2px solid transparent;
-        }
-
-        .navbar-link:hover,
-        .navbar-link.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
-
-        .navbar-actions {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .user-menu {
-            position: relative;
-        }
-
-        .user-button {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: none;
-            background: var(--bg);
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .user-button:hover {
-            background: #e5e7eb;
-        }
-
-        .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        .user-dropdown {
-            position: absolute;
-            top: calc(100% + 8px);
-            right: 0;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            min-width: 200px;
-            padding: 8px;
-            display: none;
-            border: 1px solid var(--border);
-        }
-
-        .user-dropdown.active {
-            display: block;
-        }
-
-        .user-dropdown a,
-        .user-dropdown button {
-            display: block;
-            width: 100%;
-            padding: 10px 12px;
-            text-align: left;
-            border: none;
-            background: none;
-            color: var(--text);
-            text-decoration: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-
-        .user-dropdown a:hover,
-        .user-dropdown button:hover {
-            background: var(--bg);
-        }
-
-        .user-dropdown .divider {
-            height: 1px;
-            background: var(--border);
-            margin: 8px 0;
-        }
-
-        /* Dashboard Container */
-        .dashboard {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 32px;
-        }
-
-        .dashboard-header {
-            margin-bottom: 32px;
-        }
-
-        .dashboard-title {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 8px;
-        }
-
-        .dashboard-subtitle {
-            color: var(--text-light);
-            font-size: 16px;
-        }
-
-        /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-6);
+            margin-bottom: var(--space-8);
         }
 
         .stat-card {
             background: white;
-            border-radius: 12px;
-            padding: 24px;
-            border: 1px solid var(--border);
-            box-shadow: var(--card-shadow);
-            transition: all 0.2s;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            text-align: center;
         }
 
-        .stat-card:hover {
-            box-shadow: var(--card-shadow-hover);
-            transform: translateY(-2px);
-        }
-
-        .stat-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: var(--space-2);
         }
 
         .stat-label {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-light);
-        }
-
-        .stat-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .stat-icon.purple { background: #ede9fe; }
-        .stat-icon.green { background: #d1fae5; }
-        .stat-icon.blue { background: #dbeafe; }
-        .stat-icon.orange { background: #fed7aa; }
-
-        .stat-value {
-            font-size: 36px;
-            font-weight: 700;
-            color: var(--text);
-            margin-bottom: 4px;
-        }
-
-        .stat-change {
-            font-size: 13px;
-            color: var(--success);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* Main Content Grid */
-        .content-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-        }
-
-        .content-main {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .content-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            border: 1px solid var(--border);
-            box-shadow: var(--card-shadow);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text);
-        }
-
-        .card-action {
-            font-size: 14px;
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        .card-action:hover {
-            color: var(--primary-dark);
-        }
-
-        /* Quiz List */
-        .quiz-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .quiz-item {
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            transition: all 0.2s;
-            cursor: pointer;
-            background: var(--bg);
-        }
-
-        .quiz-item:hover {
-            border-color: var(--primary);
-            background: white;
-            box-shadow: var(--card-shadow);
-        }
-
-        .quiz-item-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-
-        .quiz-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 16px;
-        }
-
-        .quiz-info {
-            flex: 1;
-        }
-
-        .quiz-title {
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 4px;
-        }
-
-        .quiz-meta {
-            font-size: 13px;
-            color: var(--text-light);
-        }
-
-        .quiz-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .quiz-badge.roentgen { background: #dbeafe; color: #1e40af; }
-        .quiz-badge.ct { background: #ede9fe; color: #6b21a8; }
-        .quiz-badge.mrt { background: #d1fae5; color: #065f46; }
-        .quiz-badge.ultraschall { background: #fed7aa; color: #92400e; }
-
-        /* Activity Timeline */
-        .activity-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .activity-item {
-            display: flex;
-            gap: 12px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .activity-item:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .activity-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .activity-content {
-            flex: 1;
-        }
-
-        .activity-title {
-            font-weight: 500;
-            color: var(--text);
-            margin-bottom: 4px;
-            font-size: 14px;
-        }
-
-        .activity-meta {
-            font-size: 13px;
-            color: var(--text-light);
-        }
-
-        .activity-score {
-            font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-
-        .activity-score.good { background: #d1fae5; color: #065f46; }
-        .activity-score.average { background: #fed7aa; color: #92400e; }
-        .activity-score.poor { background: #fee2e2; color: #991b1b; }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 48px 24px;
-        }
-
-        .empty-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        .empty-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text);
-            margin-bottom: 8px;
-        }
-
-        .empty-text {
-            color: var(--text-light);
-            margin-bottom: 24px;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 500;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: var(--bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: white;
-        }
-
-        /* Mobile Responsive */
-        @media (max-width: 1024px) {
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .navbar {
-                padding: 0 16px;
-            }
-
-            .navbar-menu {
-                display: none;
-            }
-
-            .dashboard {
-                padding: 16px;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .dashboard-title {
-                font-size: 24px;
-            }
+            color: var(--gray-600);
+            font-size: 0.9375rem;
         }
     </style>
 </head>
 <body>
-<!-- Navbar -->
+
+<!-- Navigation -->
 <nav class="navbar">
-    <a href="index.html" class="navbar-brand">
-        <img src="logo.png" alt="RadBrain" style="height: 28px;">
-    </a>
-
-    <ul class="navbar-menu">
-        <li><a href="dashboard.html" class="navbar-link active">Dashboard</a></li>
-        <li><a href="quizzes.html" class="navbar-link">Quiz</a></li>
-        <li><a href="user-home.html" class="navbar-link">Home</a></li>
-    </ul>
-
-    <div class="navbar-actions">
-        <div class="user-menu">
-            <button class="user-button" onclick="toggleUserMenu()">
-                <div class="user-avatar" id="userAvatar">U</div>
-                <span id="userName">Laden...</span>
-            </button>
-            <div class="user-dropdown" id="userDropdown">
-                <a href="account.html">Mein Account</a>
-                <a href="dashboard.html">Dashboard</a>
-                <div class="divider"></div>
-                <button onclick="logout()">Abmelden</button>
-            </div>
+    <div class="navbar-content">
+        <div class="nav-left">
+            <img src="logo.png" alt="RadBrain" class="nav-logo">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/user-home.html" class="nav-link">Übersicht</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link">Lernbereiche</a>
+                    <ul class="dropdown-menu" id="learningAreasMenu">
+                        <!-- Dynamisch geladen -->
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="/quizzes.html" class="nav-link active">Quizzes</a>
+                </li>
+            </ul>
+        </div>
+        <div class="nav-right" id="navRight">
+            <a href="/login.html" class="btn-login">Anmelden</a>
         </div>
     </div>
 </nav>
 
-<!-- Dashboard Content -->
-<div class="dashboard">
-    <div class="dashboard-header">
-        <h1 class="dashboard-title" id="greetingTitle">Willkommen zurück!</h1>
-        <p class="dashboard-subtitle">Hier ist deine Lernübersicht</p>
+<!-- Header -->
+<header class="quiz-header">
+    <div class="container">
+        <div style="max-width: 720px;">
+            <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-3); color: white;">
+                Quizzes
+            </h1>
+            <p style="font-size: 1.125rem; color: rgba(255,255,255,0.9);">
+                Teste dein Wissen mit praxisnahen Fragen und erhalte direktes Feedback
+            </p>
+        </div>
     </div>
+</header>
 
-    <!-- Stats Grid -->
-    <div class="stats-grid">
+<!-- Main Content -->
+<div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
+    <!-- Statistics -->
+    <div class="stats-grid" id="statsGrid">
         <div class="stat-card">
-            <div class="stat-header">
-                <span class="stat-label">Abgeschlossene Quizzes</span>
-                <div class="stat-icon purple">📊</div>
-            </div>
-            <div class="stat-value" id="totalCompleted">0</div>
-            <div class="stat-change">Insgesamt absolviert</div>
+            <div class="stat-value" id="totalQuizzes">0</div>
+            <div class="stat-label">Verfügbare Quizzes</div>
         </div>
-
         <div class="stat-card">
-            <div class="stat-header">
-                <span class="stat-label">Durchschnittsscore</span>
-                <div class="stat-icon green">🎯</div>
-            </div>
-            <div class="stat-value" id="avgScore">0%</div>
-            <div class="stat-change">Über alle Quizzes</div>
+            <div class="stat-value" id="totalQuestions">0</div>
+            <div class="stat-label">Fragen insgesamt</div>
         </div>
-
         <div class="stat-card">
-            <div class="stat-header">
-                <span class="stat-label">Bester Score</span>
-                <div class="stat-icon blue">⭐</div>
-            </div>
-            <div class="stat-value" id="bestScore">0%</div>
-            <div class="stat-change">Persönliche Bestleistung</div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-header">
-                <span class="stat-label">Diese Woche</span>
-                <div class="stat-icon orange">📅</div>
-            </div>
-            <div class="stat-value" id="weeklyCompleted">0</div>
-            <div class="stat-change">In den letzten 7 Tagen</div>
+            <div class="stat-value" id="avgQuestions">0</div>
+            <div class="stat-label">Ø Fragen pro Quiz</div>
         </div>
     </div>
 
-    <!-- Main Content Grid -->
-    <div class="content-grid">
-        <!-- Main Content -->
-        <div class="content-main">
-            <!-- Available Quizzes -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Verfügbare Quizzes</h2>
-                    <a href="quizzes.html" class="card-action">Alle anzeigen →</a>
-                </div>
-                <div class="quiz-list" id="availableQuizzes">
-                    <div class="empty-state">
-                        <div class="empty-icon">📚</div>
-                        <div class="empty-title">Quizzes werden geladen...</div>
-                    </div>
-                </div>
-            </div>
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <input
+                    type="text"
+                    id="searchInput"
+                    class="form-input search-input"
+                    placeholder="Quiz suchen..."
+                    onkeyup="filterQuizzes()">
 
-            <!-- Recent Activity -->
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Letzte Aktivitäten</h2>
-                </div>
-                <div class="activity-list" id="recentActivity">
-                    <div class="empty-state">
-                        <div class="empty-icon">📝</div>
-                        <div class="empty-title">Aktivitäten werden geladen...</div>
-                    </div>
-                </div>
+            <div class="category-filters">
+                <button class="category-btn active" onclick="filterCategory(event, 'ALL')">
+                    Alle
+                </button>
+                <button class="category-btn" onclick="filterCategory(event, 'ROENTGEN')">
+                    Röntgen
+                </button>
+                <button class="category-btn" onclick="filterCategory(event, 'CT')">
+                    CT
+                </button>
+                <button class="category-btn" onclick="filterCategory(event, 'MRT')">
+                    MRT
+                </button>
+                <button class="category-btn" onclick="filterCategory(event, 'ULTRASCHALL')">
+                    Ultraschall
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- Sidebar -->
-        <div class="content-sidebar">
-            <!-- Quick Actions -->
-            <div class="card">
-                <h3 class="card-title" style="margin-bottom: 16px;">Schnellzugriff</h3>
-                <div style="display: flex; flex-direction: column; gap: 12px;">
-                    <a href="quizzes.html" class="btn btn-primary" style="justify-content: center;">
-                        Alle Quizzes durchsuchen
-                    </a>
-                    <a href="user-home.html" class="btn btn-secondary" style="justify-content: center;">
-                        Lernbereiche entdecken
-                    </a>
-                    <!-- Admin Panel Link (only shown for admins) -->
-                    <a href="admin-dashboard.html" class="btn btn-admin" id="adminPanelLink" style="justify-content: center; display: none; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none;">
-                        ⚡ Admin Control Panel
-                    </a>
-                </div>
-            </div>
-
-            <!-- Category Stats -->
-            <div class="card" id="categoryStats">
-                <h3 class="card-title" style="margin-bottom: 16px;">Nach Kategorie</h3>
-                <div style="display: flex; flex-direction: column; gap: 12px;" id="categoryList">
-                    <p style="text-align: center; color: var(--text-light); padding: 20px 0;">Laden...</p>
-                </div>
-            </div>
+    <!-- Quiz Grid -->
+    <div id="quizContainer">
+        <div style="text-align: center; padding: var(--space-12);">
+            <div class="loading" style="width: 40px; height: 40px; margin: 0 auto var(--space-4);"></div>
+            <p style="color: var(--gray-600);">Lade Quizzes...</p>
         </div>
     </div>
 </div>
 
+<script src="auth.js"></script>
 <script>
-    // Auth check
+    const API_BASE = 'http://localhost:8080/api';
+    let allQuizzes = [];
+    let currentCategory = 'ALL';
+
+    // Check authentication
     if (!window.auth || !window.auth.isLoggedIn()) {
-        window.location.href = 'login.html';
-    }
+        window.location.href = '/login.html';
+    } else {
+        const user = window.auth.getUser();
+        const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
 
-    // Global state
-    let currentUser = null;
+        let navHtml = `
+            <div class="nav-profile-dropdown">
+                <button class="nav-profile-btn">
+                    <span>${name}</span>
+                    <span style="font-size: 0.75rem;">▾</span>
+                </button>
+                <div class="nav-profile-menu">
+                    <a href="/account.html">Mein Account</a>
+                    <a href="/dashboard.html">Dashboard</a>`;
 
-    // Initialize
-    (async function init() {
-        try {
-            // Fetch fresh user data from API
-            const userRes = await window.auth.authFetch('/api/users/me');
-            if (userRes.ok) {
-                currentUser = await userRes.json();
-            } else {
-                // Fallback to localStorage
-                currentUser = window.auth.getUser();
-            }
-
-            updateUserInfo();
-            await Promise.all([
-                loadStats(),
-                loadAvailableQuizzes(),
-                loadRecentActivity(),
-                loadCategoryStats()
-            ]);
-        } catch (error) {
-            console.error('Init error:', error);
-            // Fallback to localStorage on error
-            currentUser = window.auth.getUser();
-            updateUserInfo();
-        }
-    })();
-
-    function updateUserInfo() {
-        const firstName = getFirstName(currentUser.fullname || currentUser.email);
-        const greeting = getTimeOfDayGreeting();
-
-        document.getElementById('greetingTitle').textContent = `${greeting}, ${firstName}!`;
-        document.getElementById('userName').textContent = firstName;
-        document.getElementById('userAvatar').textContent = firstName.charAt(0).toUpperCase();
-
-        // Show admin panel link if user is admin
         if (window.auth.hasRole('ADMIN')) {
-            document.getElementById('adminPanelLink').style.display = 'flex';
+            navHtml += `<div class="divider"></div><a href="/admin-dashboard.html">Admin-Bereich</a>`;
         }
+
+        navHtml += `
+                    <div class="divider"></div>
+                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('navRight').innerHTML = navHtml;
     }
 
-    async function loadStats() {
+    // Load quizzes
+    async function loadQuizzes() {
         try {
-            const res = await window.auth.authFetch('/api/attempts/my-stats');
-            if (res.ok) {
-                const stats = await res.json();
-                updateStats(stats);
-            } else {
-                setDefaultStats();
-            }
-        } catch (error) {
-            console.error('Error loading stats:', error);
-            setDefaultStats();
-        }
-    }
+            const response = await window.auth.authFetch(`${API_BASE}/quizzes/published`);
+            if (!response.ok) throw new Error('Failed to load quizzes');
 
-    function updateStats(stats) {
-        animateValue('totalCompleted', stats.totalCompleted || 0);
-        animateValue('avgScore', Math.round(stats.averageScore || 0), '%');
-        animateValue('bestScore', Math.round(stats.bestScore || 0), '%');
-        animateValue('weeklyCompleted', stats.weeklyCompleted || 0);
-    }
-
-    function setDefaultStats() {
-        document.getElementById('totalCompleted').textContent = '0';
-        document.getElementById('avgScore').textContent = '0%';
-        document.getElementById('bestScore').textContent = '0%';
-        document.getElementById('weeklyCompleted').textContent = '0';
-    }
-
-    function animateValue(id, target, suffix = '') {
-        const element = document.getElementById(id);
-        let current = 0;
-        const increment = target / 30;
-        const timer = setInterval(() => {
-            current += increment;
-            if (current >= target) {
-                current = target;
-                clearInterval(timer);
-            }
-            element.textContent = Math.floor(current) + suffix;
-        }, 20);
-    }
-
-    async function loadAvailableQuizzes() {
-        try {
-            const res = await fetch('/api/quizzes/published');
-            if (res.ok) {
-                const quizzes = await res.json();
-                displayQuizzes(quizzes);
-            } else {
-                showEmptyQuizzes();
-            }
+            allQuizzes = await response.json();
+            updateStats();
+            displayQuizzes(allQuizzes);
         } catch (error) {
             console.error('Error loading quizzes:', error);
-            showEmptyQuizzes();
+            document.getElementById('quizContainer').innerHTML = `
+                <div style="text-align: center; padding: var(--space-12);">
+                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">
+                        Quizzes konnten nicht geladen werden.
+                    </p>
+                    <button class="btn btn-primary" onclick="loadQuizzes()">
+                        Erneut versuchen
+                    </button>
+                </div>
+            `;
         }
+    }
+
+    function updateStats() {
+        const totalQuestions = allQuizzes.reduce((sum, quiz) => sum + (quiz.questionCount || 0), 0);
+        const avgQuestions = allQuizzes.length > 0 ? Math.round(totalQuestions / allQuizzes.length) : 0;
+
+        document.getElementById('totalQuizzes').textContent = allQuizzes.length;
+        document.getElementById('totalQuestions').textContent = totalQuestions;
+        document.getElementById('avgQuestions').textContent = avgQuestions;
     }
 
     function displayQuizzes(quizzes) {
-        const container = document.getElementById('availableQuizzes');
+        const container = document.getElementById('quizContainer');
 
-        if (!quizzes || quizzes.length === 0) {
-            showEmptyQuizzes();
-            return;
-        }
-
-        container.innerHTML = quizzes.slice(0, 6).map(quiz => `
-                <div class="quiz-item" onclick="startQuiz(${quiz.id})">
-                    <div class="quiz-item-header">
-                        <div class="quiz-icon">${quiz.title.charAt(0)}</div>
-                        <div class="quiz-info">
-                            <div class="quiz-title">${quiz.title}</div>
-                            <div class="quiz-meta">${quiz.questionCount || 0} Fragen</div>
-                        </div>
-                        <span class="quiz-badge ${(quiz.category || '').toLowerCase()}">${quiz.category || 'Allgemein'}</span>
-                    </div>
-                </div>
-            `).join('');
-    }
-
-    function showEmptyQuizzes() {
-        document.getElementById('availableQuizzes').innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">📚</div>
-                    <div class="empty-title">Keine Quizzes verfügbar</div>
-                    <div class="empty-text">Schau bald wieder vorbei!</div>
+        if (quizzes.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: var(--space-12);">
+                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">
+                        Keine Quizzes gefunden.
+                    </p>
+                    <p style="color: var(--gray-500); font-size: 0.9375rem;">
+                        Versuche einen anderen Filter oder Suchbegriff.
+                    </p>
                 </div>
             `;
-    }
-
-    async function loadRecentActivity() {
-        try {
-            const res = await window.auth.authFetch('/api/attempts/my-recent');
-            if (res.ok) {
-                const activities = await res.json();
-                displayActivities(activities);
-            } else {
-                showEmptyActivity();
-            }
-        } catch (error) {
-            console.error('Error loading activity:', error);
-            showEmptyActivity();
-        }
-    }
-
-    function displayActivities(activities) {
-        const container = document.getElementById('recentActivity');
-
-        if (!activities || activities.length === 0) {
-            showEmptyActivity();
             return;
         }
 
-        container.innerHTML = activities.slice(0, 5).map(activity => {
-            const score = Math.round(activity.scorePct || 0);
-            const scoreClass = score >= 80 ? 'good' : score >= 60 ? 'average' : 'poor';
-            const timeAgo = getTimeAgo(new Date(activity.completedAt || activity.startedAt));
-
-            return `
-                    <div class="activity-item">
-                        <div class="activity-icon">${activity.completed ? '✓' : '⏱'}</div>
-                        <div class="activity-content">
-                            <div class="activity-title">${activity.quiz?.title || 'Quiz'}</div>
-                            <div class="activity-meta">
-                                ${activity.completed ? `<span class="activity-score ${scoreClass}">${score}%</span> · ` : ''}
-                                ${timeAgo}
-                            </div>
+        container.innerHTML = `
+            <div class="quiz-grid">
+                ${quizzes.map(quiz => `
+                    <div class="quiz-card" onclick="startQuiz(${quiz.id})">
+                        <div class="quiz-category">${getCategoryLabel(quiz.category || 'ROENTGEN')}</div>
+                        <div class="quiz-title">${escapeHtml(quiz.title)}</div>
+                        <div class="quiz-description">${escapeHtml(quiz.description || 'Teste dein Wissen!')}</div>
+                        <div class="quiz-meta">
+                            <span class="quiz-questions">${quiz.questionCount || 0} Fragen</span>
+                            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); startQuiz(${quiz.id})">
+                                Starten →
+                            </button>
                         </div>
                     </div>
-                `;
-        }).join('');
+                `).join('')}
+            </div>
+        `;
     }
 
-    function showEmptyActivity() {
-        document.getElementById('recentActivity').innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">📝</div>
-                    <div class="empty-title">Noch keine Aktivitäten</div>
-                    <div class="empty-text">Starte dein erstes Quiz!</div>
-                    <a href="quizzes.html" class="btn btn-primary">Quiz starten</a>
-                </div>
-            `;
+    function filterCategory(event, category) {
+        currentCategory = category;
+
+        // Update button states
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+
+        filterQuizzes();
     }
 
-    async function loadCategoryStats() {
-        try {
-            const res = await window.auth.authFetch('/api/attempts/by-category');
-            if (res.ok) {
-                const stats = await res.json();
-                displayCategoryStats(stats);
-            } else {
-                showDefaultCategories();
-            }
-        } catch (error) {
-            console.error('Error loading category stats:', error);
-            showDefaultCategories();
-        }
-    }
+    function filterQuizzes() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
 
-    function displayCategoryStats(stats) {
-        const container = document.getElementById('categoryList');
+        let filtered = allQuizzes;
 
-        if (!stats || Object.keys(stats).length === 0) {
-            showDefaultCategories();
-            return;
+        // Filter by category
+        if (currentCategory !== 'ALL') {
+            filtered = filtered.filter(quiz => quiz.category === currentCategory);
         }
 
-        container.innerHTML = Object.entries(stats).map(([category, data]) => `
-                <div style="padding: 12px; background: var(--bg); border-radius: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                        <span style="font-weight: 500; font-size: 14px;">${category}</span>
-                        <span style="font-size: 13px; color: var(--text-light);">${data.completed || 0} Quiz${(data.completed || 0) !== 1 ? 'zes' : ''}</span>
-                    </div>
-                    <div style="font-size: 13px; color: var(--success);">⌀ ${Math.round(data.avgScore || 0)}%</div>
-                </div>
-            `).join('');
-    }
+        // Filter by search term
+        if (searchTerm) {
+            filtered = filtered.filter(quiz =>
+                quiz.title.toLowerCase().includes(searchTerm) ||
+                (quiz.description && quiz.description.toLowerCase().includes(searchTerm))
+            );
+        }
 
-    function showDefaultCategories() {
-        document.getElementById('categoryList').innerHTML = `
-                <p style="text-align: center; color: var(--text-light); padding: 20px 0;">
-                    Absolviere Quizzes um deine Statistiken zu sehen
-                </p>
-            `;
-    }
-
-    // Helper functions
-    function getTimeOfDayGreeting() {
-        const hour = new Date().getHours();
-        if (hour < 12) return 'Guten Morgen';
-        if (hour < 18) return 'Guten Tag';
-        return 'Guten Abend';
-    }
-
-    function getFirstName(nameOrEmail) {
-        if (!nameOrEmail) return 'User';
-        if (nameOrEmail.includes('@')) return nameOrEmail.split('@')[0];
-        return nameOrEmail.split(' ')[0];
-    }
-
-    function getTimeAgo(date) {
-        const now = new Date();
-        const diff = now - date;
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(diff / 3600000);
-        const days = Math.floor(diff / 86400000);
-
-        if (days > 0) return `vor ${days} Tag${days > 1 ? 'en' : ''}`;
-        if (hours > 0) return `vor ${hours} Stunde${hours > 1 ? 'n' : ''}`;
-        if (minutes > 0) return `vor ${minutes} Minute${minutes > 1 ? 'n' : ''}`;
-        return 'gerade eben';
-    }
-
-    function toggleUserMenu() {
-        document.getElementById('userDropdown').classList.toggle('active');
+        displayQuizzes(filtered);
     }
 
     function startQuiz(id) {
-        window.location.href = `quiz.html?id=${id}`;
+        window.location.href = `/quiz.html?id=${id}`;
     }
 
-    function logout() {
-        window.auth.logout();
-        window.location.href = 'login.html';
+    function getCategoryLabel(category) {
+        const labels = {
+            'ROENTGEN': 'Röntgen',
+            'CT': 'CT',
+            'MRT': 'MRT',
+            'ULTRASCHALL': 'Ultraschall'
+        };
+        return labels[category] || category;
     }
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.user-menu')) {
-            document.getElementById('userDropdown').classList.remove('active');
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Load navigation areas
+    async function loadNavigationAreas() {
+        try {
+            const response = await fetch(`${API_BASE}/learning-areas`);
+            if (!response.ok) return;
+
+            const areas = await response.json();
+            const menu = document.getElementById('learningAreasMenu');
+            menu.innerHTML = areas
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .map(area => `
+                    <li><a href="/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>
+                `)
+                .join('');
+        } catch (error) {
+            console.error('Error loading navigation areas:', error);
         }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+        loadQuizzes();
+        loadNavigationAreas();
     });
 </script>
+
 </body>
 </html>

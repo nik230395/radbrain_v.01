@@ -3,360 +3,599 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Content-Verwaltung - RadBrain Admin</title>
+    <title>Inhalte verwalten - RadBrain Admin</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="learning-areas.css">
     <style>
-        .admin-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 2rem;
+        .content-item {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-5);
+            margin-bottom: var(--space-4);
+            transition: all var(--transition-base);
         }
 
-        .breadcrumb {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-            margin-bottom: 2rem;
-            color: #6b7280;
-            flex-wrap: wrap;
+        .content-item:hover {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-md);
         }
 
-        .breadcrumb a {
-            color: #3b82f6;
-            text-decoration: none;
-        }
-
-        .page-header {
+        .content-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .content-list {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        .content-item {
-            padding: 1rem;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .content-item:last-child {
-            border-bottom: none;
-        }
-
-        .drag-handle {
-            cursor: move;
-            color: #9ca3af;
+            margin-bottom: var(--space-3);
         }
 
         .content-type-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
+            display: inline-block;
+            padding: var(--space-1) var(--space-3);
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border-radius: var(--radius-md);
             font-size: 0.75rem;
-            font-weight: 500;
-            white-space: nowrap;
+            font-weight: 600;
+            text-transform: uppercase;
         }
-
-        .type-TEXT { background: #dbeafe; color: #1e40af; }
-        .type-HEADING { background: #fce7f3; color: #9f1239; }
-        .type-IMAGE { background: #fef3c7; color: #92400e; }
-        .type-LIST { background: #d1fae5; color: #065f46; }
-        .type-CALLOUT { background: #e0e7ff; color: #3730a3; }
-        .type-CODE { background: #f3f4f6; color: #1f2937; }
 
         .content-preview {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .content-title {
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 0.25rem;
-        }
-
-        .content-data {
-            color: #6b7280;
-            font-size: 0.875rem;
+            color: var(--gray-600);
+            font-size: 0.9375rem;
+            margin-bottom: var(--space-3);
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
         }
 
         .content-actions {
             display: flex;
-            gap: 0.5rem;
+            gap: var(--space-2);
         }
 
-        .btn-edit, .btn-delete {
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
+        .content-form-group {
+            margin-bottom: var(--space-4);
         }
 
-        .btn-edit {
-            background: #3b82f6;
-            color: white;
+        .type-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
         }
 
-        .btn-delete {
-            background: #ef4444;
-            color: white;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            max-width: 800px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #1f2937;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #6b7280;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #374151;
-        }
-
-        .form-input, .form-textarea, .form-select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 1rem;
-        }
-
-        .form-textarea {
-            min-height: 150px;
-            resize: vertical;
-            font-family: monospace;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 2rem;
-        }
-
-        .btn-cancel {
-            padding: 0.75rem 1.5rem;
-            background: #e5e7eb;
-            color: #374151;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .btn-submit {
-            padding: 0.75rem 1.5rem;
-            background: #3b82f6;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .empty-state {
+        .type-option {
+            padding: var(--space-4);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
             text-align: center;
-            padding: 4rem 2rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
         }
 
-        .helper-text {
+        .type-option:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .type-option.active {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+        }
+
+        .type-option-icon {
+            font-size: 1.5rem;
+            margin-bottom: var(--space-2);
+        }
+
+        .type-option-label {
             font-size: 0.875rem;
-            color: #6b7280;
-            margin-top: 0.25rem;
-        }
-
-        .content-type-info {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        .content-type-info h4 {
-            margin: 0 0 0.5rem 0;
-            color: #1f2937;
-        }
-
-        .content-type-info p {
-            margin: 0;
-            font-size: 0.875rem;
-            color: #6b7280;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
+
+<!-- Navigation -->
 <nav class="navbar">
     <div class="navbar-content">
         <div class="nav-left">
-            <img src="logo.png" alt="RadBrain Logo" class="nav-logo">
+            <img src="logo.png" alt="RadBrain" class="nav-logo">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/admin-dashboard.html" class="nav-link">Admin</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/admin-learning-areas.html" class="nav-link">Lernbereiche</a>
+                </li>
+            </ul>
         </div>
-        <ul class="nav-menu">
-            <li class="nav-item"><a href="/admin-dashboard.html" class="nav-link">Dashboard</a></li>
-            <li class="nav-item"><a href="/admin-learning-areas.html" class="nav-link active">Lernbereiche</a></li>
-            <li class="nav-item"><a href="/quiz-creator.html" class="nav-link">Quiz</a></li>
-        </ul>
-        <div class="nav-profile-dropdown">
-            <button class="nav-profile-btn" id="profileBtn">
-                <span id="userName">Admin</span>
-                <span style="font-size: 0.8rem;">▾</span>
-            </button>
-            <div class="nav-profile-menu" id="profileMenu">
-                <a href="/account.html">Mein Account</a>
-                <div class="divider"></div>
-                <button id="logoutBtn" style="color: #dc2626;">Abmelden</button>
-            </div>
-        </div>
+        <div class="nav-right" id="navRight"></div>
     </div>
 </nav>
 
-<div class="admin-container">
-    <div class="breadcrumb">
-        <a href="/admin-learning-areas.html">Lernbereiche</a>
-        <span>›</span>
-        <a href="#" id="backToModules">Module</a>
-        <span>›</span>
-        <span id="moduleTitle">Modul</span>
+<!-- Main Content -->
+<div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
+    <!-- Breadcrumb -->
+    <div style="margin-bottom: var(--space-6);">
+        <a href="/admin-learning-areas.html" style="color: var(--gray-600); text-decoration: none; display: inline-flex; align-items: center; gap: var(--space-2);">
+            ← Zurück zu Lernbereichen
+        </a>
     </div>
 
-    <div class="page-header">
-        <h1>Inhalte verwalten</h1>
-        <button class="btn-primary" onclick="openCreateContentModal()">+ Neuer Inhalt</button>
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-12);">
+        <div>
+            <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-2);">
+                Inhalte verwalten
+            </h1>
+            <p style="color: var(--gray-600); font-size: 1.125rem;" id="moduleName">
+                Modul
+            </p>
+        </div>
+        <button onclick="openContentModal()" class="btn btn-primary">
+            + Neuer Inhalt
+        </button>
     </div>
 
-    <div class="content-list" id="contentList">
-    </div>
-
-    <div id="emptyState" class="empty-state" style="display: none;">
-        <div style="font-size: 4rem; margin-bottom: 1rem;">📝</div>
-        <h2>Noch keine Inhalte vorhanden</h2>
-        <p style="color: #6b7280;">Erstelle den ersten Inhalt für dieses Modul.</p>
-        <button class="btn-primary" onclick="openCreateContentModal()">Ersten Inhalt erstellen</button>
+    <!-- Content List -->
+    <div id="contentList">
+        <div style="text-align: center; padding: var(--space-12);">
+            <div class="loading" style="width: 40px; height: 40px; margin: 0 auto;"></div>
+        </div>
     </div>
 </div>
 
 <!-- Content Modal -->
-<div id="contentModal" class="modal">
-    <div class="modal-content">
+<div class="modal-overlay" id="contentModal" style="display: none;">
+    <div class="modal" style="max-width: 800px;">
         <div class="modal-header">
-            <h2 class="modal-title" id="contentModalTitle">Neuer Inhalt</h2>
+            <h2 class="modal-title" id="modalTitle">Neuer Inhalt</h2>
             <button class="modal-close" onclick="closeContentModal()">&times;</button>
         </div>
         <form id="contentForm" onsubmit="saveContent(event)">
-            <input type="hidden" id="contentId">
+            <div class="modal-body">
+                <input type="hidden" id="contentId">
 
-            <div class="form-group">
-                <label class="form-label" for="contentType">Content-Typ *</label>
-                <select id="contentType" class="form-select" required onchange="updateContentTypeInfo()">
-                    <option value="TEXT">Text</option>
-                    <option value="HEADING">Überschrift</option>
-                    <option value="LIST">Liste</option>
-                    <option value="CALLOUT">Hinweisbox</option>
-                    <option value="QUOTE">Zitat</option>
-                    <option value="CODE">Code</option>
-                    <option value="IMAGE">Bild</option>
-                    <option value="TABLE">Tabelle</option>
-                </select>
-                <div id="contentTypeInfo" class="content-type-info"></div>
+                <!-- Content Type Selector -->
+                <div class="content-form-group">
+                    <label class="form-label">Inhaltstyp *</label>
+                    <div class="type-selector">
+                        <div class="type-option active" onclick="selectContentType('TEXT', event)">
+                            <div class="type-option-icon">📝</div>
+                            <div class="type-option-label">Text</div>
+                        </div>
+                        <div class="type-option" onclick="selectContentType('HEADING', event)">
+                            <div class="type-option-icon">📌</div>
+                            <div class="type-option-label">Überschrift</div>
+                        </div>
+                        <div class="type-option" onclick="selectContentType('LIST', event)">
+                            <div class="type-option-icon">📋</div>
+                            <div class="type-option-label">Liste</div>
+                        </div>
+                        <div class="type-option" onclick="selectContentType('IMAGE', event)">
+                            <div class="type-option-icon">🖼️</div>
+                            <div class="type-option-label">Bild</div>
+                        </div>
+                        <div class="type-option" onclick="selectContentType('VIDEO', event)">
+                            <div class="type-option-icon">🎥</div>
+                            <div class="type-option-label">Video</div>
+                        </div>
+                        <div class="type-option" onclick="selectContentType('CODE', event)">
+                            <div class="type-option-icon">💻</div>
+                            <div class="type-option-label">Code</div>
+                        </div>
+                        <div class="type-option" onclick="selectContentType('NOTE', event)">
+                            <div class="type-option-icon">💡</div>
+                            <div class="type-option-label">Hinweis</div>
+                        </div>
+                        <div class="type-option" onclick="selectContentType('WARNING', event)">
+                            <div class="type-option-icon">⚠️</div>
+                            <div class="type-option-label">Warnung</div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="contentType" value="TEXT">
+                </div>
+
+                <!-- Title Field -->
+                <div class="form-group">
+                    <label class="form-label" for="title">Titel (optional)</label>
+                    <input type="text" id="title" class="form-input" placeholder="z.B. Wichtiger Hinweis">
+                    <div class="form-helper">Wird als Überschrift über dem Inhalt angezeigt</div>
+                </div>
+
+                <!-- Content Data Field -->
+                <div class="form-group">
+                    <label class="form-label" for="contentData">Inhalt *</label>
+                    <textarea
+                            id="contentData"
+                            class="form-textarea"
+                            rows="8"
+                            placeholder="Gib hier den Inhalt ein..."
+                            required></textarea>
+                    <div class="form-helper" id="contentHelper">
+                        Hauptinhalt des Elements
+                    </div>
+                </div>
+
+                <!-- Display Order -->
+                <div class="form-group">
+                    <label class="form-label" for="displayOrder">Reihenfolge</label>
+                    <input type="number" id="displayOrder" class="form-input" value="0" min="0">
+                    <div class="form-helper">Niedrigere Zahlen erscheinen zuerst</div>
+                </div>
+
+                <div id="contentMessage" class="alert" style="display: none; margin-top: var(--space-4);"></div>
             </div>
-
-            <div class="form-group">
-                <label class="form-label" for="contentTitle">Titel (optional)</label>
-                <input type="text" id="contentTitle" class="form-input">
-                <div class="helper-text">Wird als Überschrift angezeigt (bei manchen Typen)</div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="contentData">Inhalt *</label>
-                <textarea id="contentData" class="form-textarea" required></textarea>
-                <div class="helper-text" id="contentDataHelper">Formatierung abhängig vom Content-Typ</div>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="contentOrder">Reihenfolge</label>
-                <input type="number" id="contentOrder" class="form-input" value="0" min="0">
-            </div>
-
-            <div class="form-actions">
-                <button type="button" class="btn-cancel" onclick="closeContentModal()">Abbrechen</button>
-                <button type="submit" class="btn-submit">Speichern</button>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeContentModal()">Abbrechen</button>
+                <button type="submit" class="btn btn-primary" id="saveBtn">Speichern</button>
             </div>
         </form>
     </div>
 </div>
 
 <script src="auth.js"></script>
-<script src="admin-content.js"></script>
+<script>
+    const API_BASE = 'http://localhost:8080/api';
+    let currentModuleId = null;
+    let currentContents = [];
+    let editingContentId = null;
+    let currentContentType = 'TEXT';
+
+    // Content type helpers
+    const contentTypeHelpers = {
+        TEXT: 'Normaler Fließtext oder Absatz',
+        HEADING: 'Überschrift für einen neuen Abschnitt',
+        LIST: 'Aufzählung - Eine Zeile pro Listenpunkt',
+        IMAGE: 'Bild-URL oder Dateipfad',
+        VIDEO: 'Video-URL (YouTube, Vimeo, etc.)',
+        CODE: 'Code-Beispiel mit Syntax-Highlighting',
+        NOTE: 'Informationsbox für wichtige Hinweise',
+        WARNING: 'Warnungsbox für kritische Informationen'
+    };
+
+    const contentTypeIcons = {
+        TEXT: '📝',
+        HEADING: '📌',
+        LIST: '📋',
+        IMAGE: '🖼️',
+        VIDEO: '🎥',
+        CODE: '💻',
+        NOTE: '💡',
+        WARNING: '⚠️'
+    };
+
+    // Check admin auth
+    if (!window.auth || !window.auth.isLoggedIn()) {
+        window.location.href = '/login.html';
+    } else if (!window.auth.hasRole('ADMIN')) {
+        window.location.href = '/user-home.html';
+    } else {
+        initializePage();
+    }
+
+    async function initializePage() {
+        const user = window.auth.getUser();
+        const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
+
+        document.getElementById('navRight').innerHTML = `
+            <div class="nav-profile-dropdown">
+                <button class="nav-profile-btn">
+                    <span>${name}</span>
+                    <span style="font-size: 0.75rem;">▾</span>
+                </button>
+                <div class="nav-profile-menu">
+                    <a href="/account.html">Mein Account</a>
+                    <div class="divider"></div>
+                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
+                </div>
+            </div>
+        `;
+
+        // Get module ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        currentModuleId = urlParams.get('moduleId');
+        const moduleTitle = urlParams.get('title');
+
+        if (!currentModuleId) {
+            alert('Kein Modul ausgewählt');
+            window.location.href = '/admin-learning-areas.html';
+            return;
+        }
+
+        if (moduleTitle) {
+            document.getElementById('moduleName').textContent = decodeURIComponent(moduleTitle);
+        }
+
+        loadContents();
+    }
+
+    async function loadContents() {
+        try {
+            const response = await fetch(`${API_BASE}/learning-areas/modules/${currentModuleId}`);
+            if (!response.ok) throw new Error('Failed to load');
+
+            const module = await response.json();
+            currentContents = module.contents || [];
+            renderContents();
+        } catch (error) {
+            console.error('Error loading contents:', error);
+            document.getElementById('contentList').innerHTML = `
+                <p style="text-align: center; color: var(--gray-600);">Fehler beim Laden</p>
+            `;
+        }
+    }
+
+    function renderContents() {
+        const container = document.getElementById('contentList');
+
+        if (currentContents.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: var(--space-12);">
+                    <div style="font-size: 3rem; margin-bottom: var(--space-4);">📄</div>
+                    <h3 style="margin-bottom: var(--space-2);">Noch keine Inhalte</h3>
+                    <p style="color: var(--gray-600); margin-bottom: var(--space-6);">
+                        Füge den ersten Inhalt zu diesem Modul hinzu
+                    </p>
+                    <button onclick="openContentModal()" class="btn btn-primary">
+                        Ersten Inhalt erstellen
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = currentContents
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map(content => renderContentItem(content))
+            .join('');
+    }
+
+    function renderContentItem(content) {
+        const icon = contentTypeIcons[content.contentType] || '📄';
+        const preview = content.contentData ?
+            (content.contentData.length > 150 ? content.contentData.substring(0, 150) + '...' : content.contentData) :
+            '';
+
+        return `
+            <div class="content-item">
+                <div class="content-header">
+                    <div style="display: flex; align-items: center; gap: var(--space-3);">
+                        <span style="font-size: 1.5rem;">${icon}</span>
+                        <div>
+                            <span class="content-type-badge">${content.contentType}</span>
+                            ${content.title ? `
+                                <div style="font-weight: 600; margin-top: var(--space-1);">
+                                    ${escapeHtml(content.title)}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <span style="color: var(--gray-500); font-size: 0.875rem;">
+                        Position: ${content.displayOrder}
+                    </span>
+                </div>
+                ${preview ? `
+                    <div class="content-preview">${escapeHtml(preview)}</div>
+                ` : ''}
+                <div class="content-actions">
+                    <button onclick="editContent(${content.id})" class="btn btn-sm btn-secondary">
+                        Bearbeiten
+                    </button>
+                    <button onclick="moveContent(${content.id}, 'up')" class="btn btn-sm btn-outline" ${content.displayOrder === 0 ? 'disabled' : ''}>
+                        ↑
+                    </button>
+                    <button onclick="moveContent(${content.id}, 'down')" class="btn btn-sm btn-outline">
+                        ↓
+                    </button>
+                    <button onclick="deleteContent(${content.id})" class="btn btn-sm" style="background: var(--error); color: white;">
+                        Löschen
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    function openContentModal() {
+        editingContentId = null;
+        currentContentType = 'TEXT';
+        document.getElementById('modalTitle').textContent = 'Neuer Inhalt';
+        document.getElementById('contentForm').reset();
+        document.getElementById('displayOrder').value = currentContents.length;
+        selectContentType('TEXT');
+        document.getElementById('contentModal').style.display = 'flex';
+    }
+
+    function editContent(contentId) {
+        const content = currentContents.find(c => c.id === contentId);
+        if (!content) return;
+
+        editingContentId = contentId;
+        currentContentType = content.contentType;
+        document.getElementById('modalTitle').textContent = 'Inhalt bearbeiten';
+        document.getElementById('contentId').value = content.id;
+        document.getElementById('title').value = content.title || '';
+        document.getElementById('contentData').value = content.contentData || '';
+        document.getElementById('displayOrder').value = content.displayOrder || 0;
+        selectContentType(content.contentType);
+        document.getElementById('contentModal').style.display = 'flex';
+    }
+
+    function closeContentModal() {
+        document.getElementById('contentModal').style.display = 'none';
+        editingContentId = null;
+    }
+
+    function selectContentType(type, evt) {
+        currentContentType = type;
+        document.getElementById('contentType').value = type;
+
+        // Update UI - remove active from all
+        document.querySelectorAll('.type-option').forEach(option => {
+            option.classList.remove('active');
+        });
+
+        // Add active to clicked element
+        if (evt && evt.currentTarget) {
+            evt.currentTarget.classList.add('active');
+        } else {
+            // When called programmatically (from editContent), find the right element
+            const labels = {
+                'TEXT': 'Text',
+                'HEADING': 'Überschrift',
+                'LIST': 'Liste',
+                'IMAGE': 'Bild',
+                'VIDEO': 'Video',
+                'CODE': 'Code',
+                'NOTE': 'Hinweis',
+                'WARNING': 'Warnung'
+            };
+
+            const targetLabel = labels[type];
+            document.querySelectorAll('.type-option').forEach(option => {
+                const label = option.querySelector('.type-option-label');
+                if (label && label.textContent === targetLabel) {
+                    option.classList.add('active');
+                }
+            });
+        }
+
+        // Update helper text
+        document.getElementById('contentHelper').textContent = contentTypeHelpers[type] || 'Inhalt eingeben';
+
+        // Update placeholder
+        const placeholders = {
+            TEXT: 'Gib hier deinen Text ein...',
+            HEADING: 'Überschrift eingeben...',
+            LIST: 'Ein Punkt pro Zeile:\n• Erster Punkt\n• Zweiter Punkt\n• Dritter Punkt',
+            IMAGE: 'Bild-URL oder Pfad eingeben (z.B. /images/bild.jpg)',
+            VIDEO: 'Video-URL eingeben (z.B. https://youtube.com/watch?v=...)',
+            CODE: 'Code hier eingeben...',
+            NOTE: 'Wichtigen Hinweis eingeben...',
+            WARNING: 'Warnung eingeben...'
+        };
+        document.getElementById('contentData').placeholder = placeholders[type] || 'Inhalt eingeben...';
+    }
+
+    async function saveContent(event) {
+        event.preventDefault();
+
+        const data = {
+            contentType: currentContentType,
+            title: document.getElementById('title').value.trim() || null,
+            contentData: document.getElementById('contentData').value.trim(),
+            displayOrder: parseInt(document.getElementById('displayOrder').value) || 0
+        };
+
+        if (!data.contentData) {
+            showContentMessage('Inhalt ist erforderlich', 'error');
+            return;
+        }
+
+        const saveBtn = document.getElementById('saveBtn');
+        const originalText = saveBtn.textContent;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<div class="loading"></div>';
+
+        try {
+            const url = editingContentId
+                ? `${API_BASE}/secure/admin/learning-areas/modules/contents/${editingContentId}`
+                : `${API_BASE}/secure/admin/learning-areas/modules/${currentModuleId}/contents`;
+
+            const method = editingContentId ? 'PUT' : 'POST';
+
+            const response = await window.auth.authFetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                closeContentModal();
+                loadContents();
+            } else {
+                const error = await response.json();
+                showContentMessage(error.message || 'Fehler beim Speichern', 'error');
+            }
+        } catch (error) {
+            console.error('Save error:', error);
+            showContentMessage('Verbindungsfehler', 'error');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalText;
+        }
+    }
+
+    async function moveContent(contentId, direction) {
+        const content = currentContents.find(c => c.id === contentId);
+        if (!content) return;
+
+        const currentOrder = content.displayOrder;
+        const newOrder = direction === 'up' ? currentOrder - 1 : currentOrder + 1;
+
+        if (newOrder < 0) return;
+
+        try {
+            const response = await window.auth.authFetch(
+                `${API_BASE}/secure/admin/learning-areas/modules/contents/${contentId}`,
+                {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ displayOrder: newOrder })
+                }
+            );
+
+            if (response.ok) {
+                loadContents();
+            }
+        } catch (error) {
+            console.error('Move error:', error);
+        }
+    }
+
+    async function deleteContent(contentId) {
+        if (!confirm('Diesen Inhalt wirklich löschen?')) return;
+
+        try {
+            const response = await window.auth.authFetch(
+                `${API_BASE}/secure/admin/learning-areas/modules/contents/${contentId}`,
+                { method: 'DELETE' }
+            );
+
+            if (response.ok) {
+                loadContents();
+            } else {
+                alert('Fehler beim Löschen');
+            }
+        } catch {
+            alert('Verbindungsfehler');
+        }
+    }
+
+    function showContentMessage(message, type) {
+        const div = document.getElementById('contentMessage');
+        div.className = `alert alert-${type}`;
+        div.textContent = message;
+        div.style.display = 'block';
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Close modal on background click
+    document.getElementById('contentModal').addEventListener('click', (e) => {
+        if (e.target.id === 'contentModal') {
+            closeContentModal();
+        }
+    });
+</script>
+
 </body>
 </html>

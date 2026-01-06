@@ -1,4 +1,4 @@
-package org. nikolic.programm.entities;
+package org.nikolic.programm.entities;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;

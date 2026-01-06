@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Route Tester - RadBrain</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body style="padding: var(--space-8); background: var(--gray-50);">
+
+<div class="container" style="max-width: 1200px;">
+    <h1 style="margin-bottom: var(--space-8);">🔍 API Route Tester</h1>
+
+    <div class="card" style="margin-bottom: var(--space-6);">
+        <div class="card-header">
+            <h2 class="card-title">Test API Endpoints</h2>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label class="form-label">API Base URL</label>
+                <input type="text" id="apiBase" class="form-input" value="http://localhost:8080/api">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Test Endpoint</label>
+                <select id="endpoint" class="form-input">
+                    <optgroup label="Public Endpoints">
+                        <option value="GET:/learning-areas">GET /learning-areas</option>
+                        <option value="GET:/learning-areas/{slug}">GET /learning-areas/roentgen</option>
+                        <option value="GET:/learning-areas/modules/{id}">GET /learning-areas/modules/1</option>
+                    </optgroup>
+                    <optgroup label="Admin Endpoints - Pattern 1">
+                        <option value="GET:/admin/learning-areas">GET /admin/learning-areas</option>
+                        <option value="POST:/admin/learning-areas">POST /admin/learning-areas</option>
+                        <option value="PUT:/admin/learning-areas/{id}">PUT /admin/learning-areas/1</option>
+                        <option value="POST:/admin/learning-areas/{id}/modules">POST /admin/learning-areas/1/modules</option>
+                        <option value="POST:/admin/learning-areas/modules/{id}/contents">POST /admin/learning-areas/modules/1/contents</option>
+                    </optgroup>
+                    <optgroup label="Admin Endpoints - Pattern 2">
+                        <option value="GET:/secure/admin/learning-areas">GET /secure/admin/learning-areas</option>
+                        <option value="POST:/secure/admin/learning-areas">POST /secure/admin/learning-areas</option>
+                        <option value="PUT:/secure/admin/learning-areas/{id}">PUT /secure/admin/learning-areas/1</option>
+                        <option value="POST:/secure/admin/learning-areas/{id}/modules">POST /secure/admin/learning-areas/1/modules</option>
+                        <option value="POST:/secure/admin/modules/{id}/contents">POST /secure/admin/modules/1/contents</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Request Body (JSON - for POST/PUT)</label>
+                <textarea id="requestBody" class="form-textarea" rows="6" placeholder='{"name": "Test", "slug": "test"}'></textarea>
+            </div>
+
+            <button onclick="testEndpoint()" class="btn btn-primary">Test Endpoint</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Response</h2>
+        </div>
+        <div class="card-body">
+            <div id="response" style="background: var(--gray-900); color: var(--gray-100); padding: var(--space-4); border-radius: var(--radius-md); font-family: monospace; font-size: 0.875rem; white-space: pre-wrap; min-height: 200px;">
+                Waiting for test...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+    async function testEndpoint() {
+        const apiBase = document.getElementById('apiBase').value;
+        const selected = document.getElementById('endpoint').value;
+        const [method, path] = selected.split(':');
+        const bodyText = document.getElementById('requestBody').value.trim();
+
+        const url = apiBase + path;
+        const responseDiv = document.getElementById('response');
+
+        responseDiv.textContent = `Testing: ${method} ${url}\n\n`;
+
+        try {
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            // Add body for POST/PUT
+            if ((method === 'POST' || method === 'PUT') && bodyText) {
+                options.body = bodyText;
+            }
+
+            // Use authFetch if authenticated
+            let response;
+            if (window.auth && window.auth.isLoggedIn()) {
+                responseDiv.textContent += '🔐 Using authenticated request\n\n';
+                response = await window.auth.authFetch(url, options);
+            } else {
+                responseDiv.textContent += '🌐 Using public request\n\n';
+                response = await fetch(url, options);
+            }
+
+            responseDiv.textContent += `Status: ${response.status} ${response.statusText}\n\n`;
+
+            // Get response text
+            const responseText = await response.text();
+
+            // Try to parse as JSON
+            try {
+                const json = JSON.parse(responseText);
+                responseDiv.textContent += 'Response (JSON):\n';
+                responseDiv.textContent += JSON.stringify(json, null, 2);
+            } catch {
+                responseDiv.textContent += 'Response (Text):\n';
+                responseDiv.textContent += responseText;
+            }
+
+            // Add headers
+            responseDiv.textContent += '\n\n---\nResponse Headers:\n';
+            response.headers.forEach((value, key) => {
+                responseDiv.textContent += `${key}: ${value}\n`;
+            });
+
+        } catch (error) {
+            responseDiv.textContent += `\n❌ Error: ${error.message}\n\n`;
+            responseDiv.textContent += error.stack;
+        }
+    }
+
+    // Auto-test on load
+    if (window.auth && window.auth.isLoggedIn()) {
+        document.getElementById('response').textContent = '✅ Logged in as: ' + window.auth.getUser().email + '\n\nReady to test endpoints!';
+    } else {
+        document.getElementById('response').textContent = '⚠️  Not logged in\n\nPublic endpoints will work, but admin endpoints will fail.\nPlease login first.';
+    }
+</script>
+
+</body>
+</html>

@@ -1,4 +1,4 @@
-package org. nikolic.programm.repositories;
+package org.nikolic.programm.repositories;
 
 import org.nikolic.programm.entities.Question;
 import org.nikolic.programm.entities.QuestionType;

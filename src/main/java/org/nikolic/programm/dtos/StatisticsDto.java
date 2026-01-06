@@ -1,4 +1,4 @@
-package org.nikolic.programm. dtos;
+package org.nikolic.programm.dtos;
 
 public class StatisticsDto {
     private long totalUsers;

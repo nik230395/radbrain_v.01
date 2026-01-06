@@ -1,6 +1,7 @@
 package org.nikolic.programm.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.nikolic.programm.dtos.CreateQuizRequest;
 import org.nikolic.programm.dtos.QuizDto;
 import org.nikolic.programm.entities.Quiz;
 import org.nikolic.programm.entities.User;
@@ -82,7 +83,7 @@ public class QuizController {
             }
 
             // Create quiz using QuizService
-            org.nikolic.programm.dtos.CreateQuizRequest req = new org.nikolic.programm.dtos.CreateQuizRequest();
+            CreateQuizRequest req = new CreateQuizRequest();
             req.setTitle(title);
             req.setDescription(description);
             req.setCategory(category);

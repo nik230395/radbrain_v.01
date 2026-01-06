@@ -5,110 +5,626 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">Lernbereich - RadBrain</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="learning-areas.css">
+    <style>
+        .learning-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+            color: white;
+            padding: var(--space-16) 0;
+            position: relative;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-4);
+            font-size: 0.9375rem;
+        }
+
+        .breadcrumb a {
+            color: rgba(255,255,255,0.8);
+            transition: color var(--transition-fast);
+        }
+
+        .breadcrumb a:hover {
+            color: white;
+        }
+
+        .breadcrumb span {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .module-list {
+            display: grid;
+            gap: var(--space-4);
+        }
+
+        .module-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-6);
+            transition: all var(--transition-base);
+            cursor: pointer;
+        }
+
+        .module-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .module-header {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-4);
+            margin-bottom: var(--space-4);
+        }
+
+        .module-number {
+            flex-shrink: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .module-content {
+            flex: 1;
+        }
+
+        .module-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: var(--space-2);
+        }
+
+        .module-description {
+            color: var(--gray-600);
+            line-height: 1.6;
+            margin-bottom: var(--space-3);
+        }
+
+        .module-meta {
+            display: flex;
+            gap: var(--space-6);
+            color: var(--gray-500);
+            font-size: 0.875rem;
+        }
+
+        .content-viewer {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-8);
+        }
+
+        .content-viewer h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: var(--space-8);
+            margin-bottom: var(--space-4);
+            color: var(--gray-900);
+        }
+
+        .content-viewer h3:first-child {
+            margin-top: 0;
+        }
+
+        .content-viewer h4 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: var(--space-6);
+            margin-bottom: var(--space-3);
+            color: var(--gray-900);
+        }
+
+        .content-viewer p {
+            color: var(--gray-700);
+            line-height: 1.8;
+            margin-bottom: var(--space-4);
+        }
+
+        .content-viewer ul,
+        .content-viewer ol {
+            margin: var(--space-4) 0;
+            padding-left: var(--space-8);
+        }
+
+        .content-viewer li {
+            color: var(--gray-700);
+            line-height: 1.8;
+            margin-bottom: var(--space-2);
+        }
+
+        .content-viewer .info-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            border-radius: var(--radius-md);
+            padding: var(--space-4) var(--space-6);
+            margin: var(--space-6) 0;
+        }
+
+        .content-viewer .info-box h4 {
+            color: var(--primary);
+            margin-top: 0;
+        }
+
+        .content-viewer code {
+            background: var(--gray-100);
+            padding: var(--space-1) var(--space-2);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+        }
+
+        .content-viewer pre {
+            background: var(--gray-900);
+            color: white;
+            padding: var(--space-4);
+            border-radius: var(--radius-md);
+            overflow-x: auto;
+            margin: var(--space-4) 0;
+        }
+
+        .content-viewer pre code {
+            background: none;
+            padding: 0;
+            color: white;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: calc(var(--nav-height) + var(--space-4));
+            max-height: calc(100vh - var(--nav-height) - var(--space-8));
+            overflow-y: auto;
+        }
+
+        .sidebar-nav {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+        }
+
+        .sidebar-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: var(--space-4);
+            padding: 0 var(--space-2);
+        }
+
+        .sidebar-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        .sidebar-list a {
+            display: block;
+            padding: var(--space-2) var(--space-3);
+            color: var(--gray-700);
+            border-radius: var(--radius-md);
+            font-size: 0.9375rem;
+            transition: all var(--transition-fast);
+        }
+
+        .sidebar-list a:hover {
+            background: var(--gray-50);
+            color: var(--primary);
+        }
+
+        .sidebar-list a.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body>
 
+<!-- Navigation -->
 <nav class="navbar">
     <div class="navbar-content">
         <div class="nav-left">
-            <img src="logo.png" alt="RadBrain Logo" class="nav-logo">
+            <img src="logo.png" alt="RadBrain" class="nav-logo">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/user-home.html" class="nav-link">Übersicht</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link">Lernbereiche</a>
+                    <ul class="dropdown-menu" id="learningAreasMenu">
+                        <!-- Dynamisch geladen -->
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="/quizzes.html" class="nav-link">Quizzes</a>
+                </li>
+            </ul>
         </div>
-        <ul class="nav-menu">
-            <li class="nav-item"><a href="/user-home.html" class="nav-link">Home</a></li>
-            <li class="nav-item dropdown">
-                <a href="#" class="nav-link active">Lernbereiche</a>
-                <ul class="dropdown-menu" id="learningAreasDropdown">
-                    <!-- Wird dynamisch gefüllt -->
-                </ul>
-            </li>
-            <li class="nav-item"><a href="/quizzes.html" class="nav-link">Quiz</a></li>
-            <li class="nav-item"><a href="/dashboard.html" class="nav-link">Dashboard</a></li>
-            <li class="nav-item" id="adminNavItem" style="display: none;">
-                <a href="/admin-dashboard.html" class="nav-link">Admin Panel</a>
-            </li>
-        </ul>
-
-        <div class="nav-profile-dropdown" id="profileDropdown" style="margin-left: auto; display: none;">
-            <button class="nav-profile-btn" id="profileBtn">
-                <span id="userName">Mein Account</span>
-                <span style="font-size: 0.8rem;">▾</span>
-            </button>
-            <div class="nav-profile-menu" id="profileMenu">
-                <a href="/account.html">Mein Account</a>
-                <a href="/dashboard.html">Dashboard</a>
-                <div class="divider"></div>
-                <button id="logoutBtn" style="color: #dc2626;">Abmelden</button>
-            </div>
-        </div>
-
-        <div class="nav-auth-section" id="navAuthSection" style="margin-left: auto;">
+        <div class="nav-right" id="navRight">
             <a href="/login.html" class="btn-login">Anmelden</a>
         </div>
     </div>
 </nav>
 
 <!-- Loading State -->
-<div id="loadingState" style="text-align: center; padding: 4rem;">
-    <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
-    <p style="color: #6b7280; font-size: 1.125rem;">Lernbereich wird geladen...</p>
+<div id="loadingState" style="padding: var(--space-20); text-align: center;">
+    <div class="loading" style="width: 40px; height: 40px; margin: 0 auto var(--space-4);"></div>
+    <p style="color: var(--gray-600);">Lade Lernbereich...</p>
 </div>
 
 <!-- Error State -->
-<div id="errorState" style="display: none; text-align: center; padding: 4rem;">
-    <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
-    <h2 style="color: #1f2937; margin-bottom: 1rem;">Lernbereich nicht gefunden</h2>
-    <p style="color: #6b7280; margin-bottom: 2rem;">Dieser Lernbereich existiert nicht oder ist nicht verfügbar.</p>
-    <a href="/user-home.html" class="btn-primary">Zurück zur Startseite</a>
+<div id="errorState" style="display: none; padding: var(--space-20); text-align: center;">
+    <h2 style="margin-bottom: var(--space-4);">Lernbereich nicht gefunden</h2>
+    <p style="color: var(--gray-600); margin-bottom: var(--space-6);">
+        Der angeforderte Lernbereich konnte nicht geladen werden.
+    </p>
+    <a href="/user-home.html" class="btn btn-primary">Zurück zur Übersicht</a>
 </div>
 
 <!-- Main Content -->
 <div id="mainContent" style="display: none;">
-    <!-- Hero Section -->
-    <section class="hero" id="heroSection">
-        <div class="hero-background"></div>
-        <div class="hero-content">
-            <h1 class="hero-title" id="heroTitle">Lernbereich</h1>
-            <p class="hero-subtitle" id="heroSubtitle">Beschreibung</p>
-            <div class="hero-buttons">
-                <a href="#inhaltsverzeichnis" class="btn-primary">Los geht's</a>
-                <a href="#" id="quizLink" class="btn-secondary-outline">Zum Quiz</a>
-            </div>
-        </div>
-        <div class="hero-wave">
-            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z" fill="white" />
-            </svg>
-        </div>
-    </section>
-
-    <!-- Inhaltsverzeichnis -->
-    <section id="inhaltsverzeichnis" class="toc-section">
+    <!-- Header -->
+    <header class="learning-header">
         <div class="container">
-            <h2 class="section-title">Inhaltsverzeichnis</h2>
-            <p class="section-subtitle">Wähle ein Kapitel aus, um direkt dorthin zu springen</p>
-            <div class="toc-grid" id="modulesGrid">
+            <div class="breadcrumb">
+                <a href="/user-home.html">Home</a>
+                <span>›</span>
+                <span id="areaNameBreadcrumb">Lernbereich</span>
+            </div>
+            <h1 id="areaTitle" style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-3); color: white;">
+                Lernbereich
+            </h1>
+            <p id="areaSubtitle" style="font-size: 1.125rem; color: rgba(255,255,255,0.9); max-width: 720px;">
+                Beschreibung
+            </p>
+            <div style="margin-top: var(--space-6);">
+                <a href="#" id="quizLink" class="btn btn-primary" style="background: white; color: var(--primary);">
+                    Quiz zu diesem Bereich →
+                </a>
             </div>
         </div>
-    </section>
+    </header>
 
-    <!-- Content Wrapper mit Sticky TOC -->
-    <div class="content-wrapper">
-        <aside class="sticky-toc">
-            <div class="toc-progress">
-                <div class="toc-progress-bar" id="progressBar"></div>
-            </div>
-            <h3>Auf dieser Seite</h3>
-            <ul class="sticky-toc-list" id="stickyTocList">
-            </ul>
-        </aside>
+    <!-- Content Area -->
+    <div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
+        <div style="display: grid; grid-template-columns: 280px 1fr; gap: var(--space-8);">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-nav">
+                    <div class="sidebar-title">Module</div>
+                    <ul class="sidebar-list" id="sidebarModuleList">
+                        <!-- Dynamisch geladen -->
+                    </ul>
+                </div>
+            </aside>
 
-        <main class="main-content" id="mainContentArea">
-        </main>
+            <!-- Main Content -->
+            <main>
+                <!-- Modules Overview -->
+                <div id="modulesOverview">
+                    <h2 style="font-size: 1.875rem; font-weight: 600; margin-bottom: var(--space-6);">
+                        Module in diesem Bereich
+                    </h2>
+                    <div class="module-list" id="modulesList">
+                        <!-- Dynamisch geladen -->
+                    </div>
+                </div>
+
+                <!-- Module Content View -->
+                <div id="moduleContentView" style="display: none;">
+                    <button onclick="showModulesOverview()" class="btn btn-ghost" style="margin-bottom: var(--space-6);">
+                        ← Zurück zur Übersicht
+                    </button>
+                    <div class="content-viewer" id="contentViewer">
+                        <!-- Dynamisch geladen -->
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
 </div>
 
 <script src="auth.js"></script>
-<script src="learning-area-new.js"></script>
+<script>
+    const API_BASE = 'http://localhost:8080/api';
+    let currentArea = null;
+    let currentModules = [];
+
+    // Get area slug from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const areaSlug = urlParams.get('area');
+
+    // Check authentication
+    if (window.auth && window.auth.isLoggedIn()) {
+        const user = window.auth.getUser();
+        const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
+
+        let navHtml = `
+            <div class="nav-profile-dropdown">
+                <button class="nav-profile-btn">
+                    <span>${name}</span>
+                    <span style="font-size: 0.75rem;">▾</span>
+                </button>
+                <div class="nav-profile-menu">
+                    <a href="/account.html">Mein Account</a>
+                    <a href="/dashboard.html">Dashboard</a>`;
+
+        if (window.auth.hasRole('ADMIN')) {
+            navHtml += `<div class="divider"></div><a href="/admin-dashboard.html">Admin-Bereich</a>`;
+        }
+
+        navHtml += `
+                    <div class="divider"></div>
+                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('navRight').innerHTML = navHtml;
+    }
+
+    // Load learning area
+    async function loadLearningArea() {
+        if (!areaSlug) {
+            showError();
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE}/learning-areas/${areaSlug}`);
+            if (!response.ok) throw new Error('Not found');
+
+            currentArea = await response.json();
+            currentModules = currentArea.modules || [];
+
+            // Load content for all modules
+            await Promise.all(currentModules.map(loadModuleContent));
+
+            renderPage();
+            loadNavigationAreas();
+        } catch (error) {
+            console.error('Error loading learning area:', error);
+            showError();
+        }
+    }
+
+    async function loadModuleContent(module) {
+        try {
+            const response = await fetch(`${API_BASE}/learning-areas/modules/${module.id}`);
+            if (!response.ok) return;
+
+            const fullModule = await response.json();
+            module.contents = fullModule.contents || [];
+        } catch (error) {
+            console.error('Error loading module content:', error);
+            module.contents = [];
+        }
+    }
+
+    async function loadNavigationAreas() {
+        try {
+            const response = await fetch(`${API_BASE}/learning-areas`);
+            if (!response.ok) return;
+
+            const areas = await response.json();
+            const menu = document.getElementById('learningAreasMenu');
+            menu.innerHTML = areas
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .map(area => `
+                    <li><a href="/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>
+                `)
+                .join('');
+        } catch (error) {
+            console.error('Error loading navigation areas:', error);
+        }
+    }
+
+    function renderPage() {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
+
+        // Set page title
+        document.getElementById('pageTitle').textContent = `${currentArea.name} - RadBrain`;
+        document.getElementById('areaTitle').textContent = currentArea.name;
+        document.getElementById('areaNameBreadcrumb').textContent = currentArea.name;
+        document.getElementById('areaSubtitle').textContent = currentArea.subtitle || currentArea.description || '';
+        document.getElementById('quizLink').href = `/quizzes.html?category=${currentArea.slug}`;
+
+        // Render modules
+        renderModulesList();
+        renderSidebarModules();
+    }
+
+    function renderModulesList() {
+        const container = document.getElementById('modulesList');
+
+        if (currentModules.length === 0) {
+            container.innerHTML = `
+                <p style="color: var(--gray-600); text-align: center; padding: var(--space-8);">
+                    Noch keine Module verfügbar.
+                </p>
+            `;
+            return;
+        }
+
+        container.innerHTML = currentModules
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map((module, index) => `
+                <div class="module-card" onclick="showModuleContent(${module.id})">
+                    <div class="module-header">
+                        <div class="module-number">${index + 1}</div>
+                        <div class="module-content">
+                            <div class="module-title">
+                                ${module.icon ? module.icon + ' ' : ''}${escapeHtml(module.title)}
+                            </div>
+                            ${module.subtitle ? `
+                                <div class="module-description">${escapeHtml(module.subtitle)}</div>
+                            ` : ''}
+                            <div class="module-meta">
+                                <span>${module.contents ? module.contents.length : 0} Inhalte</span>
+                                ${module.estimatedDuration ? `<span>${module.estimatedDuration} Min</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `)
+            .join('');
+    }
+
+    function renderSidebarModules() {
+        const container = document.getElementById('sidebarModuleList');
+        container.innerHTML = currentModules
+            .sort((a, b) => a.displayOrder - b.displayOrder)
+            .map(module => `
+                <li>
+                    <a href="#" onclick="event.preventDefault(); showModuleContent(${module.id});" data-module-id="${module.id}">
+                        ${escapeHtml(module.title)}
+                    </a>
+                </li>
+            `)
+            .join('');
+    }
+
+    function showModuleContent(moduleId) {
+        const module = currentModules.find(m => m.id === moduleId);
+        if (!module) return;
+
+        const contents = module.contents || [];
+
+        document.getElementById('modulesOverview').style.display = 'none';
+        document.getElementById('moduleContentView').style.display = 'block';
+
+        // Update sidebar active state
+        document.querySelectorAll('.sidebar-list a').forEach(link => {
+            link.classList.remove('active');
+            if (link.dataset.moduleId == moduleId) {
+                link.classList.add('active');
+            }
+        });
+
+        // Render content
+        const viewer = document.getElementById('contentViewer');
+
+        let html = `
+            <h2 style="font-size: 2rem; font-weight: 600; margin-bottom: var(--space-2); color: var(--gray-900);">
+                ${module.icon ? module.icon + ' ' : ''}${escapeHtml(module.title)}
+            </h2>
+        `;
+
+        if (module.subtitle) {
+            html += `<p style="font-size: 1.125rem; color: var(--gray-600); margin-bottom: var(--space-8);">${escapeHtml(module.subtitle)}</p>`;
+        }
+
+        if (contents.length === 0) {
+            html += `<p style="color: var(--gray-600);">Noch keine Inhalte verfügbar.</p>`;
+        } else {
+            html += contents
+                .sort((a, b) => a.displayOrder - b.displayOrder)
+                .map(content => renderContent(content))
+                .join('');
+        }
+
+        viewer.innerHTML = html;
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderContent(content) {
+        const type = content.contentType;
+        const data = content.contentData;
+        const title = content.title;
+
+        switch (type) {
+            case 'HEADING':
+                return `<h3>${escapeHtml(title || data)}</h3>`;
+
+            case 'TEXT':
+                return `
+                    ${title ? `<h4>${escapeHtml(title)}</h4>` : ''}
+                    <p>${escapeHtml(data)}</p>
+                `;
+
+            case 'LIST':
+                try {
+                    const items = JSON.parse(data);
+                    return `
+                        ${title ? `<h4>${escapeHtml(title)}</h4>` : ''}
+                        <ul>${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
+                    `;
+                } catch {
+                    return `<p>${escapeHtml(data)}</p>`;
+                }
+
+            case 'CALLOUT':
+            case 'INFO':
+                return `
+                    <div class="info-box">
+                        ${title ? `<h4>${escapeHtml(title)}</h4>` : ''}
+                        <p style="margin-bottom: 0;">${escapeHtml(data)}</p>
+                    </div>
+                `;
+
+            case 'CODE':
+                return `
+                    ${title ? `<h4>${escapeHtml(title)}</h4>` : ''}
+                    <pre><code>${escapeHtml(data)}</code></pre>
+                `;
+
+            case 'QUOTE':
+                return `
+                    <blockquote style="border-left: 4px solid var(--gray-300); padding-left: var(--space-4); font-style: italic; color: var(--gray-600); margin: var(--space-6) 0;">
+                        ${escapeHtml(data)}
+                        ${title ? `<br><small style="font-style: normal;">— ${escapeHtml(title)}</small>` : ''}
+                    </blockquote>
+                `;
+
+            default:
+                return `<p>${escapeHtml(data)}</p>`;
+        }
+    }
+
+    function showModulesOverview() {
+        document.getElementById('modulesOverview').style.display = 'block';
+        document.getElementById('moduleContentView').style.display = 'none';
+
+        // Remove active state
+        document.querySelectorAll('.sidebar-list a').forEach(link => {
+            link.classList.remove('active');
+        });
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showError() {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'block';
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', loadLearningArea);
+</script>
+
 </body>
 </html>

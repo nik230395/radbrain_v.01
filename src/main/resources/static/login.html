@@ -1,312 +1,225 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anmelden - RadBrain</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .auth-container {
+        .auth-page {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #667eea 0%, var(--primary-600) 50%, var(--secondary) 100%);
-            padding: var(--space-xl);
-            position: relative;
-            overflow: hidden;
+            background: var(--gray-50);
+            padding: var(--space-8) var(--space-4);
         }
 
-        .auth-container::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 25% 25%, rgba(255,255,255,0.1), transparent 50%);
-            animation: float 8s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.05) rotate(1deg); }
+        .auth-container {
+            width: 100%;
+            max-width: 440px;
         }
 
         .auth-card {
-            background: var(--white);
-            max-width: 440px;
-            width: 100%;
-            padding: var(--space-3xl);
-            border-radius: var(--radius-2xl);
-            box-shadow: var(--shadow-2xl);
-            position: relative;
-            z-index: 2;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            padding: var(--space-10);
+            box-shadow: var(--shadow-lg);
         }
 
         .auth-header {
             text-align: center;
-            margin-bottom: var(--space-2xl);
+            margin-bottom: var(--space-8);
         }
 
         .auth-logo {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--primary-600), var(--secondary));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto var(--space-lg);
-            font-size: 2rem;
+            height: 48px;
+            margin-bottom: var(--space-6);
         }
 
         .auth-title {
             font-size: 1.875rem;
-            font-weight: 800;
-            color: var(--gray-900);
-            margin-bottom: var(--space-sm);
+            font-weight: 700;
+            margin-bottom: var(--space-2);
         }
 
         .auth-subtitle {
             color: var(--gray-600);
-            font-size: 0.9375rem;
         }
 
         .back-link {
-            position: absolute;
-            top: var(--space-xl);
-            left: var(--space-xl);
             display: inline-flex;
             align-items: center;
-            gap: var(--space-sm);
-            padding: var(--space-sm) var(--space-lg);
-            background: rgba(255,255,255,0.9);
-            border-radius: var(--radius-full);
-            color: var(--gray-700);
+            gap: var(--space-2);
+            color: var(--gray-600);
             text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition-base);
-            z-index: 3;
+            margin-bottom: var(--space-6);
+            font-size: 0.9375rem;
+            transition: color var(--transition-fast);
         }
 
         .back-link:hover {
-            background: var(--white);
-            box-shadow: var(--shadow-md);
-            transform: translateX(-4px);
+            color: var(--primary);
         }
 
-        .message {
-            padding: var(--space-md) var(--space-lg);
-            border-radius: var(--radius-lg);
-            margin-bottom: var(--space-lg);
-            font-weight: 500;
-            display: none;
-        }
-
-        .message.error {
-            background: var(--error-light);
-            color: var(--error);
-            border: 2px solid var(--error);
-        }
-
-        .message.success {
-            background: var(--success-light);
-            color: var(--success);
-            border: 2px solid var(--success);
-        }
-
-        .forgot-password {
+        .divider {
             text-align: center;
-            margin: var(--space-lg) 0;
+            margin: var(--space-6) 0;
+            position: relative;
         }
 
-        .forgot-link {
-            color: var(--primary-600);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9375rem;
-            transition: var(--transition-fast);
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gray-200);
         }
 
-        .forgot-link:hover {
-            color: var(--primary-700);
-            text-decoration: underline;
-        }
-
-        .auth-divider {
-            text-align: center;
-            margin: var(--space-xl) 0;
-            padding-top: var(--space-xl);
-            border-top: 1px solid var(--gray-200);
-            color: var(--gray-600);
-        }
-
-        .auth-link {
-            color: var(--primary-600);
-            text-decoration: none;
-            font-weight: 700;
-            transition: var(--transition-fast);
-        }
-
-        .auth-link:hover {
-            color: var(--primary-700);
-            text-decoration: underline;
-        }
-
-        @media (max-width: 640px) {
-            .auth-card {
-                padding: var(--space-xl);
-            }
-
-            .back-link {
-                top: var(--space-md);
-                left: var(--space-md);
-                padding: var(--space-sm) var(--space-md);
-                font-size: 0.875rem;
-            }
+        .divider-text {
+            position: relative;
+            display: inline-block;
+            padding: 0 var(--space-4);
+            background: white;
+            color: var(--gray-500);
+            font-size: 0.875rem;
         }
     </style>
 </head>
 <body>
 
-<div class="auth-container">
-    <a href="/index.html" class="back-link">
-        ← Zurück zur Startseite
-    </a>
+<div class="auth-page">
+    <div class="auth-container">
+        <a href="/index.html" class="back-link">
+            ← Zurück zur Startseite
+        </a>
 
-    <div class="auth-card">
-        <div class="auth-header">
-            <div class="auth-logo">🎯</div>
-            <h1 class="auth-title">Willkommen zurück!</h1>
-            <p class="auth-subtitle">
-                Melden Sie sich an und setzen Sie Ihre Lernreise fort
-            </p>
-        </div>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label class="form-label" for="email">E-Mail-Adresse</label>
-                <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        class="form-input"
-                        placeholder="name@beispiel.de"
-                        required
-                        autocomplete="email"
-                >
+        <div class="auth-card">
+            <div class="auth-header">
+                <img src="logo.png" alt="RadBrain" class="auth-logo">
+                <h1 class="auth-title">Willkommen zurück!</h1>
+                <p class="auth-subtitle">Melde dich an, um fortzufahren</p>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="password">Passwort</label>
-                <input
-                        id="password"
-                        name="password"
-                        type="password"
-                        class="form-input"
-                        placeholder="Ihr Passwort"
-                        required
-                        autocomplete="current-password"
-                >
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="email">E-Mail-Adresse</label>
+                    <input
+                            type="email"
+                            id="email"
+                            class="form-input"
+                            placeholder="deine@email.de"
+                            required
+                            autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Passwort</label>
+                    <input
+                            type="password"
+                            id="password"
+                            class="form-input"
+                            placeholder="Dein Passwort"
+                            required
+                            autocomplete="current-password">
+                </div>
+
+                <div style="text-align: right; margin-bottom: var(--space-6);">
+                    <a href="/forgot-password.html" style="color: var(--primary); font-size: 0.9375rem; text-decoration: none;">
+                        Passwort vergessen?
+                    </a>
+                </div>
+
+                <div id="loginMessage" class="alert" style="display: none; margin-bottom: var(--space-4);"></div>
+
+                <button type="submit" class="btn btn-primary btn-lg" id="loginBtn" style="width: 100%;">
+                    Anmelden
+                </button>
+            </form>
+
+            <div class="divider">
+                <span class="divider-text">Noch kein Konto?</span>
             </div>
 
-            <div class="forgot-password">
-                <a href="forgot-password.html" class="forgot-link">Passwort vergessen?</a>
-            </div>
-
-            <div id="loginMessage" class="message"></div>
-
-            <button type="submit" class="btn btn-primary" id="loginBtn" style="width: 100%; justify-content: center; padding: 1rem;">
-                Anmelden
-            </button>
-        </form>
-
-        <div class="auth-divider">
-            <p>Noch kein Konto? <a href="register.html" class="auth-link">Jetzt registrieren</a></p>
+            <a href="/register.html" class="btn btn-outline" style="width: 100%;">
+                Jetzt registrieren
+            </a>
         </div>
     </div>
 </div>
 
 <script src="auth.js"></script>
 <script>
-    (function() {
-        'use strict';
+    const form = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const messageDiv = document.getElementById('loginMessage');
 
-        console.log('🔐 Login page loaded');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-        const form = document.getElementById('loginForm');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const loginBtn = document.getElementById('loginBtn');
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
 
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const email = emailInput.value.trim();
-            const password = passwordInput.value;
-
-            if (!email || !password) {
-                showMessage('Bitte füllen Sie alle Felder aus.', 'error');
-                return;
-            }
-
-            const originalText = loginBtn.textContent;
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'Anmeldung läuft...';
-
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const result = await response.json();
-                console.log('📡 Login response:', response.status);
-
-                if (response.ok) {
-                    if (result.requiresVerification) {
-                        showMessage('Bitte bestätigen Sie zuerst Ihre E-Mail-Adresse.', 'error');
-                        setTimeout(() => {
-                            window.location.href = `/verify.html?email=${encodeURIComponent(email)}`;
-                        }, 2000);
-                        return;
-                    }
-
-                    if (window.auth && window.auth.saveLogin(result)) {
-                        showMessage('✅ Anmeldung erfolgreich! Sie werden weitergeleitet...', 'success');
-                        setTimeout(() => {
-                            window.location.href = '/dashboard.html';
-                        }, 1000);
-                    } else {
-                        throw new Error('Login-Daten konnten nicht gespeichert werden');
-                    }
-                } else {
-                    showMessage(result.error || 'Anmeldung fehlgeschlagen', 'error');
-                }
-            } catch (error) {
-                console.error('❌ Login error:', error);
-                showMessage('Netzwerkfehler. Bitte versuchen Sie es erneut.', 'error');
-            } finally {
-                loginBtn.disabled = false;
-                loginBtn.textContent = originalText;
-            }
-        });
-
-        function showMessage(message, type) {
-            const container = document.getElementById('loginMessage');
-            container.className = `message ${type}`;
-            container.textContent = message;
-            container.style.display = 'block';
-
-            if (type === 'success') {
-                setTimeout(() => {
-                    container.style.display = 'none';
-                }, 5000);
-            }
+        if (!email || !password) {
+            showMessage('Bitte fülle alle Felder aus.', 'error');
+            return;
         }
 
-        // Auto-focus email field
-        emailInput.focus();
-    })();
+        const originalText = loginBtn.textContent;
+        loginBtn.disabled = true;
+        loginBtn.innerHTML = '<div class="loading"></div>';
+
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                if (result.requiresVerification) {
+                    showMessage('Bitte bestätige zuerst deine E-Mail-Adresse.', 'warning');
+                    setTimeout(() => {
+                        window.location.href = `/verify.html?email=${encodeURIComponent(email)}`;
+                    }, 2000);
+                    return;
+                }
+
+                if (window.auth && window.auth.saveLogin(result)) {
+                    showMessage('Anmeldung erfolgreich! Weiterleitung...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/user-home.html';
+                    }, 1000);
+                } else {
+                    throw new Error('Login-Daten konnten nicht gespeichert werden');
+                }
+            } else {
+                showMessage(result.error || 'Anmeldung fehlgeschlagen', 'error');
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            showMessage('Verbindungsfehler. Bitte versuche es erneut.', 'error');
+        } finally {
+            loginBtn.disabled = false;
+            loginBtn.textContent = originalText;
+        }
+    });
+
+    function showMessage(message, type) {
+        messageDiv.className = `alert alert-${type}`;
+        messageDiv.textContent = message;
+        messageDiv.style.display = 'block';
+    }
+
+    // Auto-focus email field
+    emailInput.focus();
 </script>
 
 </body>

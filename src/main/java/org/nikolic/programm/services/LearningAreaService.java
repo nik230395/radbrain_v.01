@@ -1,9 +1,10 @@
 package org.nikolic.programm.services;
 
 import org.nikolic.programm.dtos.*;
-import org.nikolic.programm.dtos.*;
 import org.nikolic.programm.entities.*;
-import org.nikolic.programm.repositories.*;
+import org.nikolic.programm.repositories.LearningAreaRepository;
+import org.nikolic.programm.repositories.LearningContentRepository;
+import org.nikolic.programm.repositories.LearningModuleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
