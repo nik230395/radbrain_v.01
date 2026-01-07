@@ -9,11 +9,7 @@
 </head>
 <body>
 
-
-
-<!-- Main Content -->
 <div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
-    <!-- Header -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-12);">
         <div>
             <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-2);">
@@ -28,116 +24,69 @@
         </button>
     </div>
 
-    <!-- Debug Info (entferne später) -->
-    <div id="debugInfo" style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 8px; font-family: monospace; font-size: 12px; display: none;">
-        <strong>Debug Info:</strong><br>
-        API Base: <span id="debugApiBase"></span><br>
-        Auth Token: <span id="debugToken"></span><br>
-        User Role: <span id="debugRole"></span>
-    </div>
-
-    <!-- Learning Areas List -->
     <div id="areasList" style="display: grid; gap: var(--space-4);">
         <div style="text-align: center; padding: var(--space-12);">
             <div class="loading" style="width: 40px; height: 40px; margin: 0 auto;"></div>
+            <p>Lade Lernbereiche...</p>
         </div>
     </div>
 </div>
 
 <script src="/js/auth.js"></script>
+<script src="/js/dropdown.js"></script>
 <script src="/js/navbar.js"></script>
 <script>
-    // Admin-Check
-    if (!window.auth || !window.auth.hasRole('ADMIN')) {
-        alert('Keine Berechtigung!');
-        window.location.href = '/';
-    }
     const API_BASE = 'http://localhost:8080/api';
 
-    // Check admin auth
-    if (!window.auth || !window.auth.isLoggedIn()) {
-        window.location.href = '/auth/login.html';
-    } else if (!window.auth.hasRole('ADMIN')) {
-        window.location.href = '/userpages/user-home.html';
-    } else {
-        initializePage();
-    }
+    // Zentrale Initialisierung
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Sicherheits-Check: Ist der User Admin?
+        if (!window.auth || !window.auth.isLoggedIn()) {
+            window.location.href = '/auth/login.html';
+            return;
+        }
 
-    function initializePage() {
-        const user = window.auth.getUser();
-        const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
+        if (!window.auth.hasRole('ADMIN')) {
+            alert('Keine Berechtigung!');
+            window.location.href = '/userpages/user-home.html';
+            return;
+        }
 
-        document.getElementById('navRight').innerHTML = `
-            <div class="nav-profile-dropdown">
-                <button class="nav-profile-btn">
-                    <span>${name}</span>
-                    <span style="font-size: 0.75rem;">▾</span>
-                </button>
-                <div class="nav-profile-menu">
-                    <a href="/userpages/account.html">Mein Account</a>
-                    <div class="divider"></div>
-                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
-                </div>
-            </div>
-        `;
-
-        // Debug Info anzeigen (aktiviere durch Klick auf H1)
-        document.querySelector('h1').addEventListener('dblclick', () => {
-            const debugDiv = document.getElementById('debugInfo');
-            debugDiv.style.display = debugDiv.style.display === 'none' ? 'block' : 'none';
-            document.getElementById('debugApiBase').textContent = API_BASE;
-            document.getElementById('debugToken').textContent = window.auth.getToken() ? 'Vorhanden (gekürzt: ' + window.auth.getToken().substring(0, 20) + '...)' : 'FEHLT!';
-            document.getElementById('debugRole').textContent = window.auth.hasRole('ADMIN') ? 'ADMIN ✓' : 'KEIN ADMIN ✗';
-        });
-
+        // 2. Wenn Admin, dann Daten laden
         loadAreas();
-    }
+    });
 
     async function loadAreas() {
         console.log("=== LADE LERNBEREICHE ===");
-        console.log("URL:", `${API_BASE}/admin/learning-areas`);
-
         try {
             const response = await window.auth.authFetch(`${API_BASE}/admin/learning-areas`);
-            console.log("Response Status:", response.status);
 
             if (response.ok) {
                 const areas = await response.json();
-                console.log("Geladene Bereiche:", areas);
                 renderAreas(areas);
             } else {
-                const errorText = await response.text();
-                console.error("Server antwortete mit Fehler:", errorText);
-                console.error("Status:", response.status);
-
-                if(response.status === 403) {
-                    alert("Zugriff verweigert: Du bist kein Admin.");
-                } else if(response.status === 401) {
-                    alert("Nicht authentifiziert. Bitte neu einloggen.");
-                    window.location.href = '/auth/login.html';
-                } else {
-                    alert(`Fehler beim Laden (Status ${response.status}). Siehe Konsole für Details.`);
-                }
+                console.error("Server-Fehler:", response.status);
+                document.getElementById('areasList').innerHTML = `
+                    <p style="text-align:center; color:var(--error);">
+                        Fehler beim Laden (Status ${response.status}).
+                    </p>`;
             }
         } catch (error) {
-            console.error("=== LADEFEHLER ===");
-            console.error("Error:", error);
-            alert("Verbindungsfehler: Läuft der Server auf localhost:8080?");
+            console.error("Verbindungsfehler:", error);
+            document.getElementById('areasList').innerHTML = `
+                <p style="text-align:center; color:var(--error);">
+                    Verbindung zum Server fehlgeschlagen.
+                </p>`;
         }
     }
 
     function renderAreas(areas) {
         const container = document.getElementById('areasList');
 
-        if (areas.length === 0) {
+        if (!areas || areas.length === 0) {
             container.innerHTML = `
                 <div style="text-align: center; padding: var(--space-12);">
-                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">
-                        Noch keine Lernbereiche vorhanden
-                    </p>
-                    <button onclick="createArea()" class="btn btn-primary">
-                        Ersten Lernbereich erstellen
-                    </button>
+                    <p style="color: var(--gray-600);">Noch keine Lernbereiche vorhanden.</p>
                 </div>
             `;
             return;
@@ -157,19 +106,16 @@
                         </div>
                         ${area.subtitle ? `<p style="color: var(--gray-700);">${escapeHtml(area.subtitle)}</p>` : ''}
                         <div style="display: flex; gap: var(--space-6); color: var(--gray-500); font-size: 0.875rem; margin-top: 10px;">
-                            <span>Slug: ${area.slug}</span>
-                            <span>${area.moduleCount || 0} Module</span>
                             <span>ID: ${area.id}</span>
+                            <span>${area.moduleCount || 0} Module</span>
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: var(--space-2);">
                         <a href="/admin/admin-modules.html?areaId=${area.id}" class="btn btn-sm btn-primary">Module</a>
                         <button onclick="editArea(${area.id})" class="btn btn-sm btn-secondary">Bearbeiten</button>
-
                         <button onclick="togglePublish(${area.id}, ${area.isPublished})" class="btn btn-sm btn-outline">
                             ${area.isPublished ? 'Verstecken' : 'Veröffentlichen'}
                         </button>
-
                         <button onclick="deleteArea(${area.id}, '${escapeHtml(area.name)}')" class="btn btn-sm" style="background: var(--error); color: white;">Löschen</button>
                     </div>
                 </div>
@@ -178,121 +124,40 @@
     }
 
     async function togglePublish(id, currentStatus) {
-        console.log("=== TOGGLE PUBLISH DEBUG ===");
-        console.log("ID:", id);
-        console.log("Current Status:", currentStatus);
-        console.log("Neuer Status wird:", !currentStatus);
-
         const targetUrl = `${API_BASE}/admin/learning-areas/${id}`;
-        console.log("Target URL:", targetUrl);
-
         try {
-            // 1. Bereich laden
-            console.log("Schritt 1: Lade Bereich...");
             const getRes = await window.auth.authFetch(targetUrl);
-            console.log("GET Response Status:", getRes.status);
-
-            if (!getRes.ok) {
-                const errorText = await getRes.text();
-                console.error("GET Fehler:", errorText);
-                throw new Error(`Bereich konnte nicht geladen werden (Status ${getRes.status})`);
-            }
+            if (!getRes.ok) throw new Error("Bereich nicht gefunden");
 
             const area = await getRes.json();
-            console.log("Geladener Bereich:", area);
-
-            // 2. Status umkehren
-            const newStatus = !currentStatus;
-            console.log("Setze isPublished von", area.isPublished, "auf", newStatus);
-            area.isPublished = newStatus;
-
-            // 3. Zurückspeichern
-            console.log("Schritt 2: Speichere Bereich...");
-            console.log("PUT Payload:", JSON.stringify(area, null, 2));
+            area.isPublished = !currentStatus;
 
             const putRes = await window.auth.authFetch(targetUrl, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(area)
             });
 
-            console.log("PUT Response Status:", putRes.status);
-
             if (putRes.ok) {
-                console.log("✅ Erfolgreich gespeichert!");
-                alert(`Bereich wurde ${newStatus ? 'veröffentlicht' : 'versteckt'}`);
                 loadAreas();
-            } else {
-                const errorText = await putRes.text();
-                console.error("PUT Fehler:", errorText);
-
-                try {
-                    const errJson = JSON.parse(errorText);
-                    alert("Fehler beim Speichern: " + (errJson.message || errorText));
-                } catch {
-                    alert("Fehler beim Speichern (Status " + putRes.status + "): " + errorText);
-                }
             }
         } catch (error) {
-            console.error("=== TOGGLE PUBLISH FEHLER ===");
-            console.error("Error Name:", error.name);
-            console.error("Error Message:", error.message);
-            console.error("Full Error:", error);
-
-            let userMessage = "Verbindung fehlgeschlagen!\n\n";
-
-            if (error.message.includes('Failed to fetch')) {
-                userMessage += "• Server nicht erreichbar\n";
-                userMessage += "• Prüfe ob Backend läuft (localhost:8080)\n";
-                userMessage += "• Prüfe CORS-Einstellungen";
-            } else if (error.message.includes('401')) {
-                userMessage += "• Nicht authentifiziert\n";
-                userMessage += "• Bitte neu einloggen";
-            } else if (error.message.includes('403')) {
-                userMessage += "• Keine Berechtigung\n";
-                userMessage += "• Admin-Rechte erforderlich";
-            } else {
-                userMessage += "• " + error.message;
-            }
-
-            alert(userMessage);
+            alert("Fehler beim Ändern des Status: " + error.message);
         }
     }
 
-    function createArea() {
-        window.location.href = '/admin/learning-area-editor.html';
-    }
-
-    function editArea(id) {
-        window.location.href = `/admin/learning-area-editor.html?id=${id}`;
-    }
+    function createArea() { window.location.href = '/admin/learning-area-editor.html'; }
+    function editArea(id) { window.location.href = `/admin/learning-area-editor.html?id=${id}`; }
 
     async function deleteArea(id, name) {
-        if (!confirm(`"${name}" wirklich löschen? Alle Module und Inhalte gehen verloren!`)) return;
-
-        console.log("=== LÖSCHE BEREICH ===");
-        console.log("ID:", id);
-
+        if (!confirm(`"${name}" wirklich löschen?`)) return;
         try {
             const response = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/${id}`, {
                 method: 'DELETE'
             });
-
-            console.log("DELETE Response Status:", response.status);
-
-            if (response.ok) {
-                alert("Bereich erfolgreich gelöscht!");
-                loadAreas();
-            } else {
-                const errorText = await response.text();
-                console.error("DELETE Fehler:", errorText);
-                alert('Fehler beim Löschen (Status ' + response.status + ')');
-            }
+            if (response.ok) loadAreas();
         } catch (error) {
-            console.error("DELETE Error:", error);
-            alert('Verbindungsfehler beim Löschen');
+            alert('Fehler beim Löschen');
         }
     }
 

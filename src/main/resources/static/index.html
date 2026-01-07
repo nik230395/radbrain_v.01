@@ -5,20 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RadBrain - Radiologie lernen</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/navbar.css">
 </head>
 <body>
 
-<nav class="navbar">
-    <div class="navbar-content">
-        <div class="nav-left">
-            <img src="Bilder/logo.png" alt="RadBrain" class="nav-logo">
-        </div>
-        <div class="nav-right">
-            <a href="/auth/login.html" class="btn btn-ghost">Anmelden</a>
-            <a href="/auth/register.html" class="btn btn-primary">Registrieren</a>
-        </div>
-    </div>
-</nav>
 
 <section style="background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%); color: white; padding: calc(var(--nav-height) + var(--space-20)) 0 var(--space-20);">
     <div class="container">
@@ -139,6 +129,7 @@
     </div>
 </footer>
 
+<script src="/js/navbar.js"></script>
 <script>
     const API_BASE = 'http://localhost:8080/api';
 

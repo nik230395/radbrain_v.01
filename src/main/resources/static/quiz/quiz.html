@@ -276,12 +276,7 @@
     let answers = {};
     let quizId = null;
 
-    (async function() {
-        if (!window.auth || !window.auth.isLoggedIn()) {
-            window.location.href = '/auth/login.html';
-            return;
-        }
-
+    document.addEventListener('DOMContentLoaded', async () => {
         const params = new URLSearchParams(window.location.search);
         quizId = params.get('id');
 
@@ -291,24 +286,61 @@
             return;
         }
 
+        // 1. Prüfen ob angemeldet
+        if (!window.auth || !window.auth.isLoggedIn()) {
+            showLoginRequired();
+            return;
+        }
+
+        // 2. Wenn angemeldet, Quiz laden
         await loadQuiz();
-    })();
+    });
+
+    function showLoginRequired() {
+        document.getElementById('quizContent').innerHTML = `
+            <div class="results-card" style="padding: 50px; border: 2px dashed #667eea;">
+                <div style="font-size: 4rem; margin-bottom: 20px;"></div>
+                <h2 style="margin-bottom: 15px; color: #333;">Anmeldung erforderlich</h2>
+                <p style="color: #666; margin-bottom: 30px; font-size: 1.1em;">
+                    Um an Quizzes teilzunehmen und ein Feedback zu bekommen, <br>
+                    musst du mit deinem RadBrain-Konto angemeldet sein.
+                </p>
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <a href="/auth/login.html" class="btn btn-next" style="text-decoration: none; display: flex; align-items: center; justify-content: center;">
+                        Jetzt anmelden
+                    </a>
+                    <a href="/quiz/quizzes.html" class="btn btn-prev" style="text-decoration: none;">
+                        Zurück zur Übersicht
+                    </a>
+                </div>
+            </div>
+        `;
+    }
 
     async function loadQuiz() {
         try {
             const res = await window.auth.authFetch(`/api/quizzes/${quizId}`);
-            if (!res.ok) throw new Error('Quiz not found');
 
-            quiz = await res.json();
+            if (!res.ok) {
+                if (res.status === 401 || res.status === 403) {
+                    showLoginRequired();
+                    return;
+                }
+                throw new Error('Quiz nicht gefunden');
+            }
+
+            const result = await res.json();
+            // Dein Backend nutzt ApiResponse-Wrapper, also result.data nehmen
+            quiz = result.data;
             questions = quiz.questions || [];
 
             if (questions.length === 0) {
                 document.getElementById('quizContent').innerHTML = `
-                        <div class="results-card">
-                            <h2>Keine Fragen gefunden</h2>
-                            <p>Dieses Quiz enthält noch keine Fragen.</p>
-                        </div>
-                    `;
+                    <div class="results-card">
+                        <h2>Keine Fragen gefunden</h2>
+                        <p>Dieses Quiz enthält noch keine Fragen.</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -317,11 +349,12 @@
         } catch (error) {
             console.error('Error loading quiz:', error);
             document.getElementById('quizContent').innerHTML = `
-                    <div class="results-card">
-                        <h2>Fehler</h2>
-                        <p>Quiz konnte nicht geladen werden.</p>
-                    </div>
-                `;
+                <div class="results-card">
+                    <h2 style="color: var(--error);">Fehler beim Laden</h2>
+                    <p>Das Quiz konnte nicht vom Server abgerufen werden.</p>
+                    <button class="btn btn-next" onclick="location.reload()" style="margin-top: 20px;">Erneut versuchen</button>
+                </div>
+            `;
         }
     }
 

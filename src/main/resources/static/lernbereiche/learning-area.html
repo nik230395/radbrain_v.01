@@ -105,26 +105,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const areaSlug = urlParams.get('area');
 
-    // NAVBAR AUTH LOGIK
-    function updateNavbar() {
-        const navRight = document.getElementById('navRight');
-        if (window.auth && window.auth.isLoggedIn()) {
-            const user = window.auth.getUser();
-            const name = user.fullname ? user.fullname.split(' ')[0] : "User";
-            navRight.innerHTML = `
-                <div class="nav-profile-dropdown" id="profileDropdown">
-                    <button class="nav-profile-btn" onclick="toggleDropdown()">
-                        <span>${name}</span><span>▾</span>
-                    </button>
-                    <div class="nav-profile-menu">
-                        <a href="/userpages/account.html">Mein Account</a>
-                        <a href="/userpages/dashboard.html">Dashboard</a>
-                        <div class="divider"></div>
-                        <button onclick="window.auth.logout('/index.html')" style="color:red;">Abmelden</button>
-                    </div>
-                </div>`;
-        }
-    }
+
 
     function toggleDropdown() {
         document.getElementById('profileDropdown').classList.toggle('active');
@@ -139,7 +120,6 @@
             currentModules = currentArea.modules || [];
             await Promise.all(currentModules.map(loadModuleContent));
             renderPage();
-            updateNavbar();
 
             const targetId = urlParams.get('moduleId');
             if (targetId) showModuleContent(parseInt(targetId));

@@ -535,3 +535,10 @@
 .visible {
     display: block !important;
 }
+
+#navRight {
+    min-width: 180px; /* Ungefähre Breite der Buttons/des Profils */
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}

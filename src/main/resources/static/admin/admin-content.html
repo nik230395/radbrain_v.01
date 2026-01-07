@@ -6,7 +6,7 @@
     <title>Inhalt-Editor - RadBrain Admin</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/navabr.css">
-    <script src="/js/auth.js"></script>
+
     <style>
         /* FULLSCREEN MODAL - Nimmt den ganzen Bildschirm ein */
         #contentModal {
@@ -117,10 +117,10 @@
         <div class="form-group">
             <label class="form-label">Inhaltstyp</label>
             <select id="cType" class="input-field">
-                <option value="TEXT">📝 Text-Lektion</option>
-                <option value="VIDEO">🎥 Video-Link</option>
-                <option value="IMAGE">🖼️ Bild-URL</option>
-                <option value="HEADING">🚩 Überschrift</option>
+                <option value="TEXT">Text-Lektion</option>
+                <option value="VIDEO">Video-Link</option>
+                <option value="IMAGE">Bild-URL</option>
+                <option value="HEADING">Überschrift</option>
             </select>
         </div>
 
@@ -141,6 +141,8 @@
     </div>
 </div>
 
+<script src="/js/auth.js"></script>
+<script src="/js/navabar.js"></script>
 <script>
     // Admin-Check
     if (!window.auth || !window.auth.hasRole('ADMIN')) {

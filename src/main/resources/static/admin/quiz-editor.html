@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Quiz bearbeiten - RadBrain Admin</title>
   <link rel="stylesheet" href="/css/style.css">
-  <script src="/js/dropdown.js"></script>
+  <link rel="stylesheet" href="/css/navbar.css">
   <style>
     .question-block { background: #f9fafb; border: 1px solid #e5e7eb; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
     .choice-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
@@ -24,7 +24,7 @@
 
     <div>
       <button onclick="saveAll()" class="btn btn-primary" id="saveBtn">
-        💾 Alles Speichern
+        Alles Speichern
       </button>
     </div>
   </div>
@@ -33,6 +33,7 @@
 </div>
 
 <script src="/js/auth.js"></script>
+<script src="/js/navbar.js"></script>
 <script>
   // Admin-Check
   if (!window.auth || !window.auth.hasRole('ADMIN')) {
@@ -103,7 +104,7 @@
   async function saveAll() {
     const saveBtn = document.getElementById('saveBtn');
     saveBtn.disabled = true;
-    saveBtn.textContent = '⏳ Speichere...';
+    saveBtn.textContent = 'Speichere...';
 
     try {
       for (let q of quizData.questions) {
@@ -130,13 +131,13 @@
           });
         }
       }
-      alert("✅ Änderungen erfolgreich gespeichert!");
+      alert("Änderungen erfolgreich gespeichert!");
     } catch (e) {
       console.error(e);
-      alert("❌ Fehler beim Speichern einzelner Elemente.");
+      alert("Fehler beim Speichern einzelner Elemente.");
     } finally {
       saveBtn.disabled = false;
-      saveBtn.textContent = '💾 Alles Speichern';
+      saveBtn.textContent = 'Alles Speichern';
     }
   }
 </script>

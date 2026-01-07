@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quizzes - RadBrain</title>
     <link rel="stylesheet" href="/css/style.css">
-    <script src="/js/navabar.js"></script>
+    <link rel="stylesheet" href="/css/navbar.css">
     <style>
         .quiz-header {
             background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
             color: white;
             padding: var(--space-16) 0;
         }
-
         .filter-bar {
             background: white;
             border: 1px solid var(--gray-200);
@@ -20,25 +19,9 @@
             padding: var(--space-6);
             margin-bottom: var(--space-8);
         }
-
-        .filter-group {
-            display: flex;
-            gap: var(--space-4);
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .search-input {
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .category-filters {
-            display: flex;
-            gap: var(--space-2);
-            flex-wrap: wrap;
-        }
-
+        .filter-group { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; }
+        .search-input { flex: 1; min-width: 250px; }
+        .category-filters { display: flex; gap: var(--space-2); flex-wrap: wrap; }
         .category-btn {
             padding: var(--space-2) var(--space-4);
             background: white;
@@ -50,24 +33,9 @@
             cursor: pointer;
             transition: all var(--transition-fast);
         }
-
-        .category-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        .category-btn.active {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
-
-        .quiz-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: var(--space-6);
-        }
-
+        .category-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .category-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+        .quiz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--space-6); }
         .quiz-card {
             background: white;
             border: 1px solid var(--gray-200);
@@ -75,105 +43,37 @@
             padding: var(--space-6);
             transition: all var(--transition-base);
             cursor: pointer;
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column;
         }
-
-        .quiz-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
+        .quiz-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
         .quiz-category {
-            display: inline-block;
-            padding: var(--space-1) var(--space-3);
-            background: var(--primary-light);
-            color: var(--primary);
-            border-radius: var(--radius-md);
-            font-size: 0.875rem;
-            font-weight: 500;
-            margin-bottom: var(--space-4);
-            width: fit-content;
+            display: inline-block; padding: var(--space-1) var(--space-3);
+            background: var(--primary-light); color: var(--primary);
+            border-radius: var(--radius-md); font-size: 0.875rem; font-weight: 500;
+            margin-bottom: var(--space-4); width: fit-content;
         }
-
-        .quiz-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--gray-900);
-            margin-bottom: var(--space-2);
-        }
-
-        .quiz-description {
-            color: var(--gray-600);
-            font-size: 0.9375rem;
-            line-height: 1.6;
-            margin-bottom: var(--space-4);
-            flex: 1;
-        }
-
-        .quiz-meta {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding-top: var(--space-4);
-            border-top: 1px solid var(--gray-200);
-        }
-
-        .quiz-questions {
-            color: var(--gray-500);
-            font-size: 0.875rem;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-6);
-            margin-bottom: var(--space-8);
-        }
-
-        .stat-card {
-            background: white;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: var(--space-6);
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: var(--space-2);
-        }
-
-        .stat-label {
-            color: var(--gray-600);
-            font-size: 0.9375rem;
-        }
+        .quiz-title { font-size: 1.25rem; font-weight: 600; color: var(--gray-900); margin-bottom: var(--space-2); }
+        .quiz-description { color: var(--gray-600); font-size: 0.9375rem; line-height: 1.6; margin-bottom: var(--space-4); flex: 1; }
+        .quiz-meta { display: flex; align-items: center; justify-content: space-between; padding-top: var(--space-4); border-top: 1px solid var(--gray-200); }
+        .quiz-questions { color: var(--gray-500); font-size: 0.875rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-6); margin-bottom: var(--space-8); }
+        .stat-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--space-6); text-align: center; }
+        .stat-value { font-size: 2.5rem; font-weight: 700; color: var(--primary); margin-bottom: var(--space-2); }
+        .stat-label { color: var(--gray-600); font-size: 0.9375rem; }
     </style>
 </head>
 <body>
 
-
-
-
 <header class="quiz-header">
     <div class="container">
         <div style="max-width: 720px;">
-            <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-3); color: white;">
-                Quizzes
-            </h1>
-            <p style="font-size: 1.125rem; color: rgba(255,255,255,0.9);">
-                Teste dein Wissen mit praxisnahen Fragen und erhalte direktes Feedback
-            </p>
+            <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: var(--space-3); color: white;">Quizzes</h1>
+            <p style="font-size: 1.125rem; color: rgba(255,255,255,0.9);">Teste dein Wissen mit praxisnahen Fragen und erhalte direktes Feedback</p>
         </div>
     </div>
 </header>
 
-
 <div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
-
     <div class="stats-grid" id="statsGrid">
         <div class="stat-card">
             <div class="stat-value" id="totalQuizzes">0</div>
@@ -189,40 +89,21 @@
         </div>
     </div>
 
-
     <div class="filter-bar">
         <div class="filter-group">
-            <input
-                    type="text"
-                    id="searchInput"
-                    class="form-input search-input"
-                    placeholder="Quiz suchen..."
-                    onkeyup="filterQuizzes()">
-
+            <input type="text" id="searchInput" class="form-input search-input" placeholder="Quiz suchen..." onkeyup="filterQuizzes()">
             <div class="category-filters">
-                <button class="category-btn active" onclick="filterCategory(event, 'ALL')">
-                    Alle
-                </button>
-                <button class="category-btn" onclick="filterCategory(event, 'ROENTGEN')">
-                    Röntgen
-                </button>
-                <button class="category-btn" onclick="filterCategory(event, 'CT')">
-                    CT
-                </button>
-                <button class="category-btn" onclick="filterCategory(event, 'MRT')">
-                    MRT
-                </button>
-                <button class="category-btn" onclick="filterCategory(event, 'ULTRASCHALL')">
-                    Ultraschall
-                </button>
+                <button class="category-btn active" onclick="filterCategory(event, 'ALL')">Alle</button>
+                <button class="category-btn" onclick="filterCategory(event, 'ROENTGEN')">Röntgen</button>
+                <button class="category-btn" onclick="filterCategory(event, 'CT')">CT</button>
+                <button class="category-btn" onclick="filterCategory(event, 'MRT')">MRT</button>
+                <button class="category-btn" onclick="filterCategory(event, 'ULTRASCHALL')">Ultraschall</button>
             </div>
         </div>
     </div>
 
-
     <div id="quizContainer">
         <div style="text-align: center; padding: var(--space-12);">
-            <div class="loading" style="width: 40px; height: 40px; margin: 0 auto var(--space-4);"></div>
             <p style="color: var(--gray-600);">Lade Quizzes...</p>
         </div>
     </div>
@@ -235,62 +116,60 @@
     let allQuizzes = [];
     let currentCategory = 'ALL';
 
-
-    if (!window.auth || !window.auth.isLoggedIn()) {
-        window.location.href = '/login.html';
-    } else {
-        const user = window.auth.getUser();
-        const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
-
-        let navHtml = `
-            <div class="nav-profile-dropdown">
-                <button class="nav-profile-btn">
-                    <span>${name}</span>
-                    <span style="font-size: 0.75rem;">▾</span>
-                </button>
-                <div class="nav-profile-menu">
-                    <a href="/userpages/account.html">Mein Account</a>
-                    <a href="/auth/dashboard.html">Dashboard</a>`;
-
-        if (window.auth.hasRole('ADMIN')) {
-            navHtml += `<div class="divider"></div><a href="/admin/admin-dashboard.html">Admin-Bereich</a>`;
-        }
-
-        navHtml += `
-                    <div class="divider"></div>
-                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
-                </div>
-            </div>
-        `;
-
-        document.getElementById('navRight').innerHTML = navHtml;
-    }
-
+    document.addEventListener('DOMContentLoaded', () => {
+        // Wir laden die Quizzes erst, wenn die Seite bereit ist
+        loadQuizzes();
+    });
 
     async function loadQuizzes() {
+        const container = document.getElementById('quizContainer');
         try {
-            const response = await window.auth.authFetch(`${API_BASE}/quizzes/published`);
-            if (!response.ok) throw new Error('Failed to load quizzes');
+            console.log("Fetching from:", `${API_BASE}/quizzes/published`);
 
-            allQuizzes = await response.json();
-            updateStats();
-            displayQuizzes(allQuizzes);
+            // fetch statt authFetch probieren, falls kein Token nötig ist
+            const response = await fetch(`${API_BASE}/quizzes/published`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log("API Result:", result);
+
+                // Mapping auf dein ApiResponse<Page<QuizDto>> Format
+                if (result && result.data && result.data.content) {
+                    allQuizzes = result.data.content;
+                    updateStats();
+                    displayQuizzes(allQuizzes);
+                } else {
+                    console.error("Format falsch oder keine Daten:", result);
+                    allQuizzes = [];
+                    displayQuizzes([]);
+                }
+            } else {
+                throw new Error(`HTTP Error: ${response.status}`);
+            }
         } catch (error) {
-            console.error('Error loading quizzes:', error);
-            document.getElementById('quizContainer').innerHTML = `
+            console.error('Fetch error:', error);
+            container.innerHTML = `
                 <div style="text-align: center; padding: var(--space-12);">
-                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">
-                        Quizzes konnten nicht geladen werden.
+                    <p style="color: var(--error);">
+                        <b>Verbindung fehlgeschlagen.</b><br>
+                        Prüfe ob das Backend läuft und der Pfad <br>
+                        <i>/api/quizzes/published</i> in SecurityConfig freigegeben ist.
                     </p>
-                    <button class="btn btn-primary" onclick="loadQuizzes()">
+                    <button class="btn btn-primary" onclick="loadQuizzes()" style="margin-top:20px;">
                         Erneut versuchen
                     </button>
-                </div>
-            `;
+                </div>`;
         }
     }
 
     function updateStats() {
+        if (!Array.isArray(allQuizzes)) return;
         const totalQuestions = allQuizzes.reduce((sum, quiz) => sum + (quiz.questionCount || 0), 0);
         const avgQuestions = allQuizzes.length > 0 ? Math.round(totalQuestions / allQuizzes.length) : 0;
 
@@ -301,18 +180,8 @@
 
     function displayQuizzes(quizzes) {
         const container = document.getElementById('quizContainer');
-
         if (quizzes.length === 0) {
-            container.innerHTML = `
-                <div style="text-align: center; padding: var(--space-12);">
-                    <p style="color: var(--gray-600); margin-bottom: var(--space-4);">
-                        Keine Quizzes gefunden.
-                    </p>
-                    <p style="color: var(--gray-500); font-size: 0.9375rem;">
-                        Versuche einen anderen Filter oder Suchbegriff.
-                    </p>
-                </div>
-            `;
+            container.innerHTML = '<p style="text-align:center;">Keine Quizzes gefunden.</p>';
             return;
         }
 
@@ -320,100 +189,38 @@
             <div class="quiz-grid">
                 ${quizzes.map(quiz => `
                     <div class="quiz-card" onclick="startQuiz(${quiz.id})">
-                        <div class="quiz-category">${getCategoryLabel(quiz.category || 'ROENTGEN')}</div>
-                        <div class="quiz-title">${escapeHtml(quiz.title)}</div>
-                        <div class="quiz-description">${escapeHtml(quiz.description || 'Teste dein Wissen!')}</div>
+                        <div class="quiz-category">${quiz.category || 'Allgemein'}</div>
+                        <div class="quiz-title">${quiz.title}</div>
+                        <div class="quiz-description">${quiz.description || ''}</div>
                         <div class="quiz-meta">
                             <span class="quiz-questions">${quiz.questionCount || 0} Fragen</span>
-                            <button class="btn btn-sm btn-primary" onclick="event.stopPropagation(); startQuiz(${quiz.id})">
-                                Starten →
-                            </button>
+                            <button class="btn btn-sm btn-primary">Starten</button>
                         </div>
                     </div>
                 `).join('')}
-            </div>
-        `;
-    }
-
-    function filterCategory(event, category) {
-        currentCategory = category;
-
-
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        event.target.classList.add('active');
-
-        filterQuizzes();
+            </div>`;
     }
 
     function filterQuizzes() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-
-        let filtered = allQuizzes;
-
-        // Filter by category
-        if (currentCategory !== 'ALL') {
-            filtered = filtered.filter(quiz => quiz.category === currentCategory);
-        }
-
-        // Filter by search term
-        if (searchTerm) {
-            filtered = filtered.filter(quiz =>
-                quiz.title.toLowerCase().includes(searchTerm) ||
-                (quiz.description && quiz.description.toLowerCase().includes(searchTerm))
-            );
-        }
-
+        const filtered = allQuizzes.filter(quiz => {
+            const matchesSearch = quiz.title.toLowerCase().includes(searchTerm);
+            const matchesCat = currentCategory === 'ALL' || quiz.category === currentCategory;
+            return matchesSearch && matchesCat;
+        });
         displayQuizzes(filtered);
+    }
+
+    function filterCategory(event, cat) {
+        currentCategory = cat;
+        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        filterQuizzes();
     }
 
     function startQuiz(id) {
         window.location.href = `/quiz/quiz.html?id=${id}`;
     }
-
-    function getCategoryLabel(category) {
-        const labels = {
-            'ROENTGEN': 'Röntgen',
-            'CT': 'CT',
-            'MRT': 'MRT',
-            'ULTRASCHALL': 'Ultraschall'
-        };
-        return labels[category] || category;
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // Load navigation areas
-    async function loadNavigationAreas() {
-        try {
-            const response = await fetch(`${API_BASE}/learning-areas`);
-            if (!response.ok) return;
-
-            const areas = await response.json();
-            const menu = document.getElementById('learningAreasMenu');
-            menu.innerHTML = areas
-                .sort((a, b) => a.displayOrder - b.displayOrder)
-                .map(area => `
-                    <li><a href="/lernbereiche/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>
-                `)
-                .join('');
-        } catch (error) {
-            console.error('Error loading navigation areas:', error);
-        }
-    }
-
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-        loadQuizzes();
-        loadNavigationAreas();
-    });
 </script>
-
 </body>
 </html>
