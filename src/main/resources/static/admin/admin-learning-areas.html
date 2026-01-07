@@ -5,30 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lernbereiche verwalten - RadBrain Admin</title>
     <link rel="stylesheet" href="/css/style.css">
-    <script src="/js/dropdown.js"></script>
+    <link rel="stylesheet" href="/css/navbar.css">
 </head>
 <body>
 
-<!-- Navigation -->
-<nav class="navbar">
-    <div class="navbar-content">
-        <div class="nav-left">
-            <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="/userpages/user-home.html" class="nav-link">Übersicht</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/admin/admin-dashboard.html" class="nav-link">Admin</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/admin/admin-learning-areas.html" class="nav-link active">Lernbereiche</a>
-                </li>
-            </ul>
-        </div>
-        <div class="nav-right" id="navRight"></div>
-    </div>
-</nav>
+
 
 <!-- Main Content -->
 <div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
@@ -47,6 +28,14 @@
         </button>
     </div>
 
+    <!-- Debug Info (entferne später) -->
+    <div id="debugInfo" style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; border-radius: 8px; font-family: monospace; font-size: 12px; display: none;">
+        <strong>Debug Info:</strong><br>
+        API Base: <span id="debugApiBase"></span><br>
+        Auth Token: <span id="debugToken"></span><br>
+        User Role: <span id="debugRole"></span>
+    </div>
+
     <!-- Learning Areas List -->
     <div id="areasList" style="display: grid; gap: var(--space-4);">
         <div style="text-align: center; padding: var(--space-12);">
@@ -56,8 +45,13 @@
 </div>
 
 <script src="/js/auth.js"></script>
-<script src="/js/dropdown.js"></script>
+<script src="/js/navbar.js"></script>
 <script>
+    // Admin-Check
+    if (!window.auth || !window.auth.hasRole('ADMIN')) {
+        alert('Keine Berechtigung!');
+        window.location.href = '/';
+    }
     const API_BASE = 'http://localhost:8080/api';
 
     // Check admin auth
@@ -87,23 +81,48 @@
             </div>
         `;
 
+        // Debug Info anzeigen (aktiviere durch Klick auf H1)
+        document.querySelector('h1').addEventListener('dblclick', () => {
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.style.display = debugDiv.style.display === 'none' ? 'block' : 'none';
+            document.getElementById('debugApiBase').textContent = API_BASE;
+            document.getElementById('debugToken').textContent = window.auth.getToken() ? 'Vorhanden (gekürzt: ' + window.auth.getToken().substring(0, 20) + '...)' : 'FEHLT!';
+            document.getElementById('debugRole').textContent = window.auth.hasRole('ADMIN') ? 'ADMIN ✓' : 'KEIN ADMIN ✗';
+        });
+
         loadAreas();
     }
 
     async function loadAreas() {
+        console.log("=== LADE LERNBEREICHE ===");
+        console.log("URL:", `${API_BASE}/admin/learning-areas`);
+
         try {
-            // Sicherstellen, dass der Pfad exakt so aussieht:
             const response = await window.auth.authFetch(`${API_BASE}/admin/learning-areas`);
+            console.log("Response Status:", response.status);
 
             if (response.ok) {
                 const areas = await response.json();
+                console.log("Geladene Bereiche:", areas);
                 renderAreas(areas);
             } else {
-                console.error("Server antwortete mit Status:", response.status);
-                if(response.status === 403) alert("Zugriff verweigert: Du bist kein Admin.");
+                const errorText = await response.text();
+                console.error("Server antwortete mit Fehler:", errorText);
+                console.error("Status:", response.status);
+
+                if(response.status === 403) {
+                    alert("Zugriff verweigert: Du bist kein Admin.");
+                } else if(response.status === 401) {
+                    alert("Nicht authentifiziert. Bitte neu einloggen.");
+                    window.location.href = '/auth/login.html';
+                } else {
+                    alert(`Fehler beim Laden (Status ${response.status}). Siehe Konsole für Details.`);
+                }
             }
         } catch (error) {
-            console.error("Ladefehler:", error);
+            console.error("=== LADEFEHLER ===");
+            console.error("Error:", error);
+            alert("Verbindungsfehler: Läuft der Server auf localhost:8080?");
         }
     }
 
@@ -140,6 +159,7 @@
                         <div style="display: flex; gap: var(--space-6); color: var(--gray-500); font-size: 0.875rem; margin-top: 10px;">
                             <span>Slug: ${area.slug}</span>
                             <span>${area.moduleCount || 0} Module</span>
+                            <span>ID: ${area.id}</span>
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: var(--space-2);">
@@ -158,36 +178,86 @@
     }
 
     async function togglePublish(id, currentStatus) {
-        console.log("Versuche Status zu ändern für ID:", id); // Schau in die F12 Konsole!
+        console.log("=== TOGGLE PUBLISH DEBUG ===");
+        console.log("ID:", id);
+        console.log("Current Status:", currentStatus);
+        console.log("Neuer Status wird:", !currentStatus);
+
         const targetUrl = `${API_BASE}/admin/learning-areas/${id}`;
-        console.log("Ziel-URL:", targetUrl);
+        console.log("Target URL:", targetUrl);
 
         try {
+            // 1. Bereich laden
+            console.log("Schritt 1: Lade Bereich...");
             const getRes = await window.auth.authFetch(targetUrl);
-            if (!getRes.ok) throw new Error("Bereich konnte nicht geladen werden");
+            console.log("GET Response Status:", getRes.status);
+
+            if (!getRes.ok) {
+                const errorText = await getRes.text();
+                console.error("GET Fehler:", errorText);
+                throw new Error(`Bereich konnte nicht geladen werden (Status ${getRes.status})`);
+            }
 
             const area = await getRes.json();
+            console.log("Geladener Bereich:", area);
 
             // 2. Status umkehren
-            area.isPublished = !isCurrentlyPublished;
+            const newStatus = !currentStatus;
+            console.log("Setze isPublished von", area.isPublished, "auf", newStatus);
+            area.isPublished = newStatus;
 
             // 3. Zurückspeichern
-            const res = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/${id}`, {
+            console.log("Schritt 2: Speichere Bereich...");
+            console.log("PUT Payload:", JSON.stringify(area, null, 2));
+
+            const putRes = await window.auth.authFetch(targetUrl, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify(area)
             });
 
-            if (res.ok) {
-                // FIX 2: Richtige Funktion aufrufen (loadAreas statt loadLearningAreas)
+            console.log("PUT Response Status:", putRes.status);
+
+            if (putRes.ok) {
+                console.log("✅ Erfolgreich gespeichert!");
+                alert(`Bereich wurde ${newStatus ? 'veröffentlicht' : 'versteckt'}`);
                 loadAreas();
             } else {
-                const err = await res.json();
-                alert("Fehler: " + (err.message || "Status konnte nicht geändert werden"));
+                const errorText = await putRes.text();
+                console.error("PUT Fehler:", errorText);
+
+                try {
+                    const errJson = JSON.parse(errorText);
+                    alert("Fehler beim Speichern: " + (errJson.message || errorText));
+                } catch {
+                    alert("Fehler beim Speichern (Status " + putRes.status + "): " + errorText);
+                }
             }
         } catch (error) {
-            console.error("Fehler:", error);
-            alert("Verbindung fehlgeschlagen");
+            console.error("=== TOGGLE PUBLISH FEHLER ===");
+            console.error("Error Name:", error.name);
+            console.error("Error Message:", error.message);
+            console.error("Full Error:", error);
+
+            let userMessage = "Verbindung fehlgeschlagen!\n\n";
+
+            if (error.message.includes('Failed to fetch')) {
+                userMessage += "• Server nicht erreichbar\n";
+                userMessage += "• Prüfe ob Backend läuft (localhost:8080)\n";
+                userMessage += "• Prüfe CORS-Einstellungen";
+            } else if (error.message.includes('401')) {
+                userMessage += "• Nicht authentifiziert\n";
+                userMessage += "• Bitte neu einloggen";
+            } else if (error.message.includes('403')) {
+                userMessage += "• Keine Berechtigung\n";
+                userMessage += "• Admin-Rechte erforderlich";
+            } else {
+                userMessage += "• " + error.message;
+            }
+
+            alert(userMessage);
         }
     }
 
@@ -202,18 +272,27 @@
     async function deleteArea(id, name) {
         if (!confirm(`"${name}" wirklich löschen? Alle Module und Inhalte gehen verloren!`)) return;
 
+        console.log("=== LÖSCHE BEREICH ===");
+        console.log("ID:", id);
+
         try {
             const response = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/${id}`, {
                 method: 'DELETE'
             });
 
+            console.log("DELETE Response Status:", response.status);
+
             if (response.ok) {
+                alert("Bereich erfolgreich gelöscht!");
                 loadAreas();
             } else {
-                alert('Fehler beim Löschen');
+                const errorText = await response.text();
+                console.error("DELETE Fehler:", errorText);
+                alert('Fehler beim Löschen (Status ' + response.status + ')');
             }
-        } catch {
-            alert('Verbindungsfehler');
+        } catch (error) {
+            console.error("DELETE Error:", error);
+            alert('Verbindungsfehler beim Löschen');
         }
     }
 

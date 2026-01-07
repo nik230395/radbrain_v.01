@@ -1,13 +1,17 @@
 package org.nikolic.programm.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.nikolic.programm.dtos.CreateQuizRequest;
+import org.nikolic.programm.dtos.SubmitQuizRequest;
+import jakarta.validation.Valid;
+import org.nikolic.programm.dtos.ApiResponse;
 import org.nikolic.programm.dtos.QuizDto;
 import org.nikolic.programm.entities.Quiz;
 import org.nikolic.programm.entities.User;
-import org.nikolic.programm.repositories.UserRepository;
+import org.nikolic.programm.exceptions.QuizNotFoundException;
 import org.nikolic.programm.services.QuizService;
+import org.nikolic.programm.services.UserService;
 import org.nikolic.programm.utils.QuizMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +19,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
- * Public endpoints for taking quizzes (get quiz, submit answers).
+ * Public Quiz Controller
  */
 @RestController
 @RequestMapping("/api/quizzes")
@@ -26,106 +30,88 @@ import java.util.Optional;
 public class QuizController {
 
     private final QuizService quizService;
-    private final UserRepository userRepository;
-    private final ObjectMapper objectMapper;
+    private final UserService userService;
 
-    public QuizController(QuizService quizService, UserRepository userRepository, ObjectMapper objectMapper) {
+    public QuizController(QuizService quizService, UserService userService) {
         this.quizService = quizService;
-        this.userRepository = userRepository;
-        this.objectMapper = objectMapper;
+        this.userService = userService;
     }
 
+    /**
+     * Get all published quizzes with pagination
+     */
     @GetMapping("/published")
-    public ResponseEntity<?> getPublishedQuizzes() {
-        List<Quiz> publishedQuizzes = quizService.findAllPublished();
-        List<QuizDto> dtos = publishedQuizzes.stream()
-                .map(QuizMapper::toDto)
-                .collect(java.util.stream.Collectors.toList());
-        return ResponseEntity.ok(dtos);
+    public ResponseEntity<ApiResponse<Page<QuizDto>>> getPublishedQuizzes(Pageable pageable) {
+        Page<QuizDto> quizzes = quizService.findAllPublishedPaged(pageable) //error
+                .map(QuizMapper::toLightDto);
+
+        return ResponseEntity.ok(ApiResponse.success(quizzes));
     }
 
+    /**
+     * Get quiz by ID
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getQuiz(@PathVariable Long id) {
-        Optional<Quiz> q = quizService.findById(id);
-        if (q.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "not_found"));
-        }
-        QuizDto dto = QuizMapper.toDto(q.get());
-        return ResponseEntity.ok(dto);
-    }
-    @PostMapping
-    public ResponseEntity<?> createQuiz(@RequestBody Map<String, Object> request, Authentication auth) {
-        try {
-            // Check if user is admin
-            User user = null;
-            if (auth != null) {
-                String email = auth.getName();
-                user = userRepository.findByEmail(email).orElse(null);
+    public ResponseEntity<ApiResponse<QuizDto>> getQuiz(@PathVariable Long id) {
+        Quiz quiz = quizService.findByIdWithQuestions(id)
+                .orElseThrow(() -> new QuizNotFoundException(id));
 
-                // Verify admin role
-                if (user == null || !user.getRoleString().contains("ADMIN")) {
-                    return ResponseEntity.status(403)
-                            .body(Map.of("error", "Admin-Berechtigung erforderlich"));
-                }
-            } else {
-                return ResponseEntity.status(401)
-                        .body(Map.of("error", "Authentifizierung erforderlich"));
-            }
-
-            // Extract data
-            String title = (String) request.get("title");
-            String description = (String) request.get("description");
-            String category = (String) request.get("category");
-
-            if (title == null || title.trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Titel ist erforderlich"));
-            }
-
-            // Create quiz using QuizService
-            CreateQuizRequest req = new CreateQuizRequest();
-            req.setTitle(title);
-            req.setDescription(description);
-            req.setCategory(category);
-
-            Quiz createdQuiz = quizService.createFromRequest(req, user);
-            QuizDto dto = QuizMapper.toDto(createdQuiz);
-
-            return ResponseEntity.status(201).body(dto);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(500)
-                    .body(Map.of("error", "Fehler beim Erstellen: " + e.getMessage()));
-        }
+        QuizDto dto = QuizMapper.toDto(quiz);
+        return ResponseEntity.ok(ApiResponse.success(dto));
     }
 
+    /**
+     * Submit quiz answers
+     */
     @PostMapping("/{id}/submit")
-    public ResponseEntity<?> submit(@PathVariable Long id, @RequestBody Map<String, Object> body, Authentication auth) {
-        Optional<Quiz> qopt = quizService.findById(id);
-        if (qopt.isEmpty()) {
-            return ResponseEntity.status(404).body(Map.of("error", "not_found"));
-        }
-        Quiz quiz = qopt.get();
+    public ResponseEntity<ApiResponse<Map<String, Object>>> submitQuiz(
+            @PathVariable Long id,
+            @Valid @RequestBody SubmitQuizRequest request,
+            Authentication authentication) {
 
-        User user = null;
-        if (auth != null) {
-            String email = auth.getName();
-            user = userRepository.findByEmail(email).orElse(null);
-        }
+        Quiz quiz = quizService.findById(id)
+                .orElseThrow(() -> new QuizNotFoundException(id));
 
-        Map<String, Object> rawAnswers = objectMapper.convertValue(body.get("answers"), Map.class);
-        Map<Long, Object> structuredAnswers = new HashMap<>();
-        if (rawAnswers != null) {
-            for (Map.Entry<String, Object> entry : rawAnswers.entrySet()) {
-                try {
-                    Long questionId = Long.parseLong(entry.getKey());
-                    structuredAnswers.put(questionId, entry.getValue());
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
+        User user = userService.getAuthenticatedUser(authentication).orElse(null);
 
-        Map<String, Object> result = quizService.evaluateAndSaveAttempt(quiz, user, structuredAnswers);
-        return ResponseEntity.ok(result);
+        Map<Long, Object> answersMap = convertAnswersToMap(request.getAnswers());
+        Map<String, Object> result = quizService.evaluateAndSaveAttempt(
+                quiz, user, answersMap
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Quiz ausgewertet", result)
+        );
     }
+    /**
+     * Convert List<AnswerSubmission> to Map<questionId, answer>
+     * Handles both single and multiple choice questions
+     */
+    private Map<Long, Object> convertAnswersToMap(List<SubmitQuizRequest.AnswerSubmission> submissions) {
+        Map<Long, Object> answersMap = new HashMap<>();
+
+        // Group by questionId
+        Map<Long, List<Long>> grouped = submissions.stream()
+                .collect(Collectors.groupingBy(
+                        SubmitQuizRequest.AnswerSubmission::getQuestionId,
+                        Collectors.mapping(
+                                SubmitQuizRequest.AnswerSubmission::getChoiceId,
+                                Collectors.toList()
+                        )
+                ));
+
+        // Convert to appropriate format
+        grouped.forEach((questionId, choiceIds) -> {
+            if (choiceIds.size() == 1) {
+                // Single choice - store choiceId directly
+                answersMap.put(questionId, choiceIds.get(0));
+            } else {
+                // Multiple choice - store as list
+                answersMap.put(questionId, choiceIds);
+            }
+        });
+
+        return answersMap;
+    }
+
 }

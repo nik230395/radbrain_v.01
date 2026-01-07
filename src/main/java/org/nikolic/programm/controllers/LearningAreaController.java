@@ -66,4 +66,5 @@ public class LearningAreaController {
             return ResponseEntity.internalServerError().build();
         }
     }
+
 }

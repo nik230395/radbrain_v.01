@@ -1,11 +1,13 @@
 package org.nikolic.programm.dtos;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-/**
- * QuizDto with complete question and choice data
- */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class QuizDto {
     private Long id;
     private String title;
@@ -16,68 +18,81 @@ public class QuizDto {
     private List<QuestionDto> questions;
     private Integer questionCount;
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    // Private constructor for Builder
+    private QuizDto() {}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public Boolean getIsPublished() {
-        return isPublished;
-    }
-
-    public void setIsPublished(Boolean isPublished) {
-        this.isPublished = isPublished;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
+    // Getters
+    public Long getId() { return id; }
+    public String getTitle() { return title; }
+    public String getDescription() { return description; }
+    public String getCategory() { return category; }
+    public Boolean getIsPublished() { return isPublished; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
     public List<QuestionDto> getQuestions() {
-        return questions;
+        return questions != null ? new ArrayList<>(questions) : Collections.emptyList();
+    }
+    public Integer getQuestionCount() { return questionCount; }
+
+    // Setters (needed for Jackson)
+    public void setId(Long id) { this.id = id; }
+    public void setTitle(String title) { this.title = title; }
+    public void setDescription(String description) { this.description = description; }
+    public void setCategory(String category) { this.category = category; }
+    public void setIsPublished(Boolean isPublished) { this.isPublished = isPublished; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setQuestions(List<QuestionDto> questions) { this.questions = questions; }
+    public void setQuestionCount(Integer questionCount) { this.questionCount = questionCount; }
+
+    // Builder
+    public static Builder builder() {
+        return new Builder();
     }
 
-    public void setQuestions(List<QuestionDto> questions) {
-        this.questions = questions;
-    }
+    public static class Builder {
+        private final QuizDto dto = new QuizDto();
 
-    public Integer getQuestionCount() {
-        return questionCount;
-    }
+        public Builder id(Long id) {
+            dto.id = id;
+            return this;
+        }
 
-    public void setQuestionCount(Integer questionCount) {
-        this.questionCount = questionCount;
+        public Builder title(String title) {
+            dto.title = title;
+            return this;
+        }
+
+        public Builder description(String description) {
+            dto.description = description;
+            return this;
+        }
+
+        public Builder category(String category) {
+            dto.category = category;
+            return this;
+        }
+
+        public Builder isPublished(Boolean isPublished) {
+            dto.isPublished = isPublished;
+            return this;
+        }
+
+        public Builder createdAt(LocalDateTime createdAt) {
+            dto.createdAt = createdAt;
+            return this;
+        }
+
+        public Builder questions(List<QuestionDto> questions) {
+            dto.questions = questions != null ? new ArrayList<>(questions) : new ArrayList<>();
+            return this;
+        }
+
+        public Builder questionCount(Integer questionCount) {
+            dto.questionCount = questionCount;
+            return this;
+        }
+
+        public QuizDto build() {
+            return dto;
+        }
     }
 }

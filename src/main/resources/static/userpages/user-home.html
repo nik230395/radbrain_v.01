@@ -5,39 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RadBrain - Radiologie lernen</title>
     <link rel="stylesheet" href="/css/style.css">
-    <script src="/js/dropdown.js"></script>
+    <link rel="stylesheet" href="/css/navbar.css">
 </head>
 <body>
-
-
-<nav class="navbar">
-    <div class="navbar-content">
-        <div class="nav-left">
-            <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
-            <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="/userpages/user-home.html" class="nav-link active">Übersicht</a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a href="#" class="nav-link">Lernbereiche</a>
-                    <ul class="dropdown-menu" id="learningAreasMenu">
-
-                    </ul>
-                </li>
-                <li class="nav-item">
-                    <a href="/quiz/quizzes.html" class="nav-link">Quizzes</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/lernbereiche/table-of-contents.html" class="nav-link">Inhalte</a>
-                </li>
-            </ul>
-        </div>
-        <div class="nav-right" id="navRight">
-            <a href="/auth/login.html" class="btn-login">Anmelden</a>
-        </div>
-    </div>
-</nav>
-
 
 <section style="background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%); color: white; padding: var(--space-20) 0;">
     <div class="container">
@@ -60,7 +30,6 @@
     </div>
 </section>
 
-
 <section id="lernbereiche" class="section" style="background: white;">
     <div class="container">
         <div style="text-align: center; margin-bottom: var(--space-12);">
@@ -79,7 +48,6 @@
         </div>
     </div>
 </section>
-
 
 <section class="section" style="background: var(--gray-50);">
     <div class="container">
@@ -129,7 +97,6 @@
     </div>
 </section>
 
-
 <section class="section" style="background: white;">
     <div class="container">
         <div style="background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%); border-radius: var(--radius-xl); padding: var(--space-16); text-align: center; color: white;">
@@ -151,7 +118,6 @@
     </div>
 </section>
 
-
 <footer style="background: var(--gray-900); color: white; padding: var(--space-12) 0;">
     <div class="container">
         <div style="text-align: center;">
@@ -163,10 +129,11 @@
 </footer>
 
 <script src="/js/auth.js"></script>
+<script src="/js/navbar.js"></script>
 <script>
     const API_BASE = 'http://localhost:8080/api';
 
-
+    // AUTH LOGIK & PROFILE MENU
     if (window.auth && window.auth.isLoggedIn()) {
         const user = window.auth.getUser();
         const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
@@ -180,8 +147,9 @@
                 <div class="nav-profile-menu">
                     <a href="/userpages/account.html">Mein Account</a>`;
 
+        // ADMIN-WEITERLEITUNG: Wenn Admin, dann Link zum Dashboard einfügen
         if (window.auth.hasRole('ADMIN')) {
-            navHtml += `<div class="divider"></div><a href="/admin/admin-dashboard.html">Admin-Bereich</a>`;
+            navHtml += `<a href="/admin/admin-dashboard.html" style="color: var(--primary); font-weight: bold;">Admin-Bereich</a>`;
         }
 
         navHtml += `
@@ -194,7 +162,7 @@
         document.getElementById('navRight').innerHTML = navHtml;
     }
 
-
+    // LERNBEREICHE LADEN
     async function loadLearningAreas() {
         try {
             const response = await fetch(`${API_BASE}/learning-areas`);
@@ -215,6 +183,7 @@
 
     function renderLearningAreas(areas) {
         const container = document.getElementById('learningAreasList');
+        if (!container) return;
 
         if (areas.length === 0) {
             container.innerHTML = `
@@ -259,30 +228,24 @@
                 </a>
             `)
             .join('');
-
-        // Add hover effect via JavaScript
-        container.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-4px)';
-                this.style.boxShadow = 'var(--shadow-lg)';
-                this.style.borderColor = 'var(--primary)';
-            });
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = '';
-                this.style.boxShadow = '';
-                this.style.borderColor = '';
-            });
-        });
     }
 
     function renderNavigationDropdown(areas) {
         const menu = document.getElementById('learningAreasMenu');
-        menu.innerHTML = areas
+        if (!menu) return;
+
+        // Statischer Link am Anfang
+        const staticLink = `<li><a href="/lernbereiche/table-of-contents.html" class="dropdown-item">📚 Alle Bereiche</a></li>`;
+
+        // Dynamische Links
+        const dynamicLinks = areas
             .sort((a, b) => a.displayOrder - b.displayOrder)
             .map(area => `
                 <li><a href="/lernbereiche/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>
             `)
             .join('');
+
+        menu.innerHTML = staticLink + dynamicLinks;
     }
 
     function escapeHtml(text) {
@@ -291,7 +254,6 @@
         div.textContent = text;
         return div.innerHTML;
     }
-
 
     document.addEventListener('DOMContentLoaded', () => {
         loadLearningAreas();

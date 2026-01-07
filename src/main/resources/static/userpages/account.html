@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mein Account - RadBrain</title>
   <link rel="stylesheet" href="/css/style.css">
-  <script src="/js/dropdown.js"></script>
+  <script src="/js/navbar.js"></script>
   <style>
     :root {
       --sidebar-width: 280px;
@@ -97,22 +97,6 @@
 </head>
 <body>
 
-<nav class="navbar">
-  <div class="navbar-content">
-    <div class="nav-left">
-      <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
-      <ul class="nav-menu">
-        <li class="nav-item"><a href="/userpages/user-home.html" class="nav-link">Übersicht</a></li>
-        <li class="nav-item dropdown">
-          <a href="#" class="nav-link">Lernbereiche</a>
-          <ul class="dropdown-menu" id="learningAreasMenu"></ul>
-        </li>
-        <li class="nav-item"><a href="/quiz/quizzes.html" class="nav-link">Quizzes</a></li>
-      </ul>
-    </div>
-    <div class="nav-right" id="navRight"></div>
-  </div>
-</nav>
 
 <div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
   <div class="account-layout">
@@ -199,6 +183,7 @@
 </div>
 
 <script src="/js/auth.js"></script>
+<script src="/js/navbar.js"></script>
 <script>
   const API_BASE = 'http://localhost:8080/api';
 

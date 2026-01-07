@@ -1,4 +1,3 @@
-
 package org.nikolic.programm.controllers;
 
 import org.nikolic.programm.dtos.*;
@@ -6,23 +5,29 @@ import org.nikolic.programm.services.LearningAreaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * Admin-Controller für Lernbereich-Verwaltung
+ * Admin-Controller für Lernbereiche (CRUD-Operationen)
  */
 @RestController
 @RequestMapping("/api/admin/learning-areas")
 @CrossOrigin(origins = "*")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('ADMIN')") // Nur für Admins
 public class AdminLearningAreaController {
 
     @Autowired
     private LearningAreaService learningAreaService;
 
+    // =============== LEARNING AREAS ===============
+
+    /**
+     * Alle Lernbereiche abrufen (auch unveröffentlichte)
+     * GET /api/admin/learning-areas
+     */
     @GetMapping
     public ResponseEntity<List<LearningAreaDto>> getAllAreas() {
         try {
@@ -33,53 +38,33 @@ public class AdminLearningAreaController {
         }
     }
 
-    @GetMapping("/modules/{moduleId}/contents")
-    public ResponseEntity<List<LearningContentDto>> getModuleContents(@PathVariable Long moduleId) {
-        try {
-            // Wir holen das Modul, um an seine Contents zu kommen
-            List<LearningContentDto> contents = learningAreaService.getContentsByModuleId(moduleId);
-            return ResponseEntity.ok(contents);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
     /**
-     * Einzelnen Lernbereich abrufen
+     * Einzelnen Lernbereich per ID abrufen
      * GET /api/admin/learning-areas/{id}
      */
     @GetMapping("/{id}")
     public ResponseEntity<LearningAreaDto> getAreaById(@PathVariable Long id) {
         try {
-            LearningAreaDto area = learningAreaService.getAreaBySlug(
-                    learningAreaService.getAllAreasForAdmin().stream()
-                            .filter(a -> a.getId().equals(id))
-                            .findFirst()
-                            .orElseThrow(() -> new RuntimeException("Not found"))
-                            .getSlug()
-            );
+            LearningAreaDto area = learningAreaService.getAreaById(id); // gibts nicht
             return ResponseEntity.ok(area);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 
     /**
-     * Lernbereich erstellen
+     * Neuen Lernbereich erstellen
      * POST /api/admin/learning-areas
      */
     @PostMapping
-    public ResponseEntity<LearningAreaDto> createArea(
-            @RequestBody CreateLearningAreaRequest request,
-            Authentication authentication) {
+    public ResponseEntity<LearningAreaDto> createArea(@RequestBody LearningAreaDto areaDto) {
         try {
-            String username = authentication.getName();
-            LearningAreaDto created = learningAreaService.createArea(request, username);
+            LearningAreaDto created = learningAreaService.createArea(areaDto); //error
             return ResponseEntity.ok(created);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -90,14 +75,15 @@ public class AdminLearningAreaController {
     @PutMapping("/{id}")
     public ResponseEntity<LearningAreaDto> updateArea(
             @PathVariable Long id,
-            @RequestBody CreateLearningAreaRequest request) {
+            @RequestBody LearningAreaDto areaDto
+    ) {
         try {
-            LearningAreaDto updated = learningAreaService.updateArea(id, request);
+            LearningAreaDto updated = learningAreaService.updateArea(id, areaDto);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -110,10 +96,38 @@ public class AdminLearningAreaController {
         try {
             learningAreaService.deleteArea(id);
             return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
+
+    /**
+     * Veröffentlichungsstatus ändern (PATCH)
+     * PATCH /api/admin/learning-areas/{id}/publish
+     */
+    @PatchMapping("/{id}/publish")
+    public ResponseEntity<LearningAreaDto> togglePublish(
+            @PathVariable Long id,
+            @RequestBody Map<String, Boolean> payload
+    ) {
+        try {
+            Boolean isPublished = payload.get("isPublished");
+            if (isPublished == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            LearningAreaDto updated = learningAreaService.setPublishStatus(id, isPublished);//error
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    // =============== MODULES ===============
 
     /**
      * Modul erstellen
@@ -122,14 +136,14 @@ public class AdminLearningAreaController {
     @PostMapping("/{areaId}/modules")
     public ResponseEntity<LearningModuleDto> createModule(
             @PathVariable Long areaId,
-            @RequestBody CreateModuleRequest request) {
+            @RequestBody LearningModuleDto moduleDto
+    ) {
         try {
-            LearningModuleDto created = learningAreaService.createModule(areaId, request);
+            moduleDto.setLearningAreaId(areaId);
+            LearningModuleDto created = learningAreaService.createModule(moduleDto);//error
             return ResponseEntity.ok(created);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -140,14 +154,15 @@ public class AdminLearningAreaController {
     @PutMapping("/modules/{moduleId}")
     public ResponseEntity<LearningModuleDto> updateModule(
             @PathVariable Long moduleId,
-            @RequestBody CreateModuleRequest request) {
+            @RequestBody LearningModuleDto moduleDto
+    ) {
         try {
-            LearningModuleDto updated = learningAreaService.updateModule(moduleId, request);
+            LearningModuleDto updated = learningAreaService.updateModule(moduleId, moduleDto);//error
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -160,14 +175,28 @@ public class AdminLearningAreaController {
         try {
             learningAreaService.deleteModule(moduleId);
             return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }
     }
 
-    // ============================================================
-    // Learning Content CRUD
-    // ============================================================
+    // =============== CONTENTS ===============
+
+    /**
+     * Alle Contents eines Moduls abrufen
+     * GET /api/admin/learning-areas/modules/{moduleId}/contents
+     */
+    @GetMapping("/modules/{moduleId}/contents")
+    public ResponseEntity<List<LearningContentDto>> getModuleContents(@PathVariable Long moduleId) {
+        try {
+            List<LearningContentDto> contents = learningAreaService.getContentsByModuleId(moduleId);
+            return ResponseEntity.ok(contents);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
 
     /**
      * Content erstellen
@@ -176,14 +205,14 @@ public class AdminLearningAreaController {
     @PostMapping("/modules/{moduleId}/contents")
     public ResponseEntity<LearningContentDto> createContent(
             @PathVariable Long moduleId,
-            @RequestBody CreateContentRequest request) {
+            @RequestBody LearningContentDto contentDto
+    ) {
         try {
-            LearningContentDto created = learningAreaService.createContent(moduleId, request);
+            contentDto.setModuleId(moduleId);
+            LearningContentDto created = learningAreaService.createContent(contentDto);//error
             return ResponseEntity.ok(created);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -194,14 +223,15 @@ public class AdminLearningAreaController {
     @PutMapping("/contents/{contentId}")
     public ResponseEntity<LearningContentDto> updateContent(
             @PathVariable Long contentId,
-            @RequestBody CreateContentRequest request) {
+            @RequestBody LearningContentDto contentDto
+    ) {
         try {
-            LearningContentDto updated = learningAreaService.updateContent(contentId, request);
+            LearningContentDto updated = learningAreaService.updateContent(contentId, contentDto);//error
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.badRequest().build();
         }
     }
 
@@ -214,6 +244,8 @@ public class AdminLearningAreaController {
         try {
             learningAreaService.deleteContent(contentId);
             return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.internalServerError().build();
         }

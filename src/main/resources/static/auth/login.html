@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Anmelden - RadBrain</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/navbar.css">
     <style>
         .auth-page {
             min-height: 100vh;
@@ -184,24 +185,41 @@
             const result = await response.json();
 
             if (response.ok) {
+                // Prüfe ob E-Mail-Verifizierung erforderlich
                 if (result.requiresVerification) {
                     showMessage('Bitte bestätige zuerst deine E-Mail-Adresse.', 'warning');
                     setTimeout(() => {
-                        window.location.href = `/verify.html?email=${encodeURIComponent(email)}`;
+                        window.location.href = `/auth/verify.html?email=${encodeURIComponent(email)}`;
                     }, 2000);
                     return;
                 }
 
-                if (window.auth && window.auth.saveLogin(result)) {
-                    showMessage('Anmeldung erfolgreich! Weiterleitung...', 'success');
-                    setTimeout(() => {
-                        window.location.href = '/userpages/user-home.html';
-                    }, 1000);
+                // Login erfolgreich
+                if (result.success && result.data) {
+                    // Login-Daten speichern
+                    if (window.auth && window.auth.saveLogin(result.data)) {
+                        showMessage('Anmeldung erfolgreich! Weiterleitung...', 'success');
+
+                        // Weiterleitung basierend auf Rolle
+                        setTimeout(() => {
+                            const user = window.auth.getUser();
+
+                            // Admin-Check
+                            if (user.roles.includes('ADMIN')) {
+                                window.location.href = '/admin/admin-dashboard.html';
+                            } else {
+                                window.location.href = '/userpages/user-home.html';
+                            }
+                        }, 1500);
+                    } else {
+                        throw new Error('Login-Daten konnten nicht gespeichert werden');
+                    }
                 } else {
-                    throw new Error('Login-Daten konnten nicht gespeichert werden');
+                    throw new Error('Ungültige Login-Response');
                 }
             } else {
-                showMessage(result.error || 'Anmeldung fehlgeschlagen', 'error');
+                // Server hat einen Fehler zurückgegeben
+                showMessage(result.error || result.message || 'Anmeldung fehlgeschlagen', 'error');
             }
         } catch (error) {
             console.error('Login error:', error);
@@ -218,6 +236,7 @@
         messageDiv.style.display = 'block';
     }
 
+    // Auto-focus auf Email-Feld
     emailInput.focus();
 </script>
 

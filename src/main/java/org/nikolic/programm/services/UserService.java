@@ -85,6 +85,22 @@ public class UserService implements UserDetailsService {
     }
 
     /**
+     * ✅ Die zentrale Save-Methode
+     * Verarbeitet sowohl neue User als auch Updates.
+     */
+    public User save(User user) {
+        logger.info("Saving user: {}", user.getEmail());
+
+        // Falls es ein neuer User ist und das Passwort noch im Klartext vorliegt
+        if (user.getId() == null && user.getPasswordHash() != null && !user.getPasswordHash().startsWith("$2a$")) {
+            user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+        }
+
+        user.setUpdatedAt(LocalDateTime.now());
+        return userRepository.save(user);
+    }
+
+    /**
      * Find user by ID
      */
     @Transactional(readOnly = true)

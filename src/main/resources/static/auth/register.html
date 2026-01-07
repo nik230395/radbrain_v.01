@@ -271,18 +271,13 @@
 
             const result = await response.json();
 
-            if (response.ok) {
-                // Store email for verification page
-                localStorage.setItem('registrationEmail', email);
-                localStorage.setItem('registrationName', fullname);
-
-                showMessage('Registrierung erfolgreich! Weiterleitung zur Verifizierung...', 'success');
-
+            if (response.ok && result.success) {
+                showMessage('Registrierung erfolgreich!', 'success');
                 setTimeout(() => {
-                    window.location.href = `/auth/verify.html?email=${encodeURIComponent(email)}`;
-                }, 1500);
+                    window.location.href = `/verify.html?email=${encodeURIComponent(email)}`;
+                }, 2000);
             } else {
-                showMessage(result.error || 'Registrierung fehlgeschlagen', 'error');
+                showMessage(result.message || 'Registrierung fehlgeschlagen', 'error');
             }
         } catch (error) {
             console.error('Registration error:', error);

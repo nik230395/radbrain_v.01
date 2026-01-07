@@ -1,160 +1,140 @@
 package org.nikolic.programm.controllers;
 
+import jakarta.validation.Valid;
+import org.nikolic.programm.dtos.ApiResponse;
 import org.nikolic.programm.entities.User;
-import org.nikolic.programm.repositories.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.nikolic.programm.exceptions.AuthenticationFailedException;
+import org.nikolic.programm.exceptions.InvalidCredentialsException;
+import org.nikolic.programm.exceptions.ValidationException;
+import org.nikolic.programm.services.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * User Profile Controller
+ */
 @RestController
 @RequestMapping("/api/users/me")
 @CrossOrigin(origins = "*")
 public class UserProfileController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    /**
-     * PUT /api/users/me/update
-     * Update user's fullname
-     */
-    @PutMapping("/update")
-    public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> request, Authentication auth) {
-        if (auth == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Nicht authentifiziert"));
-        }
-
-        try {
-            String email = auth.getName();
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User nicht gefunden"));
-
-            String fullname = request.get("fullname");
-            if (fullname == null || fullname.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Name darf nicht leer sein"));
-            }
-
-            user.setFullname(fullname.trim());
-            userRepository.save(user);
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("id", user.getId());
-            response.put("email", user.getEmail());
-            response.put("fullname", user.getFullname());
-            response.put("role", user.getRole().toString());
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
-        }
-    }
-
-
-    @PutMapping("/change-password")
-    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> request, Authentication auth) {
-        if (auth == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Nicht authentifiziert"));
-        }
-
-        try {
-            String email = auth.getName();
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User nicht gefunden"));
-
-            String currentPassword = request.get("currentPassword");
-            String newPassword = request.get("newPassword");
-
-            if (currentPassword == null || newPassword == null) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Beide Passwörter erforderlich"));
-            }
-
-            // Verify current password
-            if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-                return ResponseEntity.status(400).body(Map.of("error", "Aktuelles Passwort ist falsch"));
-            }
-
-            // Validate new password
-            if (newPassword.length() < 8) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Neues Passwort muss mindestens 8 Zeichen haben"));
-            }
-
-            // Update password
-            user.changePassword(passwordEncoder.encode(newPassword));
-            userRepository.save(user);
-
-            return ResponseEntity.ok(Map.of("message", "Passwort erfolgreich geändert"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
-        }
+    public UserProfileController(
+            UserService userService,
+            PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
-     * DELETE /api/users/me/delete
-     * Delete user account (soft delete - set inactive)
-     */
-    @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteAccount(Authentication auth) {
-        if (auth == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Nicht authentifiziert"));
-        }
-
-        try {
-            String email = auth.getName();
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User nicht gefunden"));
-
-            // Soft delete - deactivate account
-            user.deactivate();
-            userRepository.save(user);
-
-            // Alternative: Hard delete (uncomment if you want permanent deletion)
-            // userRepository.delete(user);
-
-            return ResponseEntity.ok(Map.of("message", "Account wurde gelöscht"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    /**
-     * GET /api/users/me
-     * Get current user info
+     * Get current user profile
      */
     @GetMapping
-    public ResponseEntity<?> getCurrentUser(Authentication auth) {
-        if (auth == null) {
-            return ResponseEntity.status(401).body(Map.of("error", "Nicht authentifiziert"));
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getCurrentUser(
+            Authentication authentication) {
+
+        User user = userService.getAuthenticatedUser(authentication)
+                .orElseThrow(() -> new AuthenticationFailedException("Nicht authentifiziert"));
+
+        Map<String, Object> userData = Map.of(
+                "id", user.getId(),
+                "email", user.getEmail(),
+                "fullname", user.getFullname(),
+                "role", user.getRoleString(),
+                "isActive", user.isActive(),
+                "createdAt", user.getCreatedAt()
+        );
+
+        return ResponseEntity.ok(ApiResponse.success(userData));
+    }
+
+    /**
+     * Update profile
+     */
+    @PutMapping("/update")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> updateProfile(
+            @Valid @RequestBody Map<String, String> request,
+            Authentication authentication) {
+
+        User user = userService.getAuthenticatedUser(authentication)
+                .orElseThrow(() -> new AuthenticationFailedException("Nicht authentifiziert"));
+
+        String fullname = request.get("fullname");
+        if (fullname == null || fullname.trim().isEmpty()) {
+            throw new ValidationException("Name darf nicht leer sein");
         }
 
-        try {
-            String email = auth.getName();
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User nicht gefunden"));
+        user.setFullname(fullname.trim());
+        userService.save(user);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("id", user.getId());
-            response.put("email", user.getEmail());
-            response.put("fullname", user.getFullname());
-            response.put("role", user.getRole().toString());
-            response.put("isActive", user.isActive());
-            response.put("createdAt", user.getCreatedAt());
-            response.put("updatedAt", user.getUpdatedAt());
+        Map<String, Object> userData = Map.of(
+                "id", user.getId(),
+                "email", user.getEmail(),
+                "fullname", user.getFullname(),
+                "role", user.getRoleString()
+        );
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        return ResponseEntity.ok(
+                ApiResponse.success("Profil aktualisiert", userData)
+        );
+    }
+
+    /**
+     * Change password
+     */
+    @PutMapping("/change-password")
+    public ResponseEntity<ApiResponse<String>> changePassword(
+            @Valid @RequestBody Map<String, String> request,
+            Authentication authentication) {
+
+        User user = userService.getAuthenticatedUser(authentication)
+                .orElseThrow(() -> new AuthenticationFailedException("Nicht authentifiziert"));
+
+        String currentPassword = request.get("currentPassword");
+        String newPassword = request.get("newPassword");
+
+        if (currentPassword == null || newPassword == null) {
+            throw new ValidationException("Beide Passwörter erforderlich");
         }
+
+        // Verify current password
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new InvalidCredentialsException("Aktuelles Passwort ist falsch");
+        }
+
+        // Validate new password
+        if (newPassword.length() < 8) {
+            throw new ValidationException("Neues Passwort muss mindestens 8 Zeichen haben");
+        }
+
+        // Update password
+        userService.changePassword(user.getId(), currentPassword, newPassword);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Passwort erfolgreich geändert")
+        );
+    }
+
+    /**
+     * Delete account
+     */
+    @DeleteMapping("/delete")
+    public ResponseEntity<ApiResponse<String>> deleteAccount(
+            Authentication authentication) {
+
+        User user = userService.getAuthenticatedUser(authentication)
+                .orElseThrow(() -> new AuthenticationFailedException("Nicht authentifiziert"));
+
+        userService.deactivateUser(user.getId());
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Account wurde deaktiviert")
+        );
     }
 }

@@ -18,32 +18,33 @@ window.auth = (function() {
         return loggedIn;
     }
 
-    function saveLogin(body) {
-        console.log('💾 saveLogin called with:', body);
+    function saveLogin(response) {
+        console.log('💾 saveLogin called with:', response);
 
-        if (!body || !body.token) {
+        // Handle both direct data and wrapped response
+        const data = response.data || response;
+
+        if (!data || !data.token) {
             console.error('❌ No token in response');
             return false;
         }
 
-        localStorage.setItem(TOKEN_KEY, body.token);
-        if (body.email) localStorage.setItem(EMAIL_KEY, body.email);
-        if (body.fullname) localStorage.setItem(NAME_KEY, body.fullname);
-        if (body.id) localStorage.setItem(USER_ID_KEY, body.id);
+        localStorage.setItem(TOKEN_KEY, data.token);
+        if (data.email) localStorage.setItem(EMAIL_KEY, data.email);
+        if (data.fullname) localStorage.setItem(NAME_KEY, data.fullname);
+        if (data.id) localStorage.setItem(USER_ID_KEY, data.id);
 
-        // ✅ CRITICAL FIX: Handle role string properly
-        let roles = body.roles || 'USER';
+        // Handle role from backend
+        let roles = data.role || data.roles || 'USER';
 
-        // If roles is a string, convert to array
         if (typeof roles === 'string') {
-            // Remove "ROLE_" prefix if present
             const cleanRole = roles.replace('ROLE_', '');
             roles = [cleanRole];
         }
 
         localStorage.setItem(ROLES_KEY, JSON.stringify(roles));
 
-        console.log('✅ Login data saved successfully. Roles:', roles);
+        console.log('✅ Login saved. Roles:', roles);
 
         triggerStateUpdate();
 

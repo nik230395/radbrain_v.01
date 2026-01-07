@@ -1,0 +1,537 @@
+/* ========================================
+   UNIVERSELLE NAVBAR - RESPONSIVE
+   ======================================== */
+
+/* Navbar Container */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--gray-200, #e5e7eb);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+}
+
+/* Left Side */
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.nav-logo-link {
+    display: flex;
+    align-items: center;
+}
+
+.nav-logo {
+    height: 40px;
+    width: auto;
+}
+
+.nav-menu {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-item {
+    position: relative;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.625rem 1rem;
+    color: var(--gray-700, #374151);
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+    color: var(--primary, #3b82f6);
+    background: var(--gray-100, #f3f4f6);
+}
+
+.dropdown-arrow {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+}
+
+.nav-item.dropdown:hover .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 220px;
+    background: white;
+    border: 1px solid var(--gray-200, #e5e7eb);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    z-index: 1001;
+}
+
+.dropdown-item {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    color: var(--gray-700, #374151);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.dropdown-item:hover {
+    background: var(--gray-100, #f3f4f6);
+    color: var(--primary, #3b82f6);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--gray-200, #e5e7eb);
+    margin: 0.5rem 0;
+}
+
+/* Right Side */
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.btn-login {
+    padding: 0.5rem 1.25rem;
+    color: var(--gray-700, #374151);
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-login:hover {
+    color: var(--primary, #3b82f6);
+    background: var(--gray-100, #f3f4f6);
+}
+
+/* Profile Dropdown */
+.nav-profile-dropdown {
+    position: relative;
+}
+
+.nav-profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-profile-btn:hover {
+    background: var(--gray-100, #f3f4f6);
+}
+
+.nav-profile-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.nav-profile-name {
+    font-weight: 500;
+    color: var(--gray-700, #374151);
+}
+
+.nav-profile-arrow {
+    font-size: 0.75rem;
+    color: var(--gray-500, #6b7280);
+    transition: transform 0.2s ease;
+}
+
+.nav-profile-dropdown:hover .nav-profile-arrow {
+    transform: rotate(180deg);
+}
+
+.nav-profile-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 260px;
+    background: white;
+    border: 1px solid var(--gray-200, #e5e7eb);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    padding: 0;
+    margin-top: 0.5rem;
+    z-index: 1001;
+    overflow: hidden;
+}
+
+.nav-profile-header {
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.nav-profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.nav-profile-fullname {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.nav-profile-email {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.nav-profile-divider {
+    height: 1px;
+    background: var(--gray-200, #e5e7eb);
+    margin: 0.25rem 0;
+}
+
+.nav-profile-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    color: var(--gray-700, #374151);
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9375rem;
+}
+
+.nav-profile-item:hover {
+    background: var(--gray-50, #f9fafb);
+}
+
+.nav-profile-icon {
+    font-size: 1.125rem;
+    width: 20px;
+    text-align: center;
+}
+
+.nav-profile-admin {
+    color: #7c3aed;
+    font-weight: 500;
+}
+
+.nav-profile-admin:hover {
+    background: #f5f3ff;
+}
+
+.nav-profile-logout {
+    color: #dc2626;
+}
+
+.nav-profile-logout:hover {
+    background: #fef2f2;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 15px;
+    right: 1.5rem;
+    z-index: 1002;
+    width: 44px;
+    height: 44px;
+    background: white;
+    border: 1px solid var(--gray-200, #e5e7eb);
+    border-radius: 8px;
+    cursor: pointer;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+}
+
+.mobile-menu-toggle:hover {
+    background: var(--gray-50, #f9fafb);
+}
+
+.mobile-menu-toggle span {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--gray-700, #374151);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Mobile Menu Overlay */
+.mobile-menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1100;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.mobile-menu-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+.mobile-menu-overlay.active .mobile-menu-content {
+    transform: translateX(0);
+}
+
+.mobile-menu-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 320px;
+    height: 100%;
+    background: white;
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--gray-200, #e5e7eb);
+}
+
+.mobile-logo {
+    height: 32px;
+}
+
+.mobile-menu-close {
+    width: 40px;
+    height: 40px;
+    background: var(--gray-100, #f3f4f6);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--gray-700, #374151);
+    transition: all 0.2s ease;
+}
+
+.mobile-menu-close:hover {
+    background: var(--gray-200, #e5e7eb);
+}
+
+.mobile-menu-section {
+    padding: 1rem 0;
+}
+
+.mobile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    color: var(--gray-700, #374151);
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.mobile-menu-item:hover {
+    background: var(--gray-50, #f9fafb);
+}
+
+.mobile-menu-icon {
+    font-size: 1.25rem;
+    width: 24px;
+    text-align: center;
+}
+
+.mobile-menu-divider {
+    height: 1px;
+    background: var(--gray-200, #e5e7eb);
+    margin: 0.5rem 0;
+}
+
+.mobile-user-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.mobile-user-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.mobile-user-details {
+    flex: 1;
+}
+
+.mobile-user-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.mobile-user-email {
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.mobile-menu-admin {
+    color: #7c3aed;
+    font-weight: 500;
+}
+
+.mobile-menu-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    margin: 0 1rem;
+    border-radius: 8px;
+}
+
+.mobile-menu-primary:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+}
+
+.mobile-menu-logout {
+    color: #dc2626;
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINTS
+   ======================================== */
+
+/* Tablet und kleiner */
+@media (max-width: 1024px) {
+    .navbar-content {
+        padding: 0 1rem;
+    }
+
+    .nav-left {
+        gap: 1rem;
+    }
+
+    .nav-menu {
+        gap: 0.25rem;
+    }
+
+    .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9375rem;
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: flex;
+    }
+
+    .nav-menu {
+        display: none !important;
+    }
+
+    .nav-right {
+        display: none !important;
+    }
+
+    .navbar-content {
+        height: 60px;
+        padding: 0 1rem;
+    }
+
+    .nav-logo {
+        height: 32px;
+    }
+}
+
+/* Sehr kleine Bildschirme */
+@media (max-width: 480px) {
+    .mobile-menu-content {
+        max-width: 100%;
+    }
+
+    .navbar-content {
+        padding: 0 0.75rem;
+    }
+}
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.hidden {
+    display: none !important;
+}
+
+.visible {
+    display: block !important;
+}

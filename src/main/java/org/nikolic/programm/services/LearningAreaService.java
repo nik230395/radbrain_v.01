@@ -83,6 +83,155 @@ public class LearningAreaService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
+    // In LearningAreaService.java nach getAllAreasForAdmin() einfügen:
+    /**
+     * Einzelnen Lernbereich per ID für Admin abrufen
+     */
+    @Transactional(readOnly = true)
+    public LearningAreaDto getAreaById(Long id) {
+        LearningArea area = areaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Lernbereich nicht gefunden: " + id));
+        return convertToDtoWithModules(area);
+    }
+
+    /**
+     * Lernbereich erstellen (mit DTO)
+     */
+    @Transactional
+    public LearningAreaDto createArea(LearningAreaDto dto) {
+        if (areaRepository.existsBySlug(dto.getSlug())) {
+            throw new RuntimeException("Slug existiert bereits: " + dto.getSlug());
+        }
+
+        LearningArea area = new LearningArea();
+        area.setName(dto.getName());
+        area.setSlug(dto.getSlug());
+        area.setDescription(dto.getDescription());
+        area.setSubtitle(dto.getSubtitle());
+        area.setIconClass(dto.getIconClass());
+        area.setColorTheme(dto.getColorTheme() != null ? dto.getColorTheme() : "#3b82f6");
+        area.setDisplayOrder(dto.getDisplayOrder() != null ? dto.getDisplayOrder() : 0);
+        area.setIsPublished(dto.getIsPublished() != null ? dto.getIsPublished() : false);
+
+        LearningArea saved = areaRepository.save(area);
+        return convertToDto(saved);
+    }
+
+    /**
+     * Lernbereich aktualisieren (mit DTO)
+     */
+    @Transactional
+    public LearningAreaDto updateArea(Long areaId, LearningAreaDto dto) {
+        LearningArea area = areaRepository.findById(areaId)
+                .orElseThrow(() -> new RuntimeException("Lernbereich nicht gefunden: " + areaId));
+
+        if (!area.getSlug().equals(dto.getSlug()) && areaRepository.existsBySlug(dto.getSlug())) {
+            throw new RuntimeException("Slug existiert bereits: " + dto.getSlug());
+        }
+
+        area.setName(dto.getName());
+        area.setSlug(dto.getSlug());
+        area.setDescription(dto.getDescription());
+        area.setSubtitle(dto.getSubtitle());
+        area.setIconClass(dto.getIconClass());
+        area.setColorTheme(dto.getColorTheme());
+        area.setDisplayOrder(dto.getDisplayOrder());
+        area.setIsPublished(dto.getIsPublished());
+
+        LearningArea saved = areaRepository.save(area);
+        return convertToDto(saved);
+    }
+
+    /**
+     * Veröffentlichungsstatus setzen
+     */
+    @Transactional
+    public LearningAreaDto setPublishStatus(Long areaId, Boolean isPublished) {
+        LearningArea area = areaRepository.findById(areaId)
+                .orElseThrow(() -> new RuntimeException("Lernbereich nicht gefunden: " + areaId));
+
+        area.setIsPublished(isPublished);
+        LearningArea saved = areaRepository.save(area);
+        return convertToDto(saved);
+    }
+
+    /**
+     * Modul erstellen (mit DTO)
+     */
+    @Transactional
+    public LearningModuleDto createModule(LearningModuleDto dto) {
+        LearningArea area = areaRepository.findById(dto.getLearningAreaId())
+                .orElseThrow(() -> new RuntimeException("Lernbereich nicht gefunden: " + dto.getLearningAreaId()));
+
+        LearningModule module = new LearningModule();
+        module.setTitle(dto.getTitle());
+        module.setSubtitle(dto.getSubtitle());
+        module.setDescription(dto.getDescription());
+        module.setDisplayOrder(dto.getDisplayOrder() != null ? dto.getDisplayOrder() : 0);
+        module.setIcon(dto.getIcon());
+        module.setEstimatedDuration(dto.getEstimatedDuration());
+        module.setLearningArea(area);
+
+        LearningModule saved = moduleRepository.save(module);
+        return convertToModuleDto(saved, false);
+    }
+
+    /**
+     * Modul aktualisieren (mit DTO)
+     */
+    @Transactional
+    public LearningModuleDto updateModule(Long moduleId, LearningModuleDto dto) {
+        LearningModule module = moduleRepository.findById(moduleId)
+                .orElseThrow(() -> new RuntimeException("Modul nicht gefunden: " + moduleId));
+
+        module.setTitle(dto.getTitle());
+        module.setSubtitle(dto.getSubtitle());
+        module.setDescription(dto.getDescription());
+        module.setDisplayOrder(dto.getDisplayOrder());
+        module.setIcon(dto.getIcon());
+        module.setEstimatedDuration(dto.getEstimatedDuration());
+
+        LearningModule saved = moduleRepository.save(module);
+        return convertToModuleDto(saved, false);
+    }
+
+    /**
+     * Content erstellen (mit DTO)
+     */
+    @Transactional
+    public LearningContentDto createContent(LearningContentDto dto) {
+        LearningModule module = moduleRepository.findById(dto.getModuleId())
+                .orElseThrow(() -> new RuntimeException("Modul nicht gefunden: " + dto.getModuleId()));
+
+        LearningContent content = new LearningContent();
+        content.setContentType(ContentType.fromString(dto.getContentType()));
+        content.setTitle(dto.getTitle());
+        content.setContentData(dto.getContentData());
+        content.setDisplayOrder(dto.getDisplayOrder() != null ? dto.getDisplayOrder() : 0);
+        content.setMetadata(dto.getMetadata());
+        content.setModule(module);
+
+        LearningContent saved = contentRepository.save(content);
+        return convertToContentDto(saved);
+    }
+
+    /**
+     * Content aktualisieren (mit DTO)
+     */
+    @Transactional
+    public LearningContentDto updateContent(Long contentId, LearningContentDto dto) {
+        LearningContent content = contentRepository.findById(contentId)
+                .orElseThrow(() -> new RuntimeException("Content nicht gefunden: " + contentId));
+
+        content.setContentType(ContentType.fromString(dto.getContentType()));
+        content.setTitle(dto.getTitle());
+        content.setContentData(dto.getContentData());
+        content.setDisplayOrder(dto.getDisplayOrder());
+        content.setMetadata(dto.getMetadata());
+
+        LearningContent saved = contentRepository.save(content);
+        return convertToContentDto(saved);
+    }
 
     /**
      * Lernbereich erstellen

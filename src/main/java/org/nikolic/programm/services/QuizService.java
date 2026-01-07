@@ -11,6 +11,9 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -71,6 +74,20 @@ public class QuizService {
     public List<Quiz> findAllPublished() {
         logger.debug("Fetching all published quizzes from database");
         return quizRepository.findByIsPublishedTrue();
+    }
+    /**
+     * Get all published quizzes with pagination and caching
+     */
+    @Cacheable("publishedQuizzes")
+    public Page<Quiz> findAllPublishedPaged(Pageable pageable) {
+        logger.debug("Fetching published quizzes with pagination: {}", pageable);
+        List<Quiz> allPublished = quizRepository.findByIsPublishedTrue();
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), allPublished.size());
+
+        List<Quiz> pageContent = allPublished.subList(start, end);
+        return new PageImpl<>(pageContent, pageable, allPublished.size());
     }
 
     /**

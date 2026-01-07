@@ -286,6 +286,11 @@
 </div>
 
 <script>
+    // Admin-Check
+    if (!window.auth || !window.auth.hasRole('ADMIN')) {
+        alert('Keine Berechtigung!');
+        window.location.href = '/';
+    }
     const API_BASE = '/api';
     let questions = [];
     let questionCounter = 0;

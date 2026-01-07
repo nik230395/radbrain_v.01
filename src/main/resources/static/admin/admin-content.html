@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inhalt-Editor - RadBrain Admin</title>
     <link rel="stylesheet" href="/css/style.css">
-    <script src="/js/dropdown.js"></script>
+    <link rel="stylesheet" href="/css/navabr.css">
     <script src="/js/auth.js"></script>
     <style>
         /* FULLSCREEN MODAL - Nimmt den ganzen Bildschirm ein */
@@ -142,6 +142,11 @@
 </div>
 
 <script>
+    // Admin-Check
+    if (!window.auth || !window.auth.hasRole('ADMIN')) {
+        alert('Keine Berechtigung!');
+        window.location.href = '/';
+    }
     const API_BASE = 'http://localhost:8080/api/admin/learning-areas';
     const moduleId = new URLSearchParams(window.location.search).get('moduleId');
 

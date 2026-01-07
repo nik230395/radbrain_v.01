@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lernbereich bearbeiten - RadBrain Admin</title>
   <link rel="stylesheet" href="/css/style.css">
-  <script src="/js/dropdown.js"></script>
+  <link rel="stylesheet" href="/css/navbar.css">
   <style>
     .editor-container {
       max-width: 800px;
@@ -40,23 +40,6 @@
 </head>
 <body>
 
-<!-- Navigation -->
-<nav class="navbar">
-  <div class="navbar-content">
-    <div class="nav-left">
-      <img src="/Bilder/logo.png" alt="RadBrain" class="nav-logo">
-      <ul class="nav-menu">
-        <li class="nav-item">
-          <a href="/admin/admin-dashboard.html" class="nav-link">Admin</a>
-        </li>
-        <li class="nav-item">
-          <a href="/admin/admin-learning-areas.html" class="nav-link">Lernbereiche</a>
-        </li>
-      </ul>
-    </div>
-    <div class="nav-right" id="navRight"></div>
-  </div>
-</nav>
 
 <!-- Main Content -->
 <div class="container" style="padding-top: var(--space-12); padding-bottom: var(--space-16);">
@@ -211,7 +194,13 @@
 </div>
 
 <script src="/js/auth.js"></script>
+<script src="/js/navbar.js"></script>
 <script>
+  // Admin-Check
+  if (!window.auth || !window.auth.hasRole('ADMIN')) {
+    alert('Keine Berechtigung!');
+    window.location.href = '/';
+  }
   const API_BASE = 'http://localhost:8080/api';
   let areaId = null;
   let isEditMode = false;
@@ -230,18 +219,18 @@
     const name = user.fullname ? user.fullname.split(' ')[0] : user.email.split('@')[0];
 
     document.getElementById('navRight').innerHTML = `
-            <div class="nav-profile-dropdown">
-                <button class="nav-profile-btn">
-                    <span>${name}</span>
-                    <span style="font-size: 0.75rem;">▾</span>
-                </button>
-                <div class="nav-profile-menu">
-                    <a href="/userpages/account.html">Mein Account</a>
-                    <div class="divider"></div>
-                    <button onclick="window.auth.logout('/index.html')">Abmelden</button>
-                </div>
-            </div>
-        `;
+      <div class="nav-profile-dropdown">
+        <button class="nav-profile-btn">
+          <span>${name}</span>
+          <span style="font-size: 0.75rem;">▾</span>
+        </button>
+        <div class="nav-profile-menu">
+          <a href="/userpages/account.html">Mein Account</a>
+          <div class="divider"></div>
+          <button onclick="window.auth.logout('/index.html')">Abmelden</button>
+        </div>
+      </div>
+    `;
 
     // Check if editing existing area
     const urlParams = new URLSearchParams(window.location.search);
@@ -250,12 +239,17 @@
     if (areaId) {
       isEditMode = true;
       document.getElementById('pageTitle').textContent = 'Lernbereich bearbeiten';
-      loadArea();
+      await loadArea();
     } else {
       document.getElementById('pageTitle').textContent = 'Neuer Lernbereich';
+      // Check for quick-create parameters
+      const nameParam = urlParams.get('name');
+      const slugParam = urlParams.get('slug');
+      if (nameParam) document.getElementById('name').value = nameParam;
+      if (slugParam) document.getElementById('slug').value = slugParam;
     }
 
-    // Auto-generate slug from name
+    // Auto-generate slug from name (only for new areas)
     document.getElementById('name').addEventListener('input', (e) => {
       if (!isEditMode) {
         const slug = e.target.value
@@ -271,53 +265,18 @@
     });
   }
 
-  let isEditMode = false;
-  const urlParams = new URLSearchParams(window.location.search);
-  const areaId = urlParams.get('id');
-
-  document.addEventListener('DOMContentLoaded', async () => {
-    if (areaId) {
-      isEditMode = true;
-      document.getElementById('editorTitle').textContent = 'Lernbereich bearbeiten';
-      await loadAreaData(areaId);
-    } else {
-      // Logik für neuen Bereich (falls Parameter via quickCreate kommen)
-      const nameParam = urlParams.get('name');
-      if (nameParam) document.getElementById('name').value = nameParam;
-    }
-  });
-
-  async function loadAreaData(id) {
-    try {
-      const response = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        document.getElementById('name').value = data.name || '';
-        document.getElementById('slug').value = data.slug || '';
-        document.getElementById('description').value = data.description || '';
-        document.getElementById('subtitle').value = data.subtitle || '';
-        document.getElementById('displayOrder').value = data.displayOrder || 0;
-        if (data.colorTheme) selectColor(data.colorTheme);
-      }
-    } catch (error) {
-      console.error("Fehler beim Laden:", error);
-    }
-  }
-
   async function loadArea() {
     try {
-      const response = await window.auth.authFetch(`${API_BASE}/secure/admin/learning-areas`);
-      if (!response.ok) throw new Error('Failed to load');
+      // FIX: Korrekter API-Pfad ohne /secure
+      const response = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/${areaId}`);
 
-      const areas = await response.json();
-      const area = areas.find(a => a.id == areaId);
-
-      if (!area) {
-        showMessage('Lernbereich nicht gefunden', 'error');
-        return;
+      if (!response.ok) {
+        throw new Error('Failed to load area');
       }
 
+      const area = await response.json();
 
+      // Felder füllen
       document.getElementById('name').value = area.name || '';
       document.getElementById('slug').value = area.slug || '';
       document.getElementById('subtitle').value = area.subtitle || '';
@@ -325,9 +284,14 @@
       document.getElementById('colorTheme').value = area.colorTheme || '#2563eb';
       document.getElementById('displayOrder').value = area.displayOrder || 0;
       document.getElementById('isPublished').checked = area.isPublished || false;
+
+      // Farbe auswählen
+      if (area.colorTheme) {
+        selectColor(area.colorTheme);
+      }
     } catch (error) {
       console.error('Error loading area:', error);
-      showMessage('Fehler beim Laden', 'error');
+      showMessage('Fehler beim Laden des Lernbereichs', 'error');
     }
   }
 
@@ -355,9 +319,10 @@
     saveBtn.innerHTML = '<div class="loading"></div>';
 
     try {
+      // FIX: Korrekter API-Pfad ohne /secure
       const url = isEditMode
-              ? `${API_BASE}/secure/admin/learning-areas/${areaId}`
-              : `${API_BASE}/secure/admin/learning-areas`;
+              ? `${API_BASE}/admin/learning-areas/${areaId}`
+              : `${API_BASE}/admin/learning-areas`;
 
       const method = isEditMode ? 'PUT' : 'POST';
 
@@ -370,7 +335,7 @@
       if (response.ok) {
         showMessage('Lernbereich erfolgreich gespeichert!', 'success');
         setTimeout(() => {
-          window.location.href = '/admin-learning-areas.html';
+          window.location.href = '/admin/admin-learning-areas.html';
         }, 1500);
       } else {
         const error = await response.json();

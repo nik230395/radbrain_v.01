@@ -1,60 +1,58 @@
 package org.nikolic.programm.dtos;
 
-/**
- * ✅ FIXED ChoiceDto
- * Now includes isCorrect field!
- */
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChoiceDto {
     private Long id;
     private String text;
     private Integer position;
-    private Boolean isCorrect;  // ✅ ADDED THIS!
+    private Boolean isCorrect;
 
-    // Constructors
-    public ChoiceDto() {}
+    private ChoiceDto() {}
 
-    public ChoiceDto(Long id, String text, Integer position, Boolean isCorrect) {
-        this.id = id;
-        this.text = text;
-        this.position = position;
-        this.isCorrect = isCorrect;
+    // Getters
+    public Long getId() { return id; }
+    public String getText() { return text; }
+    public Integer getPosition() { return position; }
+    public Boolean getIsCorrect() { return isCorrect; }
+
+    // Setters (for Jackson)
+    public void setId(Long id) { this.id = id; }
+    public void setText(String text) { this.text = text; }
+    public void setPosition(Integer position) { this.position = position; }
+    public void setIsCorrect(Boolean isCorrect) { this.isCorrect = isCorrect; }
+
+    // Builder
+    public static Builder builder() {
+        return new Builder();
     }
 
-    // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    public static class Builder {
+        private final ChoiceDto dto = new ChoiceDto();
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+        public Builder id(Long id) {
+            dto.id = id;
+            return this;
+        }
 
-    public String getText() {
-        return text;
-    }
+        public Builder text(String text) {
+            dto.text = text;
+            return this;
+        }
 
-    public void setText(String text) {
-        this.text = text;
-    }
+        public Builder position(Integer position) {
+            dto.position = position;
+            return this;
+        }
 
-    public Integer getPosition() {
-        return position;
-    }
+        public Builder isCorrect(Boolean isCorrect) {
+            dto.isCorrect = isCorrect;
+            return this;
+        }
 
-    public void setPosition(Integer position) {
-        this.position = position;
-    }
-
-    public Boolean getIsCorrect() {
-        return isCorrect;
-    }
-
-    public void setIsCorrect(Boolean isCorrect) {
-        this.isCorrect = isCorrect;
-    }
-
-    // Alternative getter for Jackson (handles both isCorrect and is_correct)
-    public Boolean isCorrect() {
-        return isCorrect;
+        public ChoiceDto build() {
+            return dto;
+        }
     }
 }

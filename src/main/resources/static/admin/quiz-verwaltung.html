@@ -40,6 +40,11 @@
 
 <script src="/js/auth.js"></script>
 <script>
+  // Admin-Check
+  if (!window.auth || !window.auth.hasRole('ADMIN')) {
+    alert('Keine Berechtigung!');
+    window.location.href = '/';
+  }
   const API_BASE = 'http://localhost:8080/api';
 
   document.addEventListener('DOMContentLoaded', () => {
