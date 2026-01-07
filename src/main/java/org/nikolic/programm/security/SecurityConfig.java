@@ -71,7 +71,8 @@ public class SecurityConfig {
                                 "/css/**",
                                 "/js/**",
                                 "/images/**",
-                                "/favicon.ico"
+                                "/favicon.ico",
+                                "/uploads/**"
                         ).permitAll()
 
                         // ============================================
@@ -122,6 +123,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/questions/**").hasRole("ADMIN")
                         .requestMatchers("/api/choices/**").hasRole("ADMIN")
                         .requestMatchers("/api/users/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/upload-image").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                         // ============================================
                         // ADMIN-ONLY HTML PAGES

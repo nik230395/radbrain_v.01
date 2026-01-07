@@ -5,77 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inhalt-Editor - RadBrain Admin</title>
     <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/navabr.css">
+    <link rel="stylesheet" href="/css/navbar.css">
 
     <style>
-        /* FULLSCREEN MODAL - Nimmt den ganzen Bildschirm ein */
+        /* FULLSCREEN MODAL */
         #contentModal {
             display: none;
             position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
+            top: 0 !important; left: 0 !important;
+            width: 100vw !important; height: 100vh !important;
             background: #ffffff !important;
             z-index: 999999 !important;
             overflow-y: auto;
-            margin: 0 !important;
-            padding: 0 !important;
+            margin: 0 !important; padding: 0 !important;
             opacity: 0;
             transform: translateY(20px);
             transition: all 0.3s ease-in-out;
         }
 
-        #contentModal.show {
-            display: block !important;
-            opacity: 1 !important;
-            transform: translateY(0) !important;
-        }
+        #contentModal.show { display: block !important; opacity: 1 !important; transform: translateY(0) !important; }
 
-        .modal-inner {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 60px 25px;
-        }
+        .modal-inner { max-width: 900px; margin: 0 auto; padding: 60px 25px; }
 
         .close-fullscreen {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #f1f5f9;
-            border: none;
-            font-size: 30px;
-            cursor: pointer;
-            z-index: 1000000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: fixed; top: 20px; right: 30px;
+            width: 50px; height: 50px; border-radius: 50%;
+            background: #f1f5f9; border: none; font-size: 30px;
+            cursor: pointer; z-index: 1000000;
+            display: flex; align-items: center; justify-content: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        .content-item {
-            background: white;
-            border: 1px solid #e2e8f0;
+        /* DRAG & DROP ZONE */
+        .upload-area {
+            border: 2px dashed var(--primary);
+            background: #f0f7ff;
             border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 25px;
+            transition: all 0.2s;
+            cursor: pointer;
+            display: none; /* Standardmäßig versteckt */
+        }
+        .upload-area.dragover {
+            background: var(--primary-light);
+            transform: scale(1.02);
+        }
+        .upload-area .icon { font-size: 40px; display: block; margin-bottom: 10px; }
+        .upload-area p { font-weight: 600; color: var(--primary); }
+
+        .content-item {
+            background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+            padding: 20px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center;
         }
 
         .badge {
-            background: #e0e7ff;
-            color: #4338ca;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-right: 12px;
-            text-transform: uppercase;
+            background: #e0e7ff; color: #4338ca; padding: 4px 10px;
+            border-radius: 6px; font-size: 11px; font-weight: bold;
+            margin-right: 12px; text-transform: uppercase;
         }
 
         body.modal-open { overflow: hidden !important; }
@@ -86,6 +75,8 @@
 </head>
 <body>
 
+<div id="navbar-placeholder"></div>
+
 <div class="container" style="padding-top: 50px;">
     <button onclick="window.history.back()" class="btn btn-ghost" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
         ← Zurück zur Übersicht
@@ -94,7 +85,7 @@
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
         <div>
             <h1 id="moduleTitle" style="font-size: 2.2rem; margin:0;">Inhalte verwalten</h1>
-            <p style="color: #64748b;">Hier kannst du die Lektionen des Moduls bearbeiten.</p>
+            <p style="color: #64748b;">Verwalte Texte, Bilder und Videos für dieses Modul.</p>
         </div>
         <button onclick="openCreate()" class="btn btn-primary" style="padding: 12px 24px;">+ Neuer Inhalt</button>
     </div>
@@ -111,22 +102,27 @@
 
         <div class="form-group">
             <label class="form-label">Titel der Lektion</label>
-            <input type="text" id="cTitle" class="input-field" placeholder="z.B. Einführung in die Radiologie">
+            <input type="text" id="cTitle" class="input-field" placeholder="z.B. Anatomie des Herzens">
         </div>
 
         <div class="form-group">
             <label class="form-label">Inhaltstyp</label>
-            <select id="cType" class="input-field">
+            <select id="cType" class="input-field" onchange="updateUIForType()">
                 <option value="TEXT">Text-Lektion</option>
-                <option value="VIDEO">Video-Link</option>
-                <option value="IMAGE">Bild-URL</option>
+                <option value="IMAGE">Bild (Upload)</option>
                 <option value="HEADING">Überschrift</option>
             </select>
         </div>
 
+        <div id="dropZone" class="upload-area">
+            <span class="icon"></span>
+            <p id="uploadStatusText">Bild hierher ziehen oder klicken zum Hochladen</p>
+            <input type="file" id="fileInput" hidden accept="image/*">
+        </div>
+
         <div class="form-group">
-            <label class="form-label">Inhalt (Der Text, der im Kurs erscheint)</label>
-            <textarea id="cBody" class="input-field" rows="15" placeholder="Schreibe hier deinen Inhalt..."></textarea>
+            <label class="form-label" id="bodyLabel">Inhalt / Daten</label>
+            <textarea id="cBody" class="input-field" rows="12" placeholder="Schreibe hier deinen Text..."></textarea>
         </div>
 
         <div class="form-group" style="width: 150px;">
@@ -142,50 +138,111 @@
 </div>
 
 <script src="/js/auth.js"></script>
-<script src="/js/navabar.js"></script>
+<script src="/js/navbar.js"></script>
 <script>
-    // Admin-Check
-    if (!window.auth || !window.auth.hasRole('ADMIN')) {
-        alert('Keine Berechtigung!');
-        window.location.href = '/';
-    }
     const API_BASE = 'http://localhost:8080/api/admin/learning-areas';
     const moduleId = new URLSearchParams(window.location.search).get('moduleId');
-
     let currentContents = [];
     let editingId = null;
 
+    // --- INITIALISIERUNG ---
     document.addEventListener('DOMContentLoaded', () => {
-        if (!moduleId) {
-            alert("Fehler: Keine Modul-ID gefunden.");
-            return;
-        }
+        if (!moduleId) return alert("Fehler: Modul-ID fehlt.");
         loadData();
+        setupUploadEvents();
     });
 
-    async function loadData() {
-        const url = `${API_BASE}/modules/${moduleId}/contents`;
+    // --- UI LOGIK ---
+    function updateUIForType() {
+        const type = document.getElementById('cType').value;
+        const dropZone = document.getElementById('dropZone');
+        const bodyLabel = document.getElementById('bodyLabel');
+        const textArea = document.getElementById('cBody');
+
+        if (type === 'IMAGE') {
+            dropZone.style.display = 'block';
+            bodyLabel.innerText = "Bild-URL (Wird nach Upload automatisch gefüllt)";
+            textArea.placeholder = "@/uploads/...";
+        } else {
+            dropZone.style.display = 'none';
+            bodyLabel.innerText = "Inhalt (Der Text, der im Kurs erscheint)";
+            textArea.placeholder = "Schreibe hier deinen Inhalt...";
+        }
+    }
+
+    // --- UPLOAD LOGIK ---
+    function setupUploadEvents() {
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropZone.onclick = () => fileInput.click();
+        dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('dragover'); };
+        dropZone.ondragleave = () => dropZone.classList.remove('dragover');
+        dropZone.ondrop = (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) startUpload(e.dataTransfer.files[0]);
+        };
+        fileInput.onchange = (e) => {
+            if (e.target.files.length) startUpload(e.target.files[0]);
+        };
+    }
+
+    async function startUpload(file) {
+        const statusText = document.getElementById('uploadStatusText');
+        const textArea = document.getElementById('cBody');
+
+        const token = localStorage.getItem('authToken');
+
+        console.log("Token-Check:", token); // Prüfe das in der Browser-Konsole (F12)
+
+        if (!token || token === "undefined") {
+            statusText.innerText = "Nicht eingeloggt!";
+            statusText.style.color = "red";
+            alert("Sitzung ungültig. Bitte logge dich neu ein.");
+            return;
+        }
+
+        statusText.innerText = "⏳ Lade hoch...";
+        const formData = new FormData();
+        formData.append('file', file);
+
         try {
-            const res = await window.auth.authFetch(url);
+            const res = await fetch('/api/admin/upload-image', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                body: formData
+            });
+
             if (res.ok) {
-                currentContents = await res.json();
-                render();
+                const data = await res.json();
+                textArea.value = `${data.url}`;
+                statusText.innerText = "Erfolgreich hochgeladen!";
+                statusText.style.color = "green";
             } else {
-                document.getElementById('contentsList').innerHTML =
-                    `<div class="card" style="color:red;">Fehler beim Laden (Status ${res.status}). Hast du den GET-Endpunkt im Java-Controller erstellt?</div>`;
+                const errText = await res.text();
+                console.error("Server Antwort:", errText);
+                statusText.innerText = "Fehler: " + res.status;
+                statusText.style.color = "red";
             }
         } catch (e) {
             console.error("Netzwerkfehler:", e);
+            statusText.innerText = "Netzwerkfehler!";
+        }
+    }
+
+    async function loadData() {
+        const res = await window.auth.authFetch(`${API_BASE}/modules/${moduleId}/contents`);
+        if (res.ok) {
+            currentContents = await res.json();
+            render();
         }
     }
 
     function render() {
         const list = document.getElementById('contentsList');
-        if (currentContents.length === 0) {
-            list.innerHTML = '<div class="card">Noch keine Inhalte vorhanden. Klicke auf "Neuer Inhalt", um zu starten.</div>';
-            return;
-        }
-
         list.innerHTML = currentContents.sort((a,b) => a.displayOrder - b.displayOrder).map(i => `
             <div class="content-item">
                 <div>
@@ -194,7 +251,7 @@
                 </div>
                 <div style="display:flex; gap:10px;">
                     <button onclick="prepareEdit(${i.id})" class="btn btn-sm btn-secondary">Bearbeiten</button>
-                    <button onclick="deleteContent(${i.id})" class="btn btn-sm" style="color:red; border:1px solid #fee2e2;">Löschen</button>
+                    <button onclick="deleteContent(${i.id})" class="btn btn-sm" style="color:red;">Löschen</button>
                 </div>
             </div>
         `).join('');
@@ -203,24 +260,13 @@
     function prepareEdit(id) {
         const item = currentContents.find(c => c.id === id);
         if (!item) return;
-
         editingId = id;
         document.getElementById('modalTitle').textContent = "Inhalt bearbeiten";
-
-        // DATEN IN DIE FELDER LADEN
-        document.getElementById('cTitle').value = item.title || "";
-        document.getElementById('cType').value = item.contentType || "TEXT";
-
-        // WICHTIG: Nutzt 'contentData' aus deinem Java DTO
-        document.getElementById('cBody').value = item.contentData || "";
-
-        document.getElementById('cOrder').value = item.displayOrder || 0;
-
-        // MODAL ÖFFNEN
-        const m = document.getElementById('contentModal');
-        m.style.display = 'block';
-        document.body.classList.add('modal-open');
-        setTimeout(() => m.classList.add('show'), 10);
+        document.getElementById('cTitle').value = item.title;
+        document.getElementById('cType').value = item.contentType;
+        document.getElementById('cBody').value = item.contentData;
+        document.getElementById('cOrder').value = item.displayOrder;
+        openModal();
     }
 
     function openCreate() {
@@ -230,43 +276,39 @@
         document.getElementById('cType').value = "TEXT";
         document.getElementById('cBody').value = "";
         document.getElementById('cOrder').value = "0";
-
-        const m = document.getElementById('contentModal');
-        m.style.display = 'block';
-        document.body.classList.add('modal-open');
-        setTimeout(() => m.classList.add('show'), 10);
+        openModal();
     }
 
     async function saveContent() {
         const payload = {
             title: document.getElementById('cTitle').value,
             contentType: document.getElementById('cType').value,
-            contentData: document.getElementById('cBody').value, // Sendet contentData an Java
+            contentData: document.getElementById('cBody').value,
             displayOrder: parseInt(document.getElementById('cOrder').value)
         };
 
-        const url = editingId
-            ? `${API_BASE}/contents/${editingId}`
-            : `${API_BASE}/modules/${moduleId}/contents`;
-
+        const url = editingId ? `${API_BASE}/contents/${editingId}` : `${API_BASE}/modules/${moduleId}/contents`;
         const res = await window.auth.authFetch(url, {
             method: editingId ? 'PUT' : 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        if (res.ok) {
-            closeModal();
-            loadData();
-        } else {
-            alert("Speichern fehlgeschlagen. Status: " + res.status);
-        }
+        if (res.ok) { closeModal(); loadData(); }
     }
 
     async function deleteContent(id) {
-        if (!confirm("Diesen Inhalt wirklich löschen?")) return;
-        const res = await window.auth.authFetch(`${API_BASE}/contents/${id}`, { method: 'DELETE' });
-        if (res.ok) loadData();
+        if (!confirm("Wirklich löschen?")) return;
+        await window.auth.authFetch(`${API_BASE}/contents/${id}`, { method: 'DELETE' });
+        loadData();
+    }
+
+    function openModal() {
+        updateUIForType(); // UI anpassen bevor es angezeigt wird
+        const m = document.getElementById('contentModal');
+        m.style.display = 'block';
+        document.body.classList.add('modal-open');
+        setTimeout(() => m.classList.add('show'), 10);
     }
 
     function closeModal() {
@@ -274,6 +316,8 @@
         m.classList.remove('show');
         document.body.classList.remove('modal-open');
         setTimeout(() => m.style.display = 'none', 300);
+        document.getElementById('uploadStatusText').innerText = "Bild hierher ziehen oder klicken zum Hochladen";
+        document.getElementById('uploadStatusText').style.color = "var(--primary)";
     }
 </script>
 </body>

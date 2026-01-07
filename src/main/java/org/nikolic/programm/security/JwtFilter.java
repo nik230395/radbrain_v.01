@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.nikolic.programm.entities.User;
 import org.nikolic.programm.repositories.UserRepository;
-import org. springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -37,7 +37,6 @@ public class JwtFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // Skip OPTIONS requests
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
@@ -45,8 +44,6 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
         String requestUri = request.getRequestURI();
-
-        logger.debug("🔍 Processing request: {} {}", request.getMethod(), requestUri);
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
@@ -59,15 +56,11 @@ public class JwtFilter extends OncePerRequestFilter {
                         Optional<User> userOpt = userRepository.findByEmail(email);
 
                         if (userOpt.isPresent()) {
-                            User user = userOpt. get();
+                            User user = userOpt.get();
 
-                            // Verify user is active and verified
                             if (user.isActive() && user.isEmailVerified()) {
-
                                 String role = "ROLE_" + user.getRole().name();
                                 SimpleGrantedAuthority authority = new SimpleGrantedAuthority(role);
-
-                                logger.info("Authenticating user: {} with authority: {}", email, role);
 
                                 UsernamePasswordAuthenticationToken authentication =
                                         new UsernamePasswordAuthenticationToken(
@@ -76,31 +69,21 @@ public class JwtFilter extends OncePerRequestFilter {
                                                 Collections.singletonList(authority)
                                         );
 
-                                authentication. setDetails(
+                                authentication.setDetails(
                                         new WebAuthenticationDetailsSource().buildDetails(request)
                                 );
 
                                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                                logger.debug("Authentication successful for:  {}", email);
-                            } else {
-                                logger.warn("User inactive or unverified: {}", email);
+                                logger.debug("Successfully authenticated admin/user: {}", email);
                             }
-                        } else {
-                            logger.warn("User not found: {}", email);
                         }
                     }
-                } else {
-                    logger.debug("Invalid token");
                 }
             } catch (Exception e) {
-                logger.error("JWT Authentication error:  {}", e.getMessage());
+                logger.error("JWT Auth error: {}", e.getMessage());
                 SecurityContextHolder.clearContext();
             }
-        } else {
-            logger.debug("No Bearer token found for:  {}", requestUri);
         }
-
         filterChain.doFilter(request, response);
     }
 
@@ -108,22 +91,18 @@ public class JwtFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
 
-        boolean shouldSkip = "OPTIONS".equalsIgnoreCase(request.getMethod()) ||
-                path.startsWith("/api/auth/") ||
-                path.startsWith("/api/users/register") ||
-                path.startsWith("/api/users/verify") ||
-                path.startsWith("/api/users/resend") ||
-                path.equals("/api/quizzes/published") ||
-                path.endsWith(".html") ||
-                path.endsWith(".css") ||
-                path. endsWith(".js") ||
-                path.endsWith(".ico") ||
-                path.equals("/");
-
-        if (shouldSkip) {
-            logger.debug("⏩ Skipping JWT filter for: {}", path);
+        // WICHTIG: Admin-Pfade NIEMALS überspringen (muss false sein)
+        if (path.startsWith("/api/admin/") || path.startsWith("/api/secure/")) {
+            return false;
         }
 
-        return shouldSkip;
+        // Nur rein öffentliche Pfade überspringen
+        return path.startsWith("/api/auth/") ||
+                path.startsWith("/api/users/register") ||
+                path.startsWith("/api/users/verify") ||
+                path.endsWith(".html") ||
+                path.endsWith(".css") ||
+                path.endsWith(".js") ||
+                path.equals("/");
     }
 }

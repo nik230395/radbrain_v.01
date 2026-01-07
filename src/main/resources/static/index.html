@@ -183,6 +183,26 @@
     }
 
     document.addEventListener('DOMContentLoaded', loadLearningAreas);
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadLearningAreas(); // Deine bestehende Funktion
+
+        // NAVBAR LABEL LOGIK
+        // Wir warten kurz, bis die navbar.js den Placeholder befüllt hat
+        setTimeout(() => {
+            const homeLink = document.querySelector('.nav-link[href="/userpages/user-home.html"], .nav-link[href="/index.html"]');
+
+            if (homeLink) {
+                if (window.auth && window.auth.isLoggedIn()) {
+                    homeLink.textContent = 'Home';
+                    homeLink.href = '/userpages/user-home.html';
+                } else {
+                    homeLink.textContent = 'Startseite';
+                    homeLink.href = '/index.html';
+                }
+            }
+        }, 100); // 100ms Verzögerung, damit die Navbar Zeit zum Laden hat
+    });
 </script>
 
 </body>

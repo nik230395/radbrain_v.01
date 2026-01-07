@@ -35,74 +35,102 @@
             margin-right: var(--space-4);
         }
 
-        /* ECHTES FULLSCREEN MODAL */
+        /* MODERNER MODAL LOOK (KEIN FULLSCREEN) */
         #moduleModal {
             display: none;
             position: fixed;
-            /* Erzwingt Fullscreen über den gesamten Viewport */
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            background: #ffffff;
-            z-index: 99999;
-            overflow-y: auto;
-
-            /* Animation von unten */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.5); /* Semi-transparentes Slate */
+            backdrop-filter: blur(8px); /* Blur-Effekt für den Hintergrund */
+            z-index: 9999;
             opacity: 0;
-            transform: translateY(100%);
-            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+            transition: opacity 0.3s ease;
+            align-items: center;
+            justify-content: center;
         }
 
         #moduleModal.show {
-            display: block !important;
+            display: flex !important;
             opacity: 1 !important;
-            transform: translateY(0) !important;
         }
 
-        .modal-inner-content {
-            width: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 100px 20px 60px 20px;
+        .modal-content-box {
+            background: white;
+            width: 90%;
+            max-width: 600px;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        /* Fixer Schließen-Knopf oben rechts */
-        .close-fullscreen {
-            position: fixed;
-            top: 25px;
-            right: 40px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #f3f4f6;
-            border: none;
-            font-size: 30px;
-            cursor: pointer;
+        #moduleModal.show .modal-content-box {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 24px 32px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-            z-index: 100000;
         }
 
-        .form-group { margin-bottom: 25px; }
-        .form-label { display: block; font-weight: 600; margin-bottom: 10px; font-size: 1.1rem; }
-        .input-xl { font-size: 1.2rem !important; padding: 15px !important; }
+        .modal-body {
+            padding: 32px;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 20px 32px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #64748b;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close-btn:hover { color: #1e293b; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-weight: 600; margin-bottom: 8px; color: #1e293b; }
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .form-input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-light); }
 
         body.modal-open { overflow: hidden !important; }
     </style>
 </head>
 <body>
 
-
+<div id="navbar-placeholder"></div>
 
 <div class="container" style="padding-top: var(--space-12);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-8);">
         <div>
-            <h1 id="areaTitle" style="font-size: 2.5rem;">Module laden...</h1>
+            <h1 id="areaTitle" style="font-size: 2rem;">Module laden...</h1>
             <p style="color: var(--gray-600);">Verwalte die Kapitel dieses Lernbereichs</p>
         </div>
-        <button onclick="openModuleModal()" class="btn btn-primary" style="padding: 12px 25px;">+ Neues Modul</button>
+        <button onclick="openModuleModal()" class="btn btn-primary" style="padding: 10px 20px;">+ Neues Modul</button>
     </div>
 
     <div id="modulesList">
@@ -110,30 +138,33 @@
     </div>
 </div>
 
-<div id="moduleModal">
-    <button class="close-fullscreen" onclick="closeModuleModal()">&times;</button>
-
-    <div class="modal-inner-content">
-        <h1 id="modalTitle" style="font-size: 2.8rem; margin-bottom: 40px;">Modul bearbeiten</h1>
-
-        <div class="form-group">
-            <label class="form-label">Titel des Moduls</label>
-            <input type="text" id="moduleTitle" class="form-control input-xl" placeholder="z.B. Anatomie des Thorax">
+<div id="moduleModal" onclick="if(event.target === this) closeModuleModal()">
+    <div class="modal-content-box">
+        <div class="modal-header">
+            <h2 id="modalTitle" style="margin: 0; font-size: 1.5rem;">Modul bearbeiten</h2>
+            <button class="close-btn" onclick="closeModuleModal()">&times;</button>
         </div>
 
-        <div class="form-group">
-            <label class="form-label">Beschreibung</label>
-            <textarea id="moduleDescription" class="form-control input-xl" rows="6"></textarea>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="form-label">Titel des Moduls</label>
+                <input type="text" id="moduleTitle" class="form-input" placeholder="z.B. Anatomie des Thorax">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Beschreibung</label>
+                <textarea id="moduleDescription" class="form-input" rows="4" placeholder="Kurze Inhaltsangabe..."></textarea>
+            </div>
+
+            <div class="form-group" style="width: 150px;">
+                <label class="form-label">Reihenfolge</label>
+                <input type="number" id="moduleOrder" class="form-input" value="0">
+            </div>
         </div>
 
-        <div class="form-group" style="width: 200px;">
-            <label class="form-label">Reihenfolge</label>
-            <input type="number" id="moduleOrder" class="form-control input-xl" value="0">
-        </div>
-
-        <div style="margin-top: 50px; display: flex; gap: 15px;">
-            <button onclick="saveModule()" class="btn btn-primary" style="padding: 15px 45px; font-size: 1.1rem;">Speichern</button>
+        <div class="modal-footer">
             <button onclick="closeModuleModal()" class="btn btn-ghost">Abbrechen</button>
+            <button onclick="saveModule()" class="btn btn-primary">Speichern</button>
         </div>
     </div>
 </div>
@@ -159,7 +190,6 @@
     });
 
     async function loadModules() {
-        const container = document.getElementById('modulesList');
         try {
             const response = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/${areaId}`);
             if (response.ok) {
@@ -182,14 +212,14 @@
                 <div style="display: flex; align-items: center;">
                     <div class="module-number">${m.displayOrder}</div>
                     <div>
-                        <h3 style="margin: 0;">${m.title}</h3>
-                        <p style="color: var(--gray-600); margin: 4px 0 0 0;">${m.description || ''}</p>
+                        <h3 style="margin: 0; font-size: 1.1rem;">${m.title}</h3>
+                        <p style="color: var(--gray-600); font-size: 0.9rem; margin: 4px 0 0 0;">${m.description || ''}</p>
                     </div>
                 </div>
-                <div style="display: flex; gap: 10px;">
+                <div style="display: flex; gap: 8px;">
                     <a href="/admin/admin-content.html?moduleId=${m.id}" class="btn btn-sm btn-primary">Inhalte</a>
                     <button onclick="openModuleModal(${m.id}, '${m.title.replace(/'/g, "\\'")}', '${(m.description || '').replace(/'/g, "\\'")}', ${m.displayOrder})" class="btn btn-sm btn-secondary">Edit</button>
-                    <button onclick="deleteModule(${m.id})" class="btn btn-sm" style="color: red; border: 1px solid red;">Löschen</button>
+                    <button onclick="deleteModule(${m.id})" class="btn btn-sm" style="color: #ef4444; border: 1px solid #fee2e2; background: #fef2f2;">Löschen</button>
                 </div>
             </div>
         `).join('');
@@ -203,16 +233,14 @@
         document.getElementById('moduleOrder').value = order;
 
         const modal = document.getElementById('moduleModal');
-        modal.style.display = 'block';
         document.body.classList.add('modal-open');
-        setTimeout(() => modal.classList.add('show'), 10);
+        modal.classList.add('show');
     }
 
     function closeModuleModal() {
         const modal = document.getElementById('moduleModal');
         modal.classList.remove('show');
         document.body.classList.remove('modal-open');
-        setTimeout(() => modal.style.display = 'none', 400);
     }
 
     async function saveModule() {
@@ -239,7 +267,7 @@
     }
 
     async function deleteModule(id) {
-        if (!confirm('Modul wirklich löschen?')) return;
+        if (!confirm('Dieses Modul und alle enthaltenen Bilder/Texte wirklich löschen?')) return;
         try {
             const res = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/modules/${id}`, {
                 method: 'DELETE'

@@ -32,35 +32,57 @@
         .sidebar-list a:hover { background: var(--gray-50); color: var(--primary); }
         .sidebar-list a.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
 
-        /* NEUE KREATIVE KLASSEN FÜR INHALTE */
+        /* INHALTS-STYLING */
         .content-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
         .content-info-card {
             background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid var(--primary);
             padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            transition: all 0.3s ease; position: relative; overflow: hidden;
+            transition: all 0.3s ease; position: relative;
         }
-        .content-info-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-color: var(--primary); }
-        .content-info-card::before { content: "💡"; position: absolute; right: 10px; top: 10px; opacity: 0.2; font-size: 1.5rem; }
-        .content-text-block { margin-bottom: 1.5rem; line-height: 1.8; color: #334155; font-size: 1.05rem; }
+        .content-text-block { margin-bottom: 1.5rem; line-height: 1.8; color: #334155; font-size: 1.05rem; white-space: pre-wrap; }
 
-        /* Warning Box für Texte die mit "!" beginnen */
         .warning-box {
             background: #fff7ed; border: 1px solid #fed7aa; border-left: 5px solid #f97316;
             padding: 1.25rem; border-radius: 8px; margin: 1.5rem 0; color: #9a3412; font-weight: 500;
         }
+
+        /* Bild-Container für Röntgenbilder */
+        .image-container {
+            margin: 2.5rem 0;
+            text-align: center;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .image-container img:hover { transform: scale(1.01); }
+        .image-caption { font-size: 0.9rem; color: #64748b; margin-top: 10px; font-style: italic; }
+
+        /* Video-Container */
+        .video-wrapper {
+            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
+            border-radius: 12px; margin: 2rem 0; box-shadow: var(--shadow-lg);
+        }
+        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
         /* Navbar Profile Dropdown */
         .nav-profile-dropdown { position: relative; }
         .nav-profile-btn { background: none; border: 1px solid var(--gray-200); padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .nav-profile-menu { display: none; position: absolute; right: 0; top: 110%; background: white; border: 1px solid var(--gray-200); border-radius: 8px; min-width: 200px; box-shadow: var(--shadow-lg); z-index: 100; }
         .nav-profile-dropdown.active .nav-profile-menu { display: block; }
-        .nav-profile-menu a, .nav-profile-menu button { display: block; width: 100%; padding: 10px 15px; text-decoration: none; color: var(--gray-700); text-align: left; background: none; border: none; cursor: pointer; }
-        .nav-profile-menu a:hover { background: var(--gray-50); }
-        .divider { height: 1px; background: var(--gray-200); margin: 5px 0; }
     </style>
 </head>
 <body>
 
+<div id="navbar-placeholder"></div>
 
 <div id="loadingState" style="padding: 100px; text-align: center;">Lade Lernbereich...</div>
 <div id="errorState" style="display: none; padding: 100px; text-align: center;">Bereich nicht gefunden.</div>
@@ -88,7 +110,7 @@
                     <div class="module-list" id="modulesList"></div>
                 </div>
                 <div id="moduleContentView" style="display: none;">
-                    <button onclick="showModulesOverview()" class="btn btn-ghost" style="margin-bottom: 20px;">← Zurück</button>
+                    <button onclick="showModulesOverview()" class="btn btn-ghost" style="margin-bottom: 20px;">← Zurück zur Übersicht</button>
                     <div class="content-viewer" id="contentViewer"></div>
                 </div>
             </main>
@@ -105,13 +127,6 @@
     const urlParams = new URLSearchParams(window.location.search);
     const areaSlug = urlParams.get('area');
 
-
-
-    function toggleDropdown() {
-        document.getElementById('profileDropdown').classList.toggle('active');
-    }
-
-    // CONTENT LOGIK
     async function loadLearningArea() {
         if (!areaSlug) { showError(); return; }
         try {
@@ -170,29 +185,57 @@
         document.getElementById('modulesOverview').style.display = 'none';
         document.getElementById('moduleContentView').style.display = 'block';
 
-        // Sidebar aktiv setzen
         document.querySelectorAll('.sidebar-list a').forEach(a => a.classList.toggle('active', a.dataset.moduleId == moduleId));
 
         const viewer = document.getElementById('contentViewer');
-        let html = `<h2>${escapeHtml(module.title)}</h2>`;
-        if (module.subtitle) html += `<p style="color:var(--gray-500); margin-bottom:2rem;">${escapeHtml(module.subtitle)}</p>`;
+        let html = `<h1 style="font-size: 2rem; margin-bottom: 10px;">${escapeHtml(module.title)}</h1>`;
+        if (module.subtitle) html += `<p style="color:var(--gray-500); margin-bottom:2.5rem; font-size: 1.1rem;">${escapeHtml(module.subtitle)}</p>`;
 
         html += (module.contents || []).sort((a,b) => a.displayOrder - b.displayOrder).map(c => {
             const data = c.contentData.trim();
+            const type = c.contentType;
 
-            // KREATIVER PARSER
+            // 1. ÜBERSCHRIFT
+            if (type === 'HEADING') {
+                return `<h2 style="margin-top: 2.5rem; color: var(--primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">${escapeHtml(data)}</h2>`;
+            }
+
+            // 2. BILD
+            if (type === 'IMAGE') {
+                const cleanUrl = data.startsWith('@') ? data.substring(1) : data;
+                return `
+                    <div class="image-container">
+                        <img src="${cleanUrl}" alt="${escapeHtml(c.title)}" onclick="window.open(this.src, '_blank')">
+                        <div class="image-caption">${escapeHtml(c.title || 'Abbildung')}</div>
+                    </div>`;
+            }
+
+            // 3. VIDEO (Youtube embed)
+            if (type === 'VIDEO') {
+                let videoId = "";
+                if (data.includes('v=')) videoId = data.split('v=')[1].split('&')[0];
+                else if (data.includes('be/')) videoId = data.split('be/')[1];
+
+                if (videoId) {
+                    return `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe></div>`;
+                }
+                return `<p><a href="${data}" target="_blank" class="btn btn-ghost">📺 Video extern öffnen</a></p>`;
+            }
+
+            // 4. KREATIVER PARSER (Cards & Warnings)
             if (data.startsWith('[') && data.endsWith(']')) {
                 try {
                     const items = JSON.parse(data);
                     return `<div class="content-card-grid">${items.map(item => `
-                        <div class="content-info-card"><strong>Fokus:</strong><br>${escapeHtml(item)}</div>`).join('')}</div>`;
+                        <div class="content-info-card"><strong>Info:</strong><br>${escapeHtml(item)}</div>`).join('')}</div>`;
                 } catch(e) { return `<p class="content-text-block">${escapeHtml(data)}</p>`; }
             }
 
             if (data.startsWith('!')) {
-                return `<div class="warning-box"><strong>Wichtig:</strong> ${escapeHtml(data.substring(1))}</div>`;
+                return `<div class="warning-box"><strong>Beachte:</strong> ${escapeHtml(data.substring(1))}</div>`;
             }
 
+            // STANDARD: TEXT
             return `<p class="content-text-block">${escapeHtml(data)}</p>`;
         }).join('');
 
@@ -212,6 +255,7 @@
     }
 
     function escapeHtml(t) {
+        if (!t) return "";
         const d = document.createElement('div'); d.textContent = t; return d.innerHTML;
     }
 
@@ -219,8 +263,11 @@
         const res = await fetch(`${API_BASE}/learning-areas`);
         if (res.ok) {
             const areas = await res.json();
-            document.getElementById('learningAreasMenu').innerHTML = areas.map(a =>
-                `<li><a href="/lernbereiche/learning-area.html?area=${a.slug}">${escapeHtml(a.name)}</a></li>`).join('');
+            const menu = document.getElementById('learningAreasMenu');
+            if(menu) {
+                menu.innerHTML = areas.map(a =>
+                    `<li><a href="/lernbereiche/learning-area.html?area=${a.slug}">${escapeHtml(a.name)}</a></li>`).join('');
+            }
         }
     }
 

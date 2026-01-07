@@ -2,10 +2,10 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quiz Verwaltung - RadBrain Admin</title>
   <link rel="stylesheet" href="/css/style.css">
-
-  <script src="/js/dropdown.js"></script>
+  <link rel="stylesheet" href="/css/navbar.css">
   <style>
     .quiz-list-item {
       background: white;
@@ -16,88 +16,153 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: transform 0.2s;
+    }
+    .quiz-list-item:hover {
+      transform: translateX(5px);
+      border-color: var(--primary);
     }
     .status-badge {
-      padding: 4px 8px;
-      border-radius: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
       font-size: 0.75rem;
-      font-weight: bold;
+      font-weight: 600;
+      margin-left: 10px;
     }
     .status-published { background: #dcfce7; color: #166534; }
     .status-draft { background: #f3f4f6; color: #374151; }
+
+    .error-box {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: var(--space-4);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-6);
+    }
   </style>
 </head>
 <body>
 
-<div class="container" style="padding-top: 50px;">
+<div id="navbar-placeholder"></div>
+
+<div class="container" style="padding-top: 100px; padding-bottom: 50px;">
   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-    <h1>Quiz Verwaltung</h1>
-    <a href="/admin/admin-dashboard.html" class="btn btn-ghost">← Zurück</a>
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 700;">Quiz Verwaltung</h1>
+      <p style="color: var(--gray-600);">Erstellen und verwalten Sie die Lernkontrollen.</p>
+    </div>
+    <div style="display: flex; gap: 12px;">
+      <a href="/admin/quiz-editor.html" class="btn btn-primary">+ Neues Quiz</a>
+      <a href="/admin/admin-dashboard.html" class="btn btn-outline">← Zurück</a>
+    </div>
   </div>
 
-  <div id="quizList">Lade Quizzes...</div>
+  <div id="errorMessage"></div>
+  <div id="quizList">
+    <div style="height: 80px; background: #f3f4f6; margin-bottom: 15px; border-radius: 12px;"></div>
+    <div style="height: 80px; background: #f3f4f6; margin-bottom: 15px; border-radius: 12px;"></div>
+  </div>
 </div>
 
 <script src="/js/auth.js"></script>
+<script src="/js/navbar.js"></script>
 <script>
-  // Admin-Check
-  if (!window.auth || !window.auth.hasRole('ADMIN')) {
-    alert('Keine Berechtigung!');
-    window.location.href = '/';
-  }
   const API_BASE = 'http://localhost:8080/api';
 
-  document.addEventListener('DOMContentLoaded', () => {
-    if (!window.auth.hasRole('ADMIN')) { window.location.href = '/'; return; }
+  document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Warten bis auth.js initialisiert ist
+    if (typeof window.auth === 'undefined') {
+      showError("Authentifizierungs-Modul konnte nicht geladen werden.");
+      return;
+    }
+
+    // 2. Admin-Check
+    if (!window.auth.isLoggedIn() || !window.auth.hasRole('ADMIN')) {
+      window.location.replace('/'); // replace verhindert Zurück-Button-Loop
+      return;
+    }
+
+    // 3. Quizzes laden
     loadQuizzes();
   });
 
   async function loadQuizzes() {
+    const container = document.getElementById('quizList');
     try {
+      // WICHTIG: Prüfen ob authFetch existiert (aus deiner auth.js)
       const response = await window.auth.authFetch(`${API_BASE}/secure/admin/quizzes`);
-      const quizzes = await response.json();
-      const container = document.getElementById('quizList');
 
-      if (quizzes.length === 0) {
-        container.innerHTML = '<p>Keine Quizzes gefunden.</p>';
-        return;
+      if (!response.ok) {
+        if(response.status === 403) throw new Error("Keine Administrator-Rechte.");
+        throw new Error("Server-Fehler beim Laden der Quizzes.");
       }
 
+      const quizzes = await response.json();
+
+      if (!quizzes || quizzes.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; background: var(--gray-50); border-radius: 15px;">
+                <p>Es wurden noch keine Quizzes erstellt.</p>
+            </div>`;
+        return;
+      }
 
       container.innerHTML = quizzes.map(q => `
         <div class="quiz-list-item">
             <div>
-                <strong>${q.title}</strong>
+                <strong style="font-size: 1.1rem; color: var(--gray-900);">${escapeHtml(q.title)}</strong>
                 <span class="status-badge ${q.isPublished ? 'status-published' : 'status-draft'}">
-                    ${q.isPublished ? 'Veröffentlicht' : 'Entwurf'}
+                    ${q.isPublished ? '● Aktiv' : '○ Entwurf'}
                 </span>
+                <div style="font-size: 0.85rem; color: var(--gray-500); margin-top: 4px;">
+                    ID: #${q.id} | ${q.questionCount || 0} Fragen
+                </div>
             </div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 8px;">
                 <a href="/admin/quiz-editor.html?id=${q.id}" class="btn btn-sm" style="background: var(--primary); color: white;">Bearbeiten</a>
-
-                <button onclick="togglePublish(${q.id}, ${q.isPublished})" class="btn btn-sm">
-                    ${q.isPublished ? 'Verstecken' : 'Veröffentlichen'}
+                <button onclick="togglePublish(${q.id}, ${q.isPublished})" class="btn btn-sm btn-outline">
+                    ${q.isPublished ? 'Deaktivieren' : 'Veröffentlichen'}
                 </button>
-                <button onclick="deleteQuiz(${q.id})" class="btn btn-sm" style="color: red; border-color: red;">Löschen</button>
+                <button onclick="deleteQuiz(${q.id})" class="btn btn-sm" style="color: #dc2626; border-color: #fee2e2;">Löschen</button>
             </div>
         </div>
     `).join('');
     } catch (error) {
       console.error("Fehler:", error);
+      showError(error.message);
     }
   }
 
   async function togglePublish(id, currentStatus) {
-    const action = currentStatus ? 'unpublish' : 'publish';
-    await window.auth.authFetch(`${API_BASE}/secure/admin/quizzes/${id}/${action}`, { method: 'POST' });
-    loadQuizzes();
+    try {
+      const action = currentStatus ? 'unpublish' : 'publish';
+      const response = await window.auth.authFetch(`${API_BASE}/secure/admin/quizzes/${id}/${action}`, {
+        method: 'POST'
+      });
+      if (response.ok) loadQuizzes();
+    } catch (e) { alert("Status-Änderung fehlgeschlagen."); }
   }
 
   async function deleteQuiz(id) {
-    if (confirm('Dieses Quiz unwiderruflich löschen?')) {
-      await window.auth.authFetch(`${API_BASE}/secure/admin/quizzes/${id}`, { method: 'DELETE' });
-      loadQuizzes();
+    if (confirm('Dieses Quiz wirklich löschen? Alle Ergebnisse gehen verloren.')) {
+      try {
+        const response = await window.auth.authFetch(`${API_BASE}/secure/admin/quizzes/${id}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) loadQuizzes();
+      } catch (e) { alert("Löschen fehlgeschlagen."); }
     }
+  }
+
+  function showError(msg) {
+    document.getElementById('errorMessage').innerHTML = `<div class="error-box">${msg}</div>`;
+    document.getElementById('quizList').innerHTML = "";
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 </script>
 </body>
