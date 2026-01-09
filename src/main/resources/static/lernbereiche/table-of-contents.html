@@ -36,16 +36,16 @@
 
 <div class="container" style="padding: 40px 20px;">
   <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 10px;">Inhaltsverzeichnis</h1>
-  <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 40px;">Übersicht aller Lernbereiche und Module</p>
+  <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 40px;">Übersicht aller Lernbereiche</p>
 
   <div class="stats-row">
     <div class="stat-card"><div class="stat-value" id="totalAreas">0</div><div>Bereiche</div></div>
-    <div class="stat-card"><div class="stat-value" id="totalModules">0</div><div>Module</div></div>
+    <div class="stat-card"><div class="stat-value" id="totalModules">0</div><div>Lerneinheiten</div></div>
     <div class="stat-card"><div class="stat-value" id="totalContents">0</div><div>Inhalte</div></div>
   </div>
 
   <div class="search-bar">
-    <input type="text" id="searchInput" class="search-input" placeholder="Nach Themen oder Modulen suchen..." onkeyup="renderContent()">
+    <input type="text" id="searchInput" class="search-input" placeholder="Nach Themen oder Inhalten suchen..." onkeyup="renderContent()">
     <div id="filterButtons" class="filter-tags">
       <button class="filter-tag active" onclick="filterByArea(event, 'ALL')">Alle Bereiche</button>
     </div>
@@ -130,7 +130,7 @@
           <div class="toc-area-header" onclick="toggleArea(${area.id})">
             <div>
               <div class="toc-area-title">${area.name}</div>
-              <div class="toc-area-meta"><span>${modules.length} Module</span></div>
+              <div class="toc-area-meta"><span>${modules.length} Lerneinheiten</span></div>
             </div>
             <span class="toggle-icon">▼</span>
           </div>
@@ -146,7 +146,7 @@
                 </div>
               </div>
             `).join('')}
-            ${filteredModules.length === 0 ? '<p style="padding:10px; color:#999;">Keine passenden Module gefunden.</p>' : ''}
+            ${filteredModules.length === 0 ? '<p style="padding:10px; color:#999;">Keine passenden Inhalte gefunden.</p>' : ''}
           </div>
         </div>
       `;

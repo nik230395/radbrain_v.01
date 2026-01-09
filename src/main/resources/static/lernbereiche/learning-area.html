@@ -78,6 +78,45 @@
         .nav-profile-btn { background: none; border: 1px solid var(--gray-200); padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .nav-profile-menu { display: none; position: absolute; right: 0; top: 110%; background: white; border: 1px solid var(--gray-200); border-radius: 8px; min-width: 200px; box-shadow: var(--shadow-lg); z-index: 100; }
         .nav-profile-dropdown.active .nav-profile-menu { display: block; }
+        /* Merke/Info-Box Styling */
+        .info-note-box {
+            background: #eff6ff; /* Sanftes Blau */
+            border: 1px solid #bfdbfe;
+            border-left: 5px solid #3b82f6; /* Blauer Balken */
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            color: #1e3a8a;
+            line-height: 1.6;
+        }
+
+        .info-note-box strong {
+            color: #1d4ed8;
+            display: block;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+        }
+        .merke-box {
+            background: #f0f9ff !important; /* Hellblau */
+            border-left: 5px solid #3b82f6 !important; /* Blauer Balken */
+            padding: 20px !important;
+            margin: 20px 0 !important;
+            border-radius: 8px;
+            color: #1e3a8a;
+            display: block; /* Wichtig, damit es eine Box ist */
+        }
+
+        /* Optional: Damit "Merke" automatisch drüber steht */
+        .merke-box::before {
+            content: "MERKE";
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            color: #3b82f6;
+        }
     </style>
 </head>
 <body>
@@ -222,13 +261,21 @@
                 return `<p><a href="${data}" target="_blank" class="btn btn-ghost">📺 Video extern öffnen</a></p>`;
             }
 
-            // 4. KREATIVER PARSER (Cards & Warnings)
+            // 4. KREATIVER PARSER (Cards & Merke-Boxen)
             if (data.startsWith('[') && data.endsWith(']')) {
                 try {
+                    // Versuch 1: Ist es eine Liste (JSON)? ["A", "B"]
                     const items = JSON.parse(data);
-                    return `<div class="content-card-grid">${items.map(item => `
-                        <div class="content-info-card"><strong>Info:</strong><br>${escapeHtml(item)}</div>`).join('')}</div>`;
-                } catch(e) { return `<p class="content-text-block">${escapeHtml(data)}</p>`; }
+                    if (Array.isArray(items)) {
+                        return `<div class="content-card-grid">${items.map(item => `
+                <div class="content-info-card"><strong>Info:</strong><br>${escapeHtml(item)}</div>`).join('')}</div>`;
+                    }
+                } catch(e) {
+                    // Versuch 2: Es ist kein JSON, also ein normaler Merksatz [Text]
+                    // Wir schneiden das erste [ und das letzte ] Zeichen ab
+                    const cleanText = data.substring(1, data.length - 1);
+                    return `<div class="merke-box">${escapeHtml(cleanText)}</div>`;
+                }
             }
 
             if (data.startsWith('!')) {
