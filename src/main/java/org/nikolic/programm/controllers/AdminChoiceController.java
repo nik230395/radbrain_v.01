@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/secure/admin/choices") // Pfad an Frontend angepasst
+@RequestMapping("/api/admin/choices") // Pfad an Frontend angepasst
 @CrossOrigin(origins = "*")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminChoiceController {

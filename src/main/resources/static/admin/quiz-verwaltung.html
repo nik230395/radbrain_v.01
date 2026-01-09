@@ -7,37 +7,246 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/navbar.css">
   <style>
-    .quiz-list-item {
-      background: white;
-      border: 1px solid var(--gray-200);
-      border-radius: var(--radius-lg);
-      padding: var(--space-4);
-      margin-bottom: var(--space-3);
+    .quiz-management-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .management-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: transform 0.2s;
+      margin-bottom: 40px;
     }
-    .quiz-list-item:hover {
-      transform: translateX(5px);
+
+    .header-content h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .header-content p {
+      color: var(--gray-600);
+      font-size: 1.1rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      color: var(--gray-600);
+      font-size: 0.9rem;
+    }
+
+    .quiz-filters {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 250px;
+      padding: 12px 16px;
+      border: 1px solid var(--gray-300);
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border: 1px solid var(--gray-300);
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      background: var(--gray-50);
+    }
+
+    .filter-btn.active {
+      background: var(--primary);
+      color: white;
       border-color: var(--primary);
     }
+
+    .quiz-list {
+      display: grid;
+      gap: 15px;
+    }
+
+    .quiz-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+
+    .quiz-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transform: translateX(5px);
+    }
+
+    .quiz-info {
+      flex: 1;
+    }
+
+    .quiz-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--gray-900);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .quiz-meta {
+      display: flex;
+      gap: 20px;
+      color: var(--gray-600);
+      font-size: 0.875rem;
+      margin-top: 8px;
+    }
+
+    .quiz-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .status-badge {
-      padding: 4px 10px;
+      padding: 4px 12px;
       border-radius: 20px;
       font-size: 0.75rem;
       font-weight: 600;
-      margin-left: 10px;
+      text-transform: uppercase;
     }
-    .status-published { background: #dcfce7; color: #166534; }
-    .status-draft { background: #f3f4f6; color: #374151; }
 
-    .error-box {
-      background: #fee2e2;
+    .status-published {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-draft {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .category-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .quiz-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+    }
+
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      opacity: 0.3;
+    }
+
+    .empty-state h3 {
+      font-size: 1.5rem;
+      color: var(--gray-600);
+      margin-bottom: 12px;
+    }
+
+    .empty-state p {
+      color: var(--gray-500);
+      margin-bottom: 24px;
+    }
+
+    .loading-container {
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .loading {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--gray-200);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .error-message {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
       color: #991b1b;
-      padding: var(--space-4);
-      border-radius: var(--radius-md);
-      margin-bottom: var(--space-6);
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
     }
   </style>
 </head>
@@ -45,125 +254,274 @@
 
 <div id="navbar-placeholder"></div>
 
-<div class="container" style="padding-top: 100px; padding-bottom: 50px;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-    <div>
-      <h1 style="font-size: 2rem; font-weight: 700;">Quiz Verwaltung</h1>
-      <p style="color: var(--gray-600);">Erstellen und verwalten Sie die Lernkontrollen.</p>
+<div class="quiz-management-container">
+  <!-- Header -->
+  <div class="management-header">
+    <div class="header-content">
+      <h1>📝 Quiz Verwaltung</h1>
+      <p>Erstelle und verwalte deine Quizzes</p>
     </div>
-    <div style="display: flex; gap: 12px;">
-      <a href="/admin/quiz-editor.html" class="btn btn-primary">+ Neues Quiz</a>
-      <a href="/admin/admin-dashboard.html" class="btn btn-outline">← Zurück</a>
+    <div class="header-actions">
+      <a href="/admin/quiz-creator.html" class="btn btn-primary btn-lg">
+        ➕ Neues Quiz erstellen
+      </a>
+      <a href="/admin/admin-dashboard.html" class="btn btn-outline">
+        ← Zurück zum Dashboard
+      </a>
     </div>
   </div>
 
+  <!-- Statistics -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="totalQuizzes">0</div>
+      <div class="stat-label">Gesamt Quizzes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="publishedQuizzes">0</div>
+      <div class="stat-label">Veröffentlicht</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="draftQuizzes">0</div>
+      <div class="stat-label">Entwürfe</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="totalQuestions">0</div>
+      <div class="stat-label">Gesamt Fragen</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="quiz-filters">
+    <div class="filter-row">
+      <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="🔍 Quiz suchen..."
+              onkeyup="filterQuizzes()">
+
+      <div class="filter-buttons">
+        <button class="filter-btn active" onclick="filterByStatus('all')">Alle</button>
+        <button class="filter-btn" onclick="filterByStatus('published')">Veröffentlicht</button>
+        <button class="filter-btn" onclick="filterByStatus('draft')">Entwürfe</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
   <div id="errorMessage"></div>
+
+  <!-- Quiz List -->
   <div id="quizList">
-    <div style="height: 80px; background: #f3f4f6; margin-bottom: 15px; border-radius: 12px;"></div>
-    <div style="height: 80px; background: #f3f4f6; margin-bottom: 15px; border-radius: 12px;"></div>
+    <div class="loading-container">
+      <div class="loading"></div>
+      <p>Lade Quizzes...</p>
+    </div>
   </div>
 </div>
 
 <script src="/js/auth.js"></script>
 <script src="/js/navbar.js"></script>
 <script>
+  // Admin-Check
+  if (!window.auth || !window.auth.hasRole('ADMIN')) {
+    alert('Keine Berechtigung!');
+    window.location.href = '/';
+  }
+
   const API_BASE = 'http://localhost:8080/api';
+  let allQuizzes = [];
+  let currentFilter = 'all';
 
-  document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Warten bis auth.js initialisiert ist
-    if (typeof window.auth === 'undefined') {
-      showError("Authentifizierungs-Modul konnte nicht geladen werden.");
-      return;
-    }
-
-    // 2. Admin-Check
-    if (!window.auth.isLoggedIn() || !window.auth.hasRole('ADMIN')) {
-      window.location.replace('/'); // replace verhindert Zurück-Button-Loop
-      return;
-    }
-
-    // 3. Quizzes laden
+  document.addEventListener('DOMContentLoaded', () => {
     loadQuizzes();
   });
 
   async function loadQuizzes() {
-    const container = document.getElementById('quizList');
+    const listContainer = document.getElementById('quizList');
+
     try {
-      // WICHTIG: Prüfen ob authFetch existiert (aus deiner auth.js)
-      const response = await window.auth.authFetch(`${API_BASE}/secure/admin/quizzes`);
+      console.log('Loading quizzes...');
+      const response = await window.auth.authFetch(`${API_BASE}/admin/quizzes`);
 
       if (!response.ok) {
-        if(response.status === 403) throw new Error("Keine Administrator-Rechte.");
-        throw new Error("Server-Fehler beim Laden der Quizzes.");
+        if (response.status === 403) {
+          throw new Error('Keine Administrator-Rechte.');
+        }
+        throw new Error(`Server-Fehler: ${response.status}`);
       }
 
-      const quizzes = await response.json();
+      const data = await response.json();
+      console.log('Quizzes loaded:', data);
 
-      if (!quizzes || quizzes.length === 0) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 40px; background: var(--gray-50); border-radius: 15px;">
-                <p>Es wurden noch keine Quizzes erstellt.</p>
-            </div>`;
-        return;
-      }
+      // Handle both direct array and wrapped response
+      allQuizzes = Array.isArray(data) ? data : (data.data || []);
 
-      container.innerHTML = quizzes.map(q => `
-        <div class="quiz-list-item">
-            <div>
-                <strong style="font-size: 1.1rem; color: var(--gray-900);">${escapeHtml(q.title)}</strong>
-                <span class="status-badge ${q.isPublished ? 'status-published' : 'status-draft'}">
-                    ${q.isPublished ? '● Aktiv' : '○ Entwurf'}
-                </span>
-                <div style="font-size: 0.85rem; color: var(--gray-500); margin-top: 4px;">
-                    ID: #${q.id} | ${q.questionCount || 0} Fragen
+      updateStatistics();
+      renderQuizzes();
+
+    } catch (error) {
+      console.error('Error loading quizzes:', error);
+      showError(error.message);
+      listContainer.innerHTML = '';
+    }
+  }
+
+  function updateStatistics() {
+    const total = allQuizzes.length;
+    const published = allQuizzes.filter(q => q.isPublished).length;
+    const draft = total - published;
+    const totalQ = allQuizzes.reduce((sum, q) => sum + (q.questionCount || 0), 0);
+
+    document.getElementById('totalQuizzes').textContent = total;
+    document.getElementById('publishedQuizzes').textContent = published;
+    document.getElementById('draftQuizzes').textContent = draft;
+    document.getElementById('totalQuestions').textContent = totalQ;
+  }
+
+  function renderQuizzes() {
+    const container = document.getElementById('quizList');
+    let filtered = allQuizzes;
+
+    // Filter by status
+    if (currentFilter === 'published') {
+      filtered = allQuizzes.filter(q => q.isPublished);
+    } else if (currentFilter === 'draft') {
+      filtered = allQuizzes.filter(q => !q.isPublished);
+    }
+
+    // Filter by search
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    if (searchTerm) {
+      filtered = filtered.filter(q =>
+              q.title.toLowerCase().includes(searchTerm) ||
+              (q.description && q.description.toLowerCase().includes(searchTerm))
+      );
+    }
+
+    // Render
+    if (filtered.length === 0) {
+      container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <h3>Keine Quizzes gefunden</h3>
+                    <p>Erstelle dein erstes Quiz oder passe deine Filter an</p>
+                    <a href="/admin/quiz-creator.html" class="btn btn-primary">
+                        ➕ Jetzt Quiz erstellen
+                    </a>
+                </div>
+            `;
+      return;
+    }
+
+    container.innerHTML = `<div class="quiz-list">${filtered.map(quiz => `
+            <div class="quiz-card">
+                <div class="quiz-info">
+                    <div class="quiz-title">
+                        ${escapeHtml(quiz.title)}
+                        <span class="status-badge ${quiz.isPublished ? 'status-published' : 'status-draft'}">
+                            ${quiz.isPublished ? '✓ Veröffentlicht' : '○ Entwurf'}
+                        </span>
+                        ${quiz.category ? `<span class="category-badge">${quiz.category}</span>` : ''}
+                    </div>
+                    ${quiz.description ? `<p style="color: var(--gray-600); margin: 8px 0;">${escapeHtml(quiz.description)}</p>` : ''}
+                    <div class="quiz-meta">
+                        <span>🆔 ID: ${quiz.id}</span>
+                        <span>❓ ${quiz.questionCount || 0} Fragen</span>
+                        ${quiz.createdAt ? `<span>📅 ${new Date(quiz.createdAt).toLocaleDateString('de-DE')}</span>` : ''}
+                    </div>
+                </div>
+                <div class="quiz-actions">
+                    <a href="/admin/quiz-editor.html?id=${quiz.id}" class="btn btn-sm btn-primary">
+                        ✏️ Bearbeiten
+                    </a>
+                    <button onclick="togglePublish(${quiz.id}, ${quiz.isPublished})" class="btn btn-sm btn-secondary">
+                        ${quiz.isPublished ? '👁️ Verstecken' : '✓ Veröffentlichen'}
+                    </button>
+                    <button onclick="deleteQuiz(${quiz.id}, '${escapeHtml(quiz.title)}')" class="btn btn-sm" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;">
+                        🗑️ Löschen
+                    </button>
                 </div>
             </div>
-            <div style="display: flex; gap: 8px;">
-                <a href="/admin/quiz-editor.html?id=${q.id}" class="btn btn-sm" style="background: var(--primary); color: white;">Bearbeiten</a>
-                <button onclick="togglePublish(${q.id}, ${q.isPublished})" class="btn btn-sm btn-outline">
-                    ${q.isPublished ? 'Deaktivieren' : 'Veröffentlichen'}
-                </button>
-                <button onclick="deleteQuiz(${q.id})" class="btn btn-sm" style="color: #dc2626; border-color: #fee2e2;">Löschen</button>
-            </div>
-        </div>
-    `).join('');
-    } catch (error) {
-      console.error("Fehler:", error);
-      showError(error.message);
-    }
+        `).join('')}</div>`;
   }
 
   async function togglePublish(id, currentStatus) {
     try {
       const action = currentStatus ? 'unpublish' : 'publish';
-      const response = await window.auth.authFetch(`${API_BASE}/secure/admin/quizzes/${id}/${action}`, {
-        method: 'POST'
-      });
-      if (response.ok) loadQuizzes();
-    } catch (e) { alert("Status-Änderung fehlgeschlagen."); }
-  }
+      console.log(`Toggling publish status: ${action} for quiz ${id}`);
 
-  async function deleteQuiz(id) {
-    if (confirm('Dieses Quiz wirklich löschen? Alle Ergebnisse gehen verloren.')) {
-      try {
-        const response = await window.auth.authFetch(`${API_BASE}/secure/admin/quizzes/${id}`, {
-          method: 'DELETE'
-        });
-        if (response.ok) loadQuizzes();
-      } catch (e) { alert("Löschen fehlgeschlagen."); }
+      const response = await window.auth.authFetch(`${API_BASE}/admin/quizzes/${id}/${action}`, {
+        method: 'PATCH'
+      });
+
+      if (!response.ok) {
+        throw new Error('Status ändern fehlgeschlagen');
+      }
+
+      // Reload quizzes
+      await loadQuizzes();
+
+    } catch (error) {
+      console.error('Toggle publish error:', error);
+      alert('Fehler beim Ändern des Status: ' + error.message);
     }
   }
 
-  function showError(msg) {
-    document.getElementById('errorMessage').innerHTML = `<div class="error-box">${msg}</div>`;
-    document.getElementById('quizList').innerHTML = "";
+  async function deleteQuiz(id, title) {
+    if (!confirm(`Quiz "${title}" wirklich löschen?\n\nAlle Fragen und Ergebnisse gehen verloren!`)) {
+      return;
+    }
+
+    try {
+      console.log(`Deleting quiz ${id}`);
+      const response = await window.auth.authFetch(`${API_BASE}/admin/quizzes/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Löschen fehlgeschlagen');
+      }
+
+      // Reload quizzes
+      await loadQuizzes();
+
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Fehler beim Löschen: ' + error.message);
+    }
+  }
+
+  function filterByStatus(status) {
+    currentFilter = status;
+
+    // Update button states
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    renderQuizzes();
+  }
+
+  function filterQuizzes() {
+    renderQuizzes();
+  }
+
+  function showError(message) {
+    document.getElementById('errorMessage').innerHTML = `
+            <div class="error-message">
+                <strong>⚠️ Fehler:</strong> ${message}
+            </div>
+        `;
   }
 
   function escapeHtml(text) {
+    if (!text) return '';
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 </script>
+
 </body>
 </html>

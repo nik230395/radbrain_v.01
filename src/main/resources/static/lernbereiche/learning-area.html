@@ -7,115 +7,71 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/navbar.css">
     <style>
-        .learning-header { background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%); color: white; padding: var(--space-16) 0; position: relative; }
+        .learning-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%);
+            color: white;
+            padding: var(--space-16) 0;
+            position: relative;
+        }
         .breadcrumb { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-4); font-size: 0.9375rem; }
-        .breadcrumb a { color: rgba(255,255,255,0.8); transition: color var(--transition-fast); }
+        .breadcrumb a { color: rgba(255,255,255,0.8); transition: color var(--transition-fast); text-decoration: none; }
         .breadcrumb a:hover { color: white; }
         .breadcrumb span { color: rgba(255,255,255,0.5); }
-        .module-list { display: grid; gap: var(--space-4); }
-        .module-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--space-6); transition: all var(--transition-base); cursor: pointer; }
-        .module-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .module-header { display: flex; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-4); }
-        .module-number { flex-shrink: 0; width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-weight: 600; }
-        .module-content { flex: 1; }
-        .module-title { font-size: 1.25rem; font-weight: 600; color: var(--gray-900); margin-bottom: var(--space-2); }
-        .module-description { color: var(--gray-600); line-height: 1.6; margin-bottom: var(--space-3); }
-        .module-meta { display: flex; gap: var(--space-6); color: var(--gray-500); font-size: 0.875rem; }
-        .content-viewer { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--space-8); }
-
-        /* Sidebar Styling */
+        .learning-layout { display: grid; grid-template-columns: 280px 1fr; gap: 40px; padding: 40px 0; }
         .sidebar { position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto; }
         .sidebar-nav { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--space-4); }
         .sidebar-title { font-size: 0.875rem; font-weight: 600; color: var(--gray-500); text-transform: uppercase; margin-bottom: var(--space-4); }
         .sidebar-list { list-style: none; display: flex; flex-direction: column; gap: var(--space-1); }
-        .sidebar-list a { display: block; padding: var(--space-2) var(--space-3); color: var(--gray-700); border-radius: var(--radius-md); text-decoration: none; transition: 0.2s; }
+        .sidebar-list a { display: block; padding: var(--space-2) var(--space-3); color: var(--gray-700); border-radius: var(--radius-md); text-decoration: none; transition: all 0.2s; font-size: 0.9375rem; }
         .sidebar-list a:hover { background: var(--gray-50); color: var(--primary); }
         .sidebar-list a.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
-
-        /* INHALTS-STYLING */
+        .module-list { display: grid; gap: var(--space-4); }
+        .module-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--space-6); transition: all var(--transition-base); cursor: pointer; }
+        .module-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+        .module-header { display: flex; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-3); }
+        .module-number { flex-shrink: 0; width: 48px; height: 48px; background: var(--primary-light); color: var(--primary); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.25rem; }
+        .module-content { flex: 1; }
+        .module-title { font-size: 1.25rem; font-weight: 600; color: var(--gray-900); margin-bottom: var(--space-2); }
+        .module-subtitle { color: var(--gray-600); line-height: 1.6; margin-bottom: var(--space-3); }
+        .module-meta { display: flex; gap: var(--space-6); color: var(--gray-500); font-size: 0.875rem; }
+        .content-viewer { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--space-8); }
+        .content-viewer h1 { font-size: 2rem; font-weight: 700; color: var(--gray-900); margin-bottom: var(--space-2); }
+        .content-viewer h2 { font-size: 1.5rem; font-weight: 600; color: var(--primary); margin-top: 2.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-light); }
+        .content-viewer h3 { font-size: 1.25rem; font-weight: 600; color: var(--gray-800); margin-top: 2rem; margin-bottom: 0.75rem; }
+        .content-text-block { margin-bottom: 1.5rem; line-height: 1.8; color: var(--gray-700); font-size: 1.0625rem; }
+        .info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #3b82f6; padding: 1.25rem; border-radius: var(--radius-md); margin: 1.5rem 0; color: #1e3a8a; line-height: 1.6; }
+        .info-box strong { color: #1d4ed8; display: block; margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.05em; }
+        .warning-box { background: #fff7ed; border: 1px solid #fed7aa; border-left: 5px solid #f97316; padding: 1.25rem; border-radius: var(--radius-md); margin: 1.5rem 0; color: #9a3412; }
+        .warning-box strong { display: block; margin-bottom: 0.5rem; color: #ea580c; }
+        .merke-box { background: #f0f9ff; border: 1px solid #bae6fd; border-left: 5px solid #0284c7; padding: 1.25rem; border-radius: var(--radius-md); margin: 1.5rem 0; color: #075985; position: relative; }
+        .merke-box::before { content: "MERKE"; display: block; font-weight: 700; margin-bottom: 0.5rem; font-size: 0.8rem; color: #0284c7; letter-spacing: 0.05em; }
+        .image-container { margin: 2rem 0; text-align: center; background: var(--gray-50); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--gray-200); }
+        .image-container img { max-width: 100%; height: auto; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); cursor: pointer; transition: transform 0.2s; }
+        .image-container img:hover { transform: scale(1.02); }
+        .image-caption { font-size: 0.9rem; color: var(--gray-600); margin-top: 0.75rem; font-style: italic; }
+        .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: var(--radius-lg); margin: 2rem 0; box-shadow: var(--shadow-lg); }
+        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
         .content-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
-        .content-info-card {
-            background: #ffffff; border: 1px solid #e2e8f0; border-left: 5px solid var(--primary);
-            padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            transition: all 0.3s ease; position: relative;
+        .content-info-card { background: white; border: 1px solid var(--gray-200); border-left: 5px solid var(--primary); padding: 1.5rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: all 0.2s; }
+        .content-info-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .content-info-card strong { display: block; color: var(--primary); margin-bottom: 0.5rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .loading-state { padding: 100px 20px; text-align: center; }
+        .loading-spinner { width: 50px; height: 50px; border: 4px solid var(--gray-200); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .error-state { padding: 100px 20px; text-align: center; }
+        .error-icon { font-size: 4rem; margin-bottom: 1rem; }
+        @media (max-width: 992px) {
+            .learning-layout { grid-template-columns: 1fr; }
+            .sidebar { position: static; max-height: none; }
+            .sidebar-nav { margin-bottom: 2rem; }
         }
-        .content-text-block { margin-bottom: 1.5rem; line-height: 1.8; color: #334155; font-size: 1.05rem; white-space: pre-wrap; }
-
-        .warning-box {
-            background: #fff7ed; border: 1px solid #fed7aa; border-left: 5px solid #f97316;
-            padding: 1.25rem; border-radius: 8px; margin: 1.5rem 0; color: #9a3412; font-weight: 500;
-        }
-
-        /* Bild-Container für Röntgenbilder */
-        .image-container {
-            margin: 2.5rem 0;
-            text-align: center;
-            background: #f8fafc;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-        }
-        .image-container img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .image-container img:hover { transform: scale(1.01); }
-        .image-caption { font-size: 0.9rem; color: #64748b; margin-top: 10px; font-style: italic; }
-
-        /* Video-Container */
-        .video-wrapper {
-            position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
-            border-radius: 12px; margin: 2rem 0; box-shadow: var(--shadow-lg);
-        }
-        .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-
-        /* Navbar Profile Dropdown */
-        .nav-profile-dropdown { position: relative; }
-        .nav-profile-btn { background: none; border: 1px solid var(--gray-200); padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .nav-profile-menu { display: none; position: absolute; right: 0; top: 110%; background: white; border: 1px solid var(--gray-200); border-radius: 8px; min-width: 200px; box-shadow: var(--shadow-lg); z-index: 100; }
-        .nav-profile-dropdown.active .nav-profile-menu { display: block; }
-        /* Merke/Info-Box Styling */
-        .info-note-box {
-            background: #eff6ff; /* Sanftes Blau */
-            border: 1px solid #bfdbfe;
-            border-left: 5px solid #3b82f6; /* Blauer Balken */
-            padding: 1.25rem;
-            border-radius: 8px;
-            margin: 1.5rem 0;
-            color: #1e3a8a;
-            line-height: 1.6;
-        }
-
-        .info-note-box strong {
-            color: #1d4ed8;
-            display: block;
-            margin-bottom: 5px;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.05em;
-        }
-        .merke-box {
-            background: #f0f9ff !important; /* Hellblau */
-            border-left: 5px solid #3b82f6 !important; /* Blauer Balken */
-            padding: 20px !important;
-            margin: 20px 0 !important;
-            border-radius: 8px;
-            color: #1e3a8a;
-            display: block; /* Wichtig, damit es eine Box ist */
-        }
-
-        /* Optional: Damit "Merke" automatisch drüber steht */
-        .merke-box::before {
-            content: "MERKE";
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            font-size: 0.8rem;
-            color: #3b82f6;
+        @media (max-width: 640px) {
+            .learning-header { padding: var(--space-12) 0; }
+            .module-number { width: 40px; height: 40px; font-size: 1rem; }
+            .module-title { font-size: 1.125rem; }
+            .content-viewer { padding: var(--space-6); }
+            .content-viewer h1 { font-size: 1.5rem; }
+            .content-viewer h2 { font-size: 1.25rem; }
         }
     </style>
 </head>
@@ -123,33 +79,50 @@
 
 <div id="navbar-placeholder"></div>
 
-<div id="loadingState" style="padding: 100px; text-align: center;">Lade Lernbereich...</div>
-<div id="errorState" style="display: none; padding: 100px; text-align: center;">Bereich nicht gefunden.</div>
+<div id="loadingState" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p style="color: var(--gray-600);">Lade Lernbereich...</p>
+</div>
+
+<div id="errorState" class="error-state" style="display: none;">
+    <div class="error-icon">!</div>
+    <h2 style="margin-bottom: 1rem;">Lernbereich nicht gefunden</h2>
+    <p style="color: var(--gray-600); margin-bottom: 2rem;">Der angeforderte Lernbereich existiert nicht oder konnte nicht geladen werden.</p>
+    <a href="/userpages/user-home.html" class="btn btn-primary">Zurück zur Startseite</a>
+</div>
 
 <div id="mainContent" style="display: none;">
     <header class="learning-header">
         <div class="container">
-            <div class="breadcrumb"><a href="/userpages/user-home.html">Home</a><span>›</span><span id="areaNameBreadcrumb"></span></div>
-            <h1 id="areaTitle"></h1>
-            <p id="areaSubtitle"></p>
+            <div class="breadcrumb">
+                <a href="/userpages/user-home.html">Home</a>
+                <span>&rsaquo;</span>
+                <span id="areaNameBreadcrumb"></span>
+            </div>
+            <h1 id="areaTitle" style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;"></h1>
+            <p id="areaSubtitle" style="font-size: 1.125rem; color: rgba(255,255,255,0.9);"></p>
         </div>
     </header>
 
-    <div class="container" style="padding: 40px 0;">
-        <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px;">
+    <div class="container">
+        <div class="learning-layout">
             <aside class="sidebar">
                 <div class="sidebar-nav">
                     <div class="sidebar-title">Module</div>
                     <ul class="sidebar-list" id="sidebarModuleList"></ul>
                 </div>
             </aside>
+
             <main>
                 <div id="modulesOverview">
-                    <h2 style="margin-bottom: 30px;">Module in diesem Bereich</h2>
+                    <h2 style="font-size: 1.875rem; font-weight: 600; margin-bottom: 2rem;">Module in diesem Bereich</h2>
                     <div class="module-list" id="modulesList"></div>
                 </div>
+
                 <div id="moduleContentView" style="display: none;">
-                    <button onclick="showModulesOverview()" class="btn btn-ghost" style="margin-bottom: 20px;">← Zurück zur Übersicht</button>
+                    <button onclick="showModulesOverview()" class="btn btn-ghost" style="margin-bottom: 1.5rem;">
+                        &larr; Zurück zur Übersicht
+                    </button>
                     <div class="content-viewer" id="contentViewer"></div>
                 </div>
             </main>
@@ -166,162 +139,192 @@
     const urlParams = new URLSearchParams(window.location.search);
     const areaSlug = urlParams.get('area');
 
-    async function loadLearningArea() {
+    document.addEventListener('DOMContentLoaded', async () => {
         if (!areaSlug) { showError(); return; }
+        await loadLearningArea();
+    });
+
+    async function loadLearningArea() {
         try {
+            showLoading();
             const response = await fetch(`${API_BASE}/learning-areas/${areaSlug}`);
+            if (!response.ok) throw new Error('Lernbereich nicht gefunden');
+
             currentArea = await response.json();
             currentModules = currentArea.modules || [];
             await Promise.all(currentModules.map(loadModuleContent));
             renderPage();
+            hideLoading();
 
-            const targetId = urlParams.get('moduleId');
-            if (targetId) showModuleContent(parseInt(targetId));
-        } catch (e) { showError(); }
+            const targetModuleId = urlParams.get('moduleId');
+            if (targetModuleId) setTimeout(() => showModuleContent(parseInt(targetModuleId)), 100);
+        } catch (error) {
+            console.error('Error loading learning area:', error);
+            showError();
+        }
     }
 
     async function loadModuleContent(module) {
-        const res = await fetch(`${API_BASE}/learning-areas/modules/${module.id}`);
-        if (res.ok) {
-            const data = await res.json();
-            module.contents = data.contents || [];
+        try {
+            const response = await fetch(`${API_BASE}/learning-areas/modules/${module.id}`);
+            if (response.ok) {
+                const data = await response.json();
+                module.contents = data.contents || [];
+            }
+        } catch (error) {
+            console.error(`Error loading module ${module.id}:`, error);
+            module.contents = [];
         }
     }
 
     function renderPage() {
-        document.getElementById('loadingState').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
+        document.getElementById('pageTitle').textContent = `${currentArea.name} - RadBrain`;
         document.getElementById('areaTitle').textContent = currentArea.name;
         document.getElementById('areaNameBreadcrumb').textContent = currentArea.name;
-        document.getElementById('areaSubtitle').textContent = currentArea.subtitle || '';
+        document.getElementById('areaSubtitle').textContent = currentArea.subtitle || currentArea.description || '';
         renderModulesList();
         renderSidebarModules();
     }
 
     function renderModulesList() {
-        document.getElementById('modulesList').innerHTML = currentModules.map((m, i) => `
-            <div class="module-card" onclick="showModuleContent(${m.id})">
+        const container = document.getElementById('modulesList');
+        if (currentModules.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 3rem; color: var(--gray-500);"><p>Noch keine Module verfügbar.</p></div>';
+            return;
+        }
+        container.innerHTML = currentModules.sort((a, b) => a.displayOrder - b.displayOrder).map((module, index) => `
+            <div class="module-card" onclick="showModuleContent(${module.id})">
                 <div class="module-header">
-                    <div class="module-number">${i+1}</div>
+                    <div class="module-number">${index + 1}</div>
                     <div class="module-content">
-                        <div class="module-title">${escapeHtml(m.title)}</div>
-                        <div class="module-meta"><span>${m.contents.length} Lerneinheiten</span></div>
+                        <div class="module-title">${escapeHtml(module.title)}</div>
+                        ${module.subtitle ? `<div class="module-subtitle">${escapeHtml(module.subtitle)}</div>` : ''}
+                        <div class="module-meta">
+                            <span>${module.contents?.length || 0} Lerneinheiten</span>
+                            ${module.estimatedDuration ? `<span>${module.estimatedDuration} Min</span>` : ''}
+                        </div>
                     </div>
                 </div>
-            </div>`).join('');
+            </div>
+        `).join('');
     }
 
     function renderSidebarModules() {
-        document.getElementById('sidebarModuleList').innerHTML = currentModules.map(m => `
-            <li><a href="#" onclick="event.preventDefault(); showModuleContent(${m.id});" data-module-id="${m.id}">${escapeHtml(m.title)}</a></li>
+        document.getElementById('sidebarModuleList').innerHTML = currentModules.sort((a, b) => a.displayOrder - b.displayOrder).map(module => `
+            <li><a href="#" onclick="event.preventDefault(); showModuleContent(${module.id});" data-module-id="${module.id}">${escapeHtml(module.title)}</a></li>
         `).join('');
     }
 
     function showModuleContent(moduleId) {
         const module = currentModules.find(m => m.id === moduleId);
         if (!module) return;
-
         document.getElementById('modulesOverview').style.display = 'none';
         document.getElementById('moduleContentView').style.display = 'block';
+        document.querySelectorAll('.sidebar-list a').forEach(link => {
+            link.classList.toggle('active', link.dataset.moduleId == moduleId);
+        });
+        renderModuleContentHTML(module);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-        document.querySelectorAll('.sidebar-list a').forEach(a => a.classList.toggle('active', a.dataset.moduleId == moduleId));
-
+    function renderModuleContentHTML(module) {
         const viewer = document.getElementById('contentViewer');
-        let html = `<h1 style="font-size: 2rem; margin-bottom: 10px;">${escapeHtml(module.title)}</h1>`;
-        if (module.subtitle) html += `<p style="color:var(--gray-500); margin-bottom:2.5rem; font-size: 1.1rem;">${escapeHtml(module.subtitle)}</p>`;
+        let html = `<h1>${escapeHtml(module.title)}</h1>`;
+        if (module.subtitle) html += `<p style="color: var(--gray-500); margin-bottom: 2.5rem; font-size: 1.125rem;">${escapeHtml(module.subtitle)}</p>`;
+        const contents = (module.contents || []).sort((a, b) => a.displayOrder - b.displayOrder);
+        if (contents.length === 0) {
+            html += '<p style="color: var(--gray-500); padding: 2rem 0;">Noch keine Inhalte verfügbar.</p>';
+        } else {
+            html += contents.map(content => renderContent(content)).join('');
+        }
+        viewer.innerHTML = html;
+    }
 
-        html += (module.contents || []).sort((a,b) => a.displayOrder - b.displayOrder).map(c => {
-            const data = c.contentData.trim();
-            const type = c.contentType;
+    function renderContent(content) {
+        const data = (content.contentData || '').trim();
+        const type = content.contentType;
+        const title = content.title;
 
-            // 1. ÜBERSCHRIFT
-            if (type === 'HEADING') {
-                return `<h2 style="margin-top: 2.5rem; color: var(--primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 8px;">${escapeHtml(data)}</h2>`;
-            }
-
-            // 2. BILD
-            if (type === 'IMAGE') {
-                const cleanUrl = data.startsWith('@') ? data.substring(1) : data;
-                return `
-                    <div class="image-container">
-                        <img src="${cleanUrl}" alt="${escapeHtml(c.title)}" onclick="window.open(this.src, '_blank')">
-                        <div class="image-caption">${escapeHtml(c.title || 'Abbildung')}</div>
-                    </div>`;
-            }
-
-            // 3. VIDEO (Youtube embed)
-            if (type === 'VIDEO') {
-                let videoId = "";
-                if (data.includes('v=')) videoId = data.split('v=')[1].split('&')[0];
-                else if (data.includes('be/')) videoId = data.split('be/')[1];
-
-                if (videoId) {
-                    return `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe></div>`;
-                }
-                return `<p><a href="${data}" target="_blank" class="btn btn-ghost">📺 Video extern öffnen</a></p>`;
-            }
-
-            // 4. KREATIVER PARSER (Cards & Merke-Boxen)
-            if (data.startsWith('[') && data.endsWith(']')) {
+        switch (type) {
+            case 'HEADING': return `<h2>${escapeHtml(title || data)}</h2>`;
+            case 'TEXT': return `${title ? `<h3>${escapeHtml(title)}</h3>` : ''}<p class="content-text-block">${escapeHtml(data)}</p>`;
+            case 'IMAGE':
+                const imageUrl = data.startsWith('@') ? data.substring(1) : data;
+                return `<div class="image-container"><img src="${imageUrl}" alt="${escapeHtml(title || 'Abbildung')}" onclick="window.open(this.src, '_blank')">${title ? `<div class="image-caption">${escapeHtml(title)}</div>` : ''}</div>`;
+            case 'VIDEO':
+                let videoId = extractYouTubeId(data);
+                if (videoId) return `<div class="video-wrapper"><iframe src="https://www.youtube.com/embed/${videoId}" allowfullscreen title="${escapeHtml(title || 'Video')}"></iframe></div>`;
+                return `<p><a href="${data}" target="_blank" class="btn btn-ghost">Video extern öffnen</a></p>`;
+            case 'CALLOUT':
+            case 'INFO':
+                return `<div class="info-box">${title ? `<strong>${escapeHtml(title)}</strong>` : '<strong>Hinweis</strong>'}<p>${escapeHtml(data)}</p></div>`;
+            case 'LIST':
                 try {
-                    // Versuch 1: Ist es eine Liste (JSON)? ["A", "B"]
                     const items = JSON.parse(data);
                     if (Array.isArray(items)) {
-                        return `<div class="content-card-grid">${items.map(item => `
-                <div class="content-info-card"><strong>Info:</strong><br>${escapeHtml(item)}</div>`).join('')}</div>`;
+                        return `${title ? `<h3>${escapeHtml(title)}</h3>` : ''}<ul style="margin: 1rem 0; padding-left: 1.5rem; line-height: 1.8;">${items.map(item => `<li style="margin-bottom: 0.5rem;">${escapeHtml(item)}</li>`).join('')}</ul>`;
                     }
-                } catch(e) {
-                    // Versuch 2: Es ist kein JSON, also ein normaler Merksatz [Text]
-                    // Wir schneiden das erste [ und das letzte ] Zeichen ab
-                    const cleanText = data.substring(1, data.length - 1);
-                    return `<div class="merke-box">${escapeHtml(cleanText)}</div>`;
+                } catch (e) {}
+                return `<p class="content-text-block">${escapeHtml(data)}</p>`;
+            case 'CODE':
+                return `${title ? `<h3>${escapeHtml(title)}</h3>` : ''}<pre style="background: #1f2937; color: #f3f4f6; padding: 1rem; border-radius: var(--radius-md); overflow-x: auto; margin: 1rem 0;"><code>${escapeHtml(data)}</code></pre>`;
+            case 'QUOTE':
+                return `<blockquote style="border-left: 4px solid var(--gray-300); padding-left: 1.5rem; font-style: italic; color: var(--gray-600); margin: 2rem 0;">${escapeHtml(data)}${title ? `<br><small style="color: var(--gray-500);">— ${escapeHtml(title)}</small>` : ''}</blockquote>`;
+            default:
+                if (data.startsWith('[') && data.endsWith(']')) {
+                    try {
+                        const items = JSON.parse(data);
+                        if (Array.isArray(items)) {
+                            return `<div class="content-card-grid">${items.map(item => `<div class="content-info-card"><strong>Info</strong><p>${escapeHtml(item)}</p></div>`).join('')}</div>`;
+                        }
+                    } catch (e) {
+                        const cleanText = data.substring(1, data.length - 1);
+                        return `<div class="merke-box">${escapeHtml(cleanText)}</div>`;
+                    }
                 }
-            }
+                if (data.startsWith('!')) return `<div class="warning-box"><strong>Beachte:</strong><p>${escapeHtml(data.substring(1))}</p></div>`;
+                return `<p class="content-text-block">${escapeHtml(data)}</p>`;
+        }
+    }
 
-            if (data.startsWith('!')) {
-                return `<div class="warning-box"><strong>Beachte:</strong> ${escapeHtml(data.substring(1))}</div>`;
-            }
-
-            // STANDARD: TEXT
-            return `<p class="content-text-block">${escapeHtml(data)}</p>`;
-        }).join('');
-
-        viewer.innerHTML = html;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    function extractYouTubeId(url) {
+        if (!url) return null;
+        if (url.includes('v=')) return url.split('v=')[1].split('&')[0];
+        if (url.includes('be/')) return url.split('be/')[1].split('?')[0];
+        return null;
     }
 
     function showModulesOverview() {
         document.getElementById('modulesOverview').style.display = 'block';
         document.getElementById('moduleContentView').style.display = 'none';
-        document.querySelectorAll('.sidebar-list a').forEach(a => a.classList.remove('active'));
+        document.querySelectorAll('.sidebar-list a').forEach(link => link.classList.remove('active'));
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showLoading() {
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('errorState').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'none';
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('mainContent').style.display = 'block';
     }
 
     function showError() {
         document.getElementById('loadingState').style.display = 'none';
         document.getElementById('errorState').style.display = 'block';
+        document.getElementById('mainContent').style.display = 'none';
     }
 
-    function escapeHtml(t) {
-        if (!t) return "";
-        const d = document.createElement('div'); d.textContent = t; return d.innerHTML;
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
-
-    async function loadNavigationAreas() {
-        const res = await fetch(`${API_BASE}/learning-areas`);
-        if (res.ok) {
-            const areas = await res.json();
-            const menu = document.getElementById('learningAreasMenu');
-            if(menu) {
-                menu.innerHTML = areas.map(a =>
-                    `<li><a href="/lernbereiche/learning-area.html?area=${a.slug}">${escapeHtml(a.name)}</a></li>`).join('');
-            }
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        loadLearningArea();
-        loadNavigationAreas();
-    });
 </script>
+
 </body>
 </html>

@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/secure/admin/questions") // Pfad an Frontend angepasst
+@RequestMapping("/api/admin/questions") // Pfad an Frontend angepasst
 @CrossOrigin(origins = "*")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminQuestionController {

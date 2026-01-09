@@ -7,36 +7,51 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/navbar.css">
     <style>
-
-        .skeleton {
-            background: #eee;
-            background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
-            background-size: 200% 100%;
-            animation: shine 1.5s linear infinite;
-        }
+        .hero-section { background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%); color: white; padding: var(--space-20) 0; position: relative; overflow: hidden; }
+        .hero-section::before { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/></svg>'); opacity: 0.3; }
+        .hero-content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; text-align: center; }
+        .hero-title { font-size: 3rem; font-weight: 700; margin-bottom: var(--space-6); color: white; line-height: 1.2; }
+        .hero-subtitle { font-size: 1.25rem; margin-bottom: var(--space-8); color: rgba(255,255,255,0.9); line-height: 1.7; }
+        .hero-actions { display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap; }
+        .section { padding: var(--space-20) 0; }
+        .section-title { font-size: 2.25rem; font-weight: 600; margin-bottom: var(--space-4); text-align: center; }
+        .section-subtitle { font-size: 1.125rem; color: var(--gray-600); max-width: 600px; margin: 0 auto var(--space-12); text-align: center; }
+        .learning-areas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-6); }
+        .area-card { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); padding: var(--space-6); text-decoration: none; color: inherit; display: flex; flex-direction: column; transition: all var(--transition-base); }
+        .area-card:hover { border-color: var(--primary); transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .area-card-title { font-size: 1.5rem; font-weight: 600; margin-bottom: var(--space-2); color: var(--gray-900); }
+        .area-card-subtitle { color: var(--gray-600); font-size: 0.9375rem; line-height: 1.6; margin-bottom: var(--space-4); flex: 1; }
+        .area-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: var(--space-4); border-top: 1px solid var(--gray-100); }
+        .area-card-meta { color: var(--gray-500); font-size: 0.875rem; }
+        .area-card-action { color: var(--primary); font-weight: 500; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--space-8); }
+        .feature-card { text-align: center; padding: var(--space-8); }
+        .feature-icon { width: 64px; height: 64px; background: var(--primary-light); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4); font-size: 2rem; }
+        .feature-title { font-size: 1.25rem; font-weight: 600; margin-bottom: var(--space-3); }
+        .feature-description { color: var(--gray-600); line-height: 1.7; }
+        .skeleton { background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%); background-size: 200% 100%; animation: shine 1.5s linear infinite; border-radius: var(--radius-lg); height: 200px; }
         @keyframes shine { to { background-position-x: -200%; } }
+        footer { background: var(--gray-900); color: white; padding: var(--space-12) 0; }
+        @media (max-width: 768px) {
+            .hero-title { font-size: 2rem; }
+            .hero-subtitle { font-size: 1rem; }
+            .hero-actions { flex-direction: column; }
+            .section-title { font-size: 1.75rem; }
+        }
     </style>
 </head>
 <body>
 
 <div id="navbar-placeholder"></div>
 
-<section style="background: linear-gradient(135deg, var(--primary) 0%, #1e40af 100%); color: white; padding: var(--space-20) 0;">
+<section class="hero-section">
     <div class="container">
-        <div style="max-width: 720px; margin: 0 auto; text-align: center;">
-            <h1 style="font-size: 3rem; font-weight: 700; margin-bottom: var(--space-6); color: white;">
-                Radiologie effektiv lernen
-            </h1>
-            <p style="font-size: 1.25rem; margin-bottom: var(--space-8); color: rgba(255,255,255,0.9); line-height: 1.7;">
-                Strukturierte Lernmodule, interaktive Quizzes und umfassende Materialien für deine Ausbildung
-            </p>
-            <div style="display: flex; gap: var(--space-4); justify-content: center;">
-                <a href="#lernbereiche" class="btn btn-primary" style="background: white; color: var(--primary);">
-                    Zu den Lernbereichen
-                </a>
-                <a href="/quiz/quizzes.html" class="btn btn-outline" style="border-color: white; color: white;">
-                    Quizzes starten
-                </a>
+        <div class="hero-content">
+            <h1 class="hero-title">Radiologie effektiv lernen</h1>
+            <p class="hero-subtitle">Strukturierte Lernmodule, interaktive Quizzes und umfassende Materialien für deine Ausbildung</p>
+            <div class="hero-actions">
+                <a href="#lernbereiche" class="btn btn-primary" style="background: white; color: var(--primary);">Zu den Lernbereichen</a>
+                <a href="/quiz/quizzes.html" class="btn btn-outline" style="border-color: white; color: white;">Quizzes starten</a>
             </div>
         </div>
     </div>
@@ -44,49 +59,40 @@
 
 <section id="lernbereiche" class="section" style="background: white;">
     <div class="container">
-        <div style="text-align: center; margin-bottom: var(--space-12);">
-            <h2 style="font-size: 2.25rem; font-weight: 600; margin-bottom: var(--space-4);">
-                Lernbereiche
-            </h2>
-            <p style="font-size: 1.125rem; color: var(--gray-600); max-width: 600px; margin: 0 auto;">
-                Wähle einen Lernbereich und starte mit strukturierten Modulen
-            </p>
-        </div>
-
-        <div id="learningAreasList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-6);">
-            <div class="skeleton" style="height: 200px; border-radius: var(--radius-lg);"></div>
-            <div class="skeleton" style="height: 200px; border-radius: var(--radius-lg);"></div>
-            <div class="skeleton" style="height: 200px; border-radius: var(--radius-lg);"></div>
+        <h2 class="section-title">Lernbereiche</h2>
+        <p class="section-subtitle">Wähle einen Lernbereich und starte mit strukturierten Modulen</p>
+        <div id="learningAreasList" class="learning-areas-grid">
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
         </div>
     </div>
 </section>
 
 <section class="section" style="background: var(--gray-50);">
     <div class="container">
-        <div style="text-align: center; margin-bottom: var(--space-12);">
-            <h2 style="font-size: 2.25rem; font-weight: 600; margin-bottom: var(--space-4);">Deine Vorteile</h2>
-        </div>
-        <div class="grid grid-3">
-            <div style="text-align: center; padding: var(--space-8);">
-                <div style="width: 64px; height: 64px; background: var(--primary-light); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4); font-size: 2rem;">📚</div>
-                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: var(--space-3);">Strukturierte Inhalte</h3>
-                <p style="color: var(--gray-600); line-height: 1.7;">Logisch aufgebaute Module führen dich Schritt für Schritt durch die Themen</p>
+        <h2 class="section-title">Deine Vorteile</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">*</div>
+                <h3 class="feature-title">Strukturierte Inhalte</h3>
+                <p class="feature-description">Logisch aufgebaute Module führen dich Schritt für Schritt durch die Themen</p>
             </div>
-            <div style="text-align: center; padding: var(--space-8);">
-                <div style="width: 64px; height: 64px; background: var(--primary-light); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4); font-size: 2rem;">✓</div>
-                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: var(--space-3);">Interaktive Quizzes</h3>
-                <p style="color: var(--gray-600); line-height: 1.7;">Teste dein Wissen mit praxisnahen Fragen und erhalte direktes Feedback</p>
+            <div class="feature-card">
+                <div class="feature-icon">+</div>
+                <h3 class="feature-title">Interaktive Quizzes</h3>
+                <p class="feature-description">Teste dein Wissen mit praxisnahen Fragen und erhalte direktes Feedback</p>
             </div>
-            <div style="text-align: center; padding: var(--space-8);">
-                <div style="width: 64px; height: 64px; background: var(--primary-light); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-4); font-size: 2rem;">🎯</div>
-                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: var(--space-3);">Praxisorientiert</h3>
-                <p style="color: var(--gray-600); line-height: 1.7;">Lerne mit Beispielen und Fällen aus der radiologischen Praxis</p>
+            <div class="feature-card">
+                <div class="feature-icon">^</div>
+                <h3 class="feature-title">Praxisorientiert</h3>
+                <p class="feature-description">Lerne mit Beispielen und Fällen aus der radiologischen Praxis</p>
             </div>
         </div>
     </div>
 </section>
 
-<footer style="background: var(--gray-900); color: white; padding: var(--space-12) 0;">
+<footer>
     <div class="container" style="text-align: center;">
         <p style="color: var(--gray-400);">© 2025 RadBrain. Eine Lernplattform für Radiologie.</p>
     </div>
@@ -101,47 +107,36 @@
 
     const API_BASE = 'http://localhost:8080/api';
 
-    // WICHTIG: Wir nutzen die Logik aus deiner navbar.js
-    // Falls navbar.js das Profilmenü baut, lassen wir das Script hier in Ruhe.
+    document.addEventListener('DOMContentLoaded', () => { loadLearningAreas(); });
 
     async function loadLearningAreas() {
         const container = document.getElementById('learningAreasList');
         try {
             const response = await fetch(`${API_BASE}/learning-areas`);
-            if (!response.ok) throw new Error('Failed to load');
-
+            if (!response.ok) throw new Error('Failed to load learning areas');
             const areas = await response.json();
-
-            // 1. Cards im Hauptbereich rendern
-            container.innerHTML = areas
-                .sort((a, b) => a.displayOrder - b.displayOrder)
-                .map(area => `
-                    <a href="/lernbereiche/learning-area.html?area=${area.slug}" class="card" style="text-decoration: none; color: inherit; display: block;">
-                        <div style="display: flex; flex-direction: column; gap: var(--space-4); height: 100%;">
-                            <div>
-                                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: var(--space-2); color: var(--gray-900);">${escapeHtml(area.name)}</h3>
-                                <p style="color: var(--gray-600); font-size: 0.9375rem; line-height: 1.6;">${escapeHtml(area.subtitle || '')}</p>
-                            </div>
-                            <div style="margin-top: auto; display: flex; align-items: center; justify-content: space-between; padding-top: var(--space-4); border-top: 1px solid var(--gray-100);">
-                                <span style="color: var(--gray-500); font-size: 0.875rem;">${area.moduleCount || 0} Module</span>
-                                <span style="color: var(--primary); font-weight: 500;">Starten →</span>
-                            </div>
-                        </div>
-                    </a>
-                `).join('');
-
-            // 2. Navbar-Dropdown befüllen (learningAreasMenu ist in deiner Navbar)
-            const menu = document.getElementById('learningAreasMenu');
-            if (menu) {
-                menu.innerHTML = areas
-                    .sort((a, b) => a.displayOrder - b.displayOrder)
-                    .map(area => `<li><a href="/lernbereiche/learning-area.html?area=${area.slug}">${escapeHtml(area.name)}</a></li>`)
-                    .join('');
+            if (!Array.isArray(areas) || areas.length === 0) {
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--gray-500);"><p>Keine Lernbereiche verfügbar.</p></div>';
+                return;
             }
-
+            container.innerHTML = areas.filter(area => area.isPublished).sort((a, b) => a.displayOrder - b.displayOrder).map(area => `
+                <a href="/lernbereiche/learning-area.html?area=${area.slug}" class="area-card">
+                    <div class="area-card-title">${escapeHtml(area.name)}</div>
+                    <div class="area-card-subtitle">${escapeHtml(area.subtitle || area.description || '')}</div>
+                    <div class="area-card-footer">
+                        <span class="area-card-meta">${area.moduleCount || 0} Module</span>
+                        <span class="area-card-action">Starten &rarr;</span>
+                    </div>
+                </a>
+            `).join('');
         } catch (error) {
-            console.error('Error:', error);
-            container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; color: var(--gray-500);">Lernbereiche konnten nicht geladen werden.</p>`;
+            console.error('Error loading learning areas:', error);
+            container.innerHTML = `
+                <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--error);">
+                    <p>Lernbereiche konnten nicht geladen werden.</p>
+                    <button class="btn btn-primary" onclick="loadLearningAreas()" style="margin-top: 1rem;">Erneut versuchen</button>
+                </div>
+            `;
         }
     }
 
@@ -151,11 +146,6 @@
         div.textContent = text;
         return div.innerHTML;
     }
-
-    // Start
-    document.addEventListener('DOMContentLoaded', () => {
-        loadLearningAreas();
-    });
 </script>
 
 </body>
