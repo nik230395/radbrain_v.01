@@ -38,13 +38,25 @@
         .content-viewer h1 { font-size: 2rem; font-weight: 700; color: var(--gray-900); margin-bottom: var(--space-2); }
         .content-viewer h2 { font-size: 1.5rem; font-weight: 600; color: var(--primary); margin-top: 2.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--primary-light); }
         .content-viewer h3 { font-size: 1.25rem; font-weight: 600; color: var(--gray-800); margin-top: 2rem; margin-bottom: 0.75rem; }
-        .content-text-block { margin-bottom: 1.5rem; line-height: 1.8; color: var(--gray-700); font-size: 1.0625rem; }
-        .info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #3b82f6; padding: 1.25rem; border-radius: var(--radius-md); margin: 1.5rem 0; color: #1e3a8a; line-height: 1.6; }
+
+        /* FIX FÜR ABSÄTZE */
+        .content-text-block {
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+            color: var(--gray-700);
+            font-size: 1.0625rem;
+            white-space: pre-line; /* Beachtet Zeilenumbrüche */
+        }
+
+        .info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 5px solid #3b82f6; padding: 1.25rem; border-radius: var(--radius-md); margin: 1.5rem 0; color: #1e3a8a; line-height: 1.6; white-space: pre-line; }
         .info-box strong { color: #1d4ed8; display: block; margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.05em; }
-        .warning-box { background: #fff7ed; border: 1px solid #fed7aa; border-left: 5px solid #f97316; padding: 1.25rem; border-radius: var(--radius-md); margin: 1.5rem 0; color: #9a3412; }
+
+        .warning-box { background: #fff7ed; border: 1px solid #fed7aa; border-left: 5px solid #f97316; padding: 1.25rem; border-radius: var(--radius-md); margin: 1.5rem 0; color: #9a3412; white-space: pre-line; }
         .warning-box strong { display: block; margin-bottom: 0.5rem; color: #ea580c; }
-        .merke-box { background: #f0f9ff; border: 1px solid #bae6fd; border-left: 5px solid #0284c7; padding: 1.25rem; border-radius: var(--radius-md); margin: 1.5rem 0; color: #075985; position: relative; }
+
+        .merke-box { background: #f0f9ff; border: 1px solid #bae6fd; border-left: 5px solid #0284c7; padding: 1.25rem; border-radius: var(--radius-md); margin: 1.5rem 0; color: #075985; position: relative; white-space: pre-line; }
         .merke-box::before { content: "MERKE"; display: block; font-weight: 700; margin-bottom: 0.5rem; font-size: 0.8rem; color: #0284c7; letter-spacing: 0.05em; }
+
         .image-container { margin: 2rem 0; text-align: center; background: var(--gray-50); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--gray-200); }
         .image-container img { max-width: 100%; height: auto; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); cursor: pointer; transition: transform 0.2s; }
         .image-container img:hover { transform: scale(1.02); }
@@ -52,9 +64,10 @@
         .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: var(--radius-lg); margin: 2rem 0; box-shadow: var(--shadow-lg); }
         .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
         .content-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin: 2rem 0; }
-        .content-info-card { background: white; border: 1px solid var(--gray-200); border-left: 5px solid var(--primary); padding: 1.5rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: all 0.2s; }
+        .content-info-card { background: white; border: 1px solid var(--gray-200); border-left: 5px solid var(--primary); padding: 1.5rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); transition: all 0.2s; white-space: pre-line; }
         .content-info-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
         .content-info-card strong { display: block; color: var(--primary); margin-bottom: 0.5rem; font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
         .loading-state { padding: 100px 20px; text-align: center; }
         .loading-spinner { width: 50px; height: 50px; border: 4px solid var(--gray-200); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -247,7 +260,7 @@
 
         switch (type) {
             case 'HEADING': return `<h2>${escapeHtml(title || data)}</h2>`;
-            case 'TEXT': return `${title ? `<h3>${escapeHtml(title)}</h3>` : ''}<p class="content-text-block">${escapeHtml(data)}</p>`;
+            case 'TEXT': return `${title ? `<h3>${escapeHtml(title)}</h3>` : ''}<div class="content-text-block">${escapeHtml(data)}</div>`;
             case 'IMAGE':
                 const imageUrl = data.startsWith('@') ? data.substring(1) : data;
                 return `<div class="image-container"><img src="${imageUrl}" alt="${escapeHtml(title || 'Abbildung')}" onclick="window.open(this.src, '_blank')">${title ? `<div class="image-caption">${escapeHtml(title)}</div>` : ''}</div>`;
@@ -265,7 +278,7 @@
                         return `${title ? `<h3>${escapeHtml(title)}</h3>` : ''}<ul style="margin: 1rem 0; padding-left: 1.5rem; line-height: 1.8;">${items.map(item => `<li style="margin-bottom: 0.5rem;">${escapeHtml(item)}</li>`).join('')}</ul>`;
                     }
                 } catch (e) {}
-                return `<p class="content-text-block">${escapeHtml(data)}</p>`;
+                return `<div class="content-text-block">${escapeHtml(data)}</div>`;
             case 'CODE':
                 return `${title ? `<h3>${escapeHtml(title)}</h3>` : ''}<pre style="background: #1f2937; color: #f3f4f6; padding: 1rem; border-radius: var(--radius-md); overflow-x: auto; margin: 1rem 0;"><code>${escapeHtml(data)}</code></pre>`;
             case 'QUOTE':
@@ -283,7 +296,7 @@
                     }
                 }
                 if (data.startsWith('!')) return `<div class="warning-box"><strong>Beachte:</strong><p>${escapeHtml(data.substring(1))}</p></div>`;
-                return `<p class="content-text-block">${escapeHtml(data)}</p>`;
+                return `<div class="content-text-block">${escapeHtml(data)}</div>`;
         }
     }
 

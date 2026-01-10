@@ -70,4 +70,16 @@ public class QuestionService {
         }
         questionRepository.deleteById(id);
     }
+
+    public Optional<Question> findById(Long id) {
+        return questionRepository.findById(id);
+    }
+
+    public Question save(Question question) {
+        return questionRepository.save(question);
+    }
+
+    public void deleteById(Long id) {
+        questionRepository.deleteById(id);
+    }
 }

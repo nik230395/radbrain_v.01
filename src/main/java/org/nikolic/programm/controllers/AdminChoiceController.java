@@ -44,4 +44,22 @@ public class AdminChoiceController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+    /**
+     * Delete choice
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteChoice(@PathVariable Long id) {
+        try {
+            choiceService.deleteById(id);
+                return ResponseEntity.ok(Map.of(
+                        "success", true,
+                        "message", "Choice deleted"
+                ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", e.getMessage()
+            ));
+        }
+    }
 }

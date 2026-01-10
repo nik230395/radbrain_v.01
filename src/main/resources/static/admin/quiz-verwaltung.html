@@ -206,6 +206,7 @@
       font-size: 4rem;
       margin-bottom: 20px;
       opacity: 0.3;
+      font-weight: 300;
     }
 
     .empty-state h3 {
@@ -258,15 +259,15 @@
   <!-- Header -->
   <div class="management-header">
     <div class="header-content">
-      <h1>📝 Quiz Verwaltung</h1>
+      <h1>Quiz Verwaltung</h1>
       <p>Erstelle und verwalte deine Quizzes</p>
     </div>
     <div class="header-actions">
       <a href="/admin/quiz-creator.html" class="btn btn-primary btn-lg">
-        ➕ Neues Quiz erstellen
+        + Neues Quiz erstellen
       </a>
       <a href="/admin/admin-dashboard.html" class="btn btn-outline">
-        ← Zurück zum Dashboard
+        &larr; Zurück zum Dashboard
       </a>
     </div>
   </div>
@@ -298,7 +299,7 @@
               type="text"
               id="searchInput"
               class="search-input"
-              placeholder="🔍 Quiz suchen..."
+              placeholder="Quiz suchen..."
               onkeyup="filterQuizzes()">
 
       <div class="filter-buttons">
@@ -404,11 +405,11 @@
     if (filtered.length === 0) {
       container.innerHTML = `
                 <div class="empty-state">
-                    <div class="empty-state-icon">📝</div>
+                    <div class="empty-state-icon">?</div>
                     <h3>Keine Quizzes gefunden</h3>
                     <p>Erstelle dein erstes Quiz oder passe deine Filter an</p>
                     <a href="/admin/quiz-creator.html" class="btn btn-primary">
-                        ➕ Jetzt Quiz erstellen
+                        + Jetzt Quiz erstellen
                     </a>
                 </div>
             `;
@@ -421,26 +422,26 @@
                     <div class="quiz-title">
                         ${escapeHtml(quiz.title)}
                         <span class="status-badge ${quiz.isPublished ? 'status-published' : 'status-draft'}">
-                            ${quiz.isPublished ? '✓ Veröffentlicht' : '○ Entwurf'}
+                            ${quiz.isPublished ? 'Veröffentlicht' : 'Entwurf'}
                         </span>
                         ${quiz.category ? `<span class="category-badge">${quiz.category}</span>` : ''}
                     </div>
                     ${quiz.description ? `<p style="color: var(--gray-600); margin: 8px 0;">${escapeHtml(quiz.description)}</p>` : ''}
                     <div class="quiz-meta">
-                        <span>🆔 ID: ${quiz.id}</span>
-                        <span>❓ ${quiz.questionCount || 0} Fragen</span>
-                        ${quiz.createdAt ? `<span>📅 ${new Date(quiz.createdAt).toLocaleDateString('de-DE')}</span>` : ''}
+                        <span>ID: ${quiz.id}</span>
+                        <span>${quiz.questionCount || 0} Fragen</span>
+                        ${quiz.createdAt ? `<span>${new Date(quiz.createdAt).toLocaleDateString('de-DE')}</span>` : ''}
                     </div>
                 </div>
                 <div class="quiz-actions">
                     <a href="/admin/quiz-editor.html?id=${quiz.id}" class="btn btn-sm btn-primary">
-                        ✏️ Bearbeiten
+                        Bearbeiten
                     </a>
                     <button onclick="togglePublish(${quiz.id}, ${quiz.isPublished})" class="btn btn-sm btn-secondary">
-                        ${quiz.isPublished ? '👁️ Verstecken' : '✓ Veröffentlichen'}
+                        ${quiz.isPublished ? 'Verstecken' : 'Veröffentlichen'}
                     </button>
                     <button onclick="deleteQuiz(${quiz.id}, '${escapeHtml(quiz.title)}')" class="btn btn-sm" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca;">
-                        🗑️ Löschen
+                        Löschen
                     </button>
                 </div>
             </div>
@@ -510,7 +511,7 @@
   function showError(message) {
     document.getElementById('errorMessage').innerHTML = `
             <div class="error-message">
-                <strong>⚠️ Fehler:</strong> ${message}
+                <strong>Fehler:</strong> ${message}
             </div>
         `;
   }

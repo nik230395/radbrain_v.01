@@ -283,4 +283,16 @@ public class ChoiceService {
             this.isCorrect = isCorrect;
         }
     }
+
+    public void updateChoice(Long id, String text, boolean isCorrect) {
+        Choice choice = choiceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Choice not found"));
+        choice.setText(text);
+        choice.setIsCorrect(isCorrect);
+        choiceRepository.save(choice);
+    }
+
+    public void deleteById(Long id) {
+        choiceRepository.deleteById(id);
+    }
 }

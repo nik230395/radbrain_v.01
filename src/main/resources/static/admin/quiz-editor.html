@@ -2,143 +2,216 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Quiz bearbeiten - RadBrain Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inhalt-Editor - RadBrain Admin</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/navbar.css">
   <style>
-    .question-block { background: #f9fafb; border: 1px solid #e5e7eb; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
-    .choice-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
-    .choice-row input[type="text"] { flex: 1; padding: 5px; }
+    #contentModal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: #ffffff;
+      z-index: 9999;
+      overflow-y: auto;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease-in-out;
+    }
+    #contentModal.show { display: block; opacity: 1; transform: translateY(0); }
+    .modal-inner { max-width: 900px; margin: 0 auto; padding: 60px 25px; }
+    .close-fullscreen {
+      position: fixed; top: 20px; right: 30px;
+      width: 50px; height: 50px; border-radius: 50%;
+      background: #f1f5f9; border: none; font-size: 30px;
+      cursor: pointer; z-index: 10000;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .upload-area {
+      border: 2px dashed var(--primary);
+      background: #f0f7ff;
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 25px;
+      cursor: pointer;
+      display: none;
+    }
+    .upload-area.dragover { background: var(--primary-light); }
+    .content-item {
+      background: white; border: 1px solid #e2e8f0; border-radius: 12px;
+      padding: 20px; margin-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .badge {
+      background: #e0e7ff; color: #4338ca; padding: 4px 10px;
+      border-radius: 6px; font-size: 11px; font-weight: bold;
+      margin-right: 12px; text-transform: uppercase;
+    }
+    .form-group { margin-bottom: 25px; }
+    .form-label { display: block; font-weight: 600; margin-bottom: 8px; }
+    .input-field {
+      width: 100%; padding: 12px; border: 1px solid #cbd5e1;
+      border-radius: 8px; font-size: 1rem; font-family: inherit;
+    }
+    /* Fix für Editor-Textarea */
+    textarea.input-field {
+      min-height: 350px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      resize: vertical;
+    }
+    body.modal-open { overflow: hidden; }
   </style>
 </head>
 <body>
-<div class="container" style="padding: 40px 20px;">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: white; padding: 20px; border-radius: 12px; box-shadow: var(--shadow-sm);">
-    <div>
-      <a href="/admin/quiz-verwaltung.html" class="btn btn-outline" style="text-decoration: none; padding: 8px 16px;">
-        ← Abbrechen & Zurück
-      </a>
-    </div>
-
-    <h1 id="editTitle" style="margin: 0; font-size: 1.5rem;">Quiz laden...</h1>
-
-    <div>
-      <button onclick="saveAll()" class="btn btn-primary" id="saveBtn">
-        Alles Speichern
-      </button>
-    </div>
+<div id="navbar-placeholder"></div>
+<div class="container" style="padding-top: 50px;">
+  <button onclick="window.history.back()" class="btn btn-ghost" style="margin-bottom: 20px;">← Zurück</button>
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
+    <h1 id="moduleTitle">Inhalte verwalten</h1>
+    <button onclick="openCreate()" class="btn btn-primary">+ Neuer Inhalt</button>
   </div>
+  <div id="contentsList"><p>Lade Inhalte...</p></div>
+</div>
 
-  <div id="editorContent"></div>
+<div id="contentModal">
+  <button class="close-fullscreen" onclick="closeModal()">&times;</button>
+  <div class="modal-inner">
+    <h1 id="modalTitle">Inhalt bearbeiten</h1>
+    <div class="form-group">
+      <label class="form-label">Titel / Überschrift</label>
+      <input type="text" id="cTitle" class="input-field">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Typ</label>
+      <select id="cType" class="input-field" onchange="updateUIForType()">
+        <option value="TEXT">Text-Lektion</option>
+        <option value="IMAGE">Bild</option>
+        <option value="HEADING">Zwischenüberschrift</option>
+        <option value="INFO">Info-Box</option>
+      </select>
+    </div>
+    <div id="dropZone" class="upload-area">
+      <p id="uploadStatusText">Datei hierher ziehen oder klicken</p>
+      <input type="file" id="fileInput" hidden>
+    </div>
+    <div class="form-group">
+      <label class="form-label" id="bodyLabel">Textinhalt (Absätze mit Enter-Taste)</label>
+      <textarea id="cBody" class="input-field"></textarea>
+    </div>
+    <div class="form-group" style="width: 120px;">
+      <label class="form-label">Sortierung</label>
+      <input type="number" id="cOrder" class="input-field" value="0">
+    </div>
+    <button onclick="saveContent()" class="btn btn-primary" style="padding: 15px 40px;">Speichern</button>
+  </div>
 </div>
 
 <script src="/js/auth.js"></script>
 <script src="/js/navbar.js"></script>
 <script>
-  // Admin-Check
-  if (!window.auth || !window.auth.hasRole('ADMIN')) {
-    alert('Keine Berechtigung!');
-    window.location.href = '/';
-  }
-  const API_BASE = 'http://localhost:8080/api';
-  const urlParams = new URLSearchParams(window.location.search);
-  const quizId = urlParams.get('id');
-  let quizData = null;
+  const API_BASE = 'http://localhost:8080/api/admin/learning-areas';
+  const moduleId = new URLSearchParams(window.location.search).get('moduleId');
+  let currentContents = [];
+  let editingId = null;
 
-  document.addEventListener('DOMContentLoaded', () => {
-    if (!quizId) {
-      alert("Keine Quiz-ID angegeben!");
-      window.location.href = '/admin/quiz-verwaltung.html';
-      return;
-    }
-    loadQuizData();
-  });
+  document.addEventListener('DOMContentLoaded', () => { if(moduleId) loadData(); setupUpload(); });
 
-  async function loadQuizData() {
-    try {
-      // Wir nutzen den public endpoint zum Laden der Details
-      const res = await window.auth.authFetch(`${API_BASE}/quizzes/${quizId}`);
-      if (!res.ok) throw new Error("Quiz konnte nicht geladen werden");
-
-      quizData = await res.json();
-      document.getElementById('editTitle').textContent = `Bearbeite: ${quizData.title}`;
-      renderEditor();
-    } catch (error) {
-      console.error(error);
-      alert("Fehler beim Laden der Daten.");
-    }
+  async function loadData() {
+    const res = await window.auth.authFetch(`${API_BASE}/modules/${moduleId}/contents`);
+    if (res.ok) { currentContents = await res.json(); render(); }
   }
 
-  function renderEditor() {
-    const container = document.getElementById('editorContent');
-    if (!quizData.questions || quizData.questions.length === 0) {
-      container.innerHTML = '<div class="card">Dieses Quiz hat noch keine Fragen.</div>';
-      return;
-    }
-
-    container.innerHTML = quizData.questions.map((q, qIndex) => `
-            <div class="question-block" id="q-block-${q.id}">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <strong>Frage ${qIndex + 1}</strong>
-                    <span style="font-size: 0.8rem; color: var(--gray-500);">${q.qtype}</span>
+  function render() {
+    const list = document.getElementById('contentsList');
+    list.innerHTML = currentContents.sort((a,b) => a.displayOrder - b.displayOrder).map(i => `
+                <div class="content-item">
+                    <div><span class="badge">${i.contentType}</span><strong>${i.title || 'Kein Titel'}</strong></div>
+                    <div>
+                        <button onclick="prepareEdit(${i.id})" class="btn btn-sm btn-secondary">Edit</button>
+                        <button onclick="deleteContent(${i.id})" class="btn btn-sm" style="color:red;">X</button>
+                    </div>
                 </div>
-
-                <textarea style="width:100%; min-height: 60px; padding: 10px; border-radius: 8px; border: 1px solid var(--gray-300);"
-                          id="q-text-${q.id}">${q.text}</textarea>
-
-                <div style="margin-top: 15px;">
-                    <strong style="display: block; margin-bottom: 10px; font-size: 0.9rem;">Antwortoptionen (Haken setzen für 'Richtig'):</strong>
-                    ${q.choices.map(c => `
-                        <div class="choice-row">
-                            <input type="checkbox" id="c-correct-${c.id}" ${c.isCorrect ? 'checked' : ''}
-                                   style="width: 20px; height: 20px; cursor: pointer;">
-                            <input type="text" id="c-text-${c.id}" value="${c.text}"
-                                   style="flex: 1; padding: 8px; border: 1px solid var(--gray-200); border-radius: 4px;">
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `).join('');
+            `).join('');
   }
 
-  async function saveAll() {
-    const saveBtn = document.getElementById('saveBtn');
-    saveBtn.disabled = true;
-    saveBtn.textContent = 'Speichere...';
+  function updateUIForType() {
+    const type = document.getElementById('cType').value;
+    document.getElementById('dropZone').style.display = (type === 'IMAGE') ? 'block' : 'none';
+  }
 
-    try {
-      for (let q of quizData.questions) {
-        // 1. Frage updaten
-        const newText = document.getElementById(`q-text-${q.id}`).value;
-        await window.auth.authFetch(`${API_BASE}/questions/${q.id}`, {
-          method: 'PUT',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ text: newText })
-        });
+  function openModal() {
+    const m = document.getElementById('contentModal');
+    m.style.display = 'block'; setTimeout(() => m.classList.add('show'), 10);
+    document.body.classList.add('modal-open');
+  }
 
-        // 2. Jede Antwort (Choice) updaten
-        for (let c of q.choices) {
-          const cText = document.getElementById(`c-text-${c.id}`).value;
-          const cCorrect = document.getElementById(`c-correct-${c.id}`).checked;
+  function closeModal() {
+    const m = document.getElementById('contentModal');
+    m.classList.remove('show'); setTimeout(() => m.style.display = 'none', 300);
+    document.body.classList.remove('modal-open');
+  }
 
-          await window.auth.authFetch(`${API_BASE}/choices/${c.id}`, {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-              text: cText,
-              isCorrect: cCorrect
-            })
-          });
-        }
+  function prepareEdit(id) {
+    const item = currentContents.find(c => c.id === id);
+    editingId = id;
+    document.getElementById('cTitle').value = item.title || '';
+    document.getElementById('cType').value = item.contentType;
+    document.getElementById('cBody').value = item.contentData || '';
+    document.getElementById('cOrder').value = item.displayOrder;
+    updateUIForType(); openModal();
+  }
+
+  function openCreate() {
+    editingId = null;
+    document.getElementById('cTitle').value = '';
+    document.getElementById('cBody').value = '';
+    updateUIForType(); openModal();
+  }
+
+  async function saveContent() {
+    const payload = {
+      title: document.getElementById('cTitle').value,
+      contentType: document.getElementById('cType').value,
+      contentData: document.getElementById('cBody').value,
+      displayOrder: parseInt(document.getElementById('cOrder').value)
+    };
+    const url = editingId ? `${API_BASE}/contents/${editingId}` : `${API_BASE}/modules/${moduleId}/contents`;
+    const res = await window.auth.authFetch(url, {
+      method: editingId ? 'PUT' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) { closeModal(); loadData(); }
+  }
+
+  async function deleteContent(id) {
+    if(confirm("Löschen?")) {
+      await window.auth.authFetch(`${API_BASE}/contents/${id}`, { method: 'DELETE' });
+      loadData();
+    }
+  }
+
+  function setupUpload() {
+    const fileInput = document.getElementById('fileInput');
+    document.getElementById('dropZone').onclick = () => fileInput.click();
+    fileInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/admin/upload-image', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('authToken') },
+        body: formData
+      });
+      if(res.ok) {
+        const data = await res.json();
+        document.getElementById('cBody').value = data.url;
+        document.getElementById('uploadStatusText').innerText = "Upload fertig!";
       }
-      alert("Änderungen erfolgreich gespeichert!");
-    } catch (e) {
-      console.error(e);
-      alert("Fehler beim Speichern einzelner Elemente.");
-    } finally {
-      saveBtn.disabled = false;
-      saveBtn.textContent = 'Alles Speichern';
-    }
+    };
   }
 </script>
 </body>
