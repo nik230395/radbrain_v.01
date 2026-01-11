@@ -2,216 +2,224 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inhalt-Editor - RadBrain Admin</title>
+  <title>Quiz Editor - RadBrain Admin</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/navbar.css">
   <style>
-    #contentModal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: #ffffff;
-      z-index: 9999;
-      overflow-y: auto;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.3s ease-in-out;
-    }
-    #contentModal.show { display: block; opacity: 1; transform: translateY(0); }
-    .modal-inner { max-width: 900px; margin: 0 auto; padding: 60px 25px; }
-    .close-fullscreen {
-      position: fixed; top: 20px; right: 30px;
-      width: 50px; height: 50px; border-radius: 50%;
-      background: #f1f5f9; border: none; font-size: 30px;
-      cursor: pointer; z-index: 10000;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .upload-area {
-      border: 2px dashed var(--primary);
-      background: #f0f7ff;
-      border-radius: 12px;
-      padding: 40px;
-      text-align: center;
-      margin-bottom: 25px;
-      cursor: pointer;
-      display: none;
-    }
-    .upload-area.dragover { background: var(--primary-light); }
-    .content-item {
-      background: white; border: 1px solid #e2e8f0; border-radius: 12px;
-      padding: 20px; margin-bottom: 12px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .badge {
-      background: #e0e7ff; color: #4338ca; padding: 4px 10px;
-      border-radius: 6px; font-size: 11px; font-weight: bold;
-      margin-right: 12px; text-transform: uppercase;
-    }
-    .form-group { margin-bottom: 25px; }
-    .form-label { display: block; font-weight: 600; margin-bottom: 8px; }
-    .input-field {
-      width: 100%; padding: 12px; border: 1px solid #cbd5e1;
-      border-radius: 8px; font-size: 1rem; font-family: inherit;
-    }
-    /* Fix für Editor-Textarea */
-    textarea.input-field {
-      min-height: 350px;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      resize: vertical;
-    }
-    body.modal-open { overflow: hidden; }
+    :root { --primary: #2563eb; --success: #166534; --error: #991b1b; }
+    .quiz-info-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+    .question-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 16px; position: relative; }
+    .question-card.editing { border: 2px solid var(--primary); background: #f0f7ff; }
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+    .badge-mc { background: #dbeafe; color: #1e40af; }
+    .edit-choice-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .alert { position: fixed; top: 20px; right: 20px; padding: 15px; border-radius: 8px; z-index: 10000; color: white; min-width: 250px; font-weight: bold; }
+    .alert-success { background: var(--success); }
+    .alert-error { background: var(--error); }
+    .btn-save { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+    .form-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
   </style>
 </head>
 <body>
 <div id="navbar-placeholder"></div>
-<div class="container" style="padding-top: 50px;">
-  <button onclick="window.history.back()" class="btn btn-ghost" style="margin-bottom: 20px;">← Zurück</button>
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px;">
-    <h1 id="moduleTitle">Inhalte verwalten</h1>
-    <button onclick="openCreate()" class="btn btn-primary">+ Neuer Inhalt</button>
-  </div>
-  <div id="contentsList"><p>Lade Inhalte...</p></div>
-</div>
+<div class="container" style="padding: 40px 20px;">
+  <div id="editorContainer">
+    <div class="quiz-info-card">
+      <h2>Quiz bearbeiten</h2>
+      <input type="text" id="quizTitle" class="form-input" placeholder="Quiz Titel">
+      <button onclick="saveQuizInfo()" class="btn btn-primary" style="margin-top: 15px;">Titel speichern</button>
+    </div>
 
-<div id="contentModal">
-  <button class="close-fullscreen" onclick="closeModal()">&times;</button>
-  <div class="modal-inner">
-    <h1 id="modalTitle">Inhalt bearbeiten</h1>
-    <div class="form-group">
-      <label class="form-label">Titel / Überschrift</label>
-      <input type="text" id="cTitle" class="input-field">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2>Fragen (<span id="questionCount">0</span>)</h2>
+      <button onclick="addQuestion()" class="btn btn-primary">+ Neue Frage</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">Typ</label>
-      <select id="cType" class="input-field" onchange="updateUIForType()">
-        <option value="TEXT">Text-Lektion</option>
-        <option value="IMAGE">Bild</option>
-        <option value="HEADING">Zwischenüberschrift</option>
-        <option value="INFO">Info-Box</option>
-      </select>
-    </div>
-    <div id="dropZone" class="upload-area">
-      <p id="uploadStatusText">Datei hierher ziehen oder klicken</p>
-      <input type="file" id="fileInput" hidden>
-    </div>
-    <div class="form-group">
-      <label class="form-label" id="bodyLabel">Textinhalt (Absätze mit Enter-Taste)</label>
-      <textarea id="cBody" class="input-field"></textarea>
-    </div>
-    <div class="form-group" style="width: 120px;">
-      <label class="form-label">Sortierung</label>
-      <input type="number" id="cOrder" class="input-field" value="0">
-    </div>
-    <button onclick="saveContent()" class="btn btn-primary" style="padding: 15px 40px;">Speichern</button>
+    <div id="questionsContainer"></div>
   </div>
+  <div id="messageContainer"></div>
 </div>
 
 <script src="/js/auth.js"></script>
 <script src="/js/navbar.js"></script>
 <script>
-  const API_BASE = 'http://localhost:8080/api/admin/learning-areas';
-  const moduleId = new URLSearchParams(window.location.search).get('moduleId');
-  let currentContents = [];
+  const API_BASE = 'http://localhost:8080/api';
+  const quizId = new URLSearchParams(window.location.search).get('id');
+  let questions = [];
   let editingId = null;
 
-  document.addEventListener('DOMContentLoaded', () => { if(moduleId) loadData(); setupUpload(); });
+  document.addEventListener('DOMContentLoaded', () => { if(quizId) loadQuiz(); });
 
-  async function loadData() {
-    const res = await window.auth.authFetch(`${API_BASE}/modules/${moduleId}/contents`);
-    if (res.ok) { currentContents = await res.json(); render(); }
+  async function loadQuiz() {
+    try {
+      const res = await window.auth.authFetch(`${API_BASE}/admin/quizzes/${quizId}`);
+      const result = await res.json();
+      const data = result.data || result;
+      document.getElementById('quizTitle').value = data.title || '';
+
+      // Wichtig: IDs explizit als Number speichern
+      questions = (data.questions || []).map(q => ({
+        ...q,
+        id: Number(q.id),
+        choices: (q.choices || []).map(c => ({...c, id: Number(c.id)}))
+      }));
+
+      renderQuestions();
+    } catch (e) { showMessage('Fehler beim Laden des Quiz', 'error'); }
   }
 
-  function render() {
-    const list = document.getElementById('contentsList');
-    list.innerHTML = currentContents.sort((a,b) => a.displayOrder - b.displayOrder).map(i => `
-                <div class="content-item">
-                    <div><span class="badge">${i.contentType}</span><strong>${i.title || 'Kein Titel'}</strong></div>
-                    <div>
-                        <button onclick="prepareEdit(${i.id})" class="btn btn-sm btn-secondary">Edit</button>
-                        <button onclick="deleteContent(${i.id})" class="btn btn-sm" style="color:red;">X</button>
+  function getTypeLabel(type) {
+    if (!type) return "MULTIPLE CHOICE";
+    return type.toString().toUpperCase().replace('_', ' ');
+  }
+
+  function renderQuestions() {
+    const container = document.getElementById('questionsContainer');
+    document.getElementById('questionCount').textContent = questions.length;
+
+    container.innerHTML = questions.map((q, idx) => {
+      if (editingId === q.id) return renderEditMode(q);
+      return `
+                <div class="question-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <span class="badge badge-mc">${getTypeLabel(q.qtype)}</span>
+                        <div>
+                            <button onclick="startEdit(${q.id})" class="btn btn-sm">Bearbeiten</button>
+                            <button onclick="deleteQuestion(${q.id})" class="btn btn-sm" style="color:red">Löschen</button>
+                        </div>
                     </div>
+                    <p><strong>${q.text}</strong></p>
+                    <div style="margin-top:10px;">
+                        ${(q.choices || []).map(c => `
+                            <div style="padding:4px; ${c.isCorrect ? 'color:#166534; font-weight:bold;' : ''}">
+                                ${c.isCorrect ? '✔' : '○'} ${c.choiceText || c.text || 'Kein Text'}
+                            </div>`).join('')}
+                    </div>
+                </div>`;
+    }).join('');
+  }
+
+  function renderEditMode(q) {
+    return `
+            <div class="question-card editing">
+                <label><strong>Fragetext:</strong></label>
+                <input type="text" id="edit-q-text" class="form-input" value="${q.text}" style="margin-bottom:15px;">
+
+                <label><strong>Antworten:</strong></label>
+                <div id="edit-choices-list">
+                    ${q.choices.map((c) => `
+                        <div class="edit-choice-row">
+                            <input type="checkbox" class="edit-choice-correct" ${c.isCorrect ? 'checked' : ''} data-choice-id="${c.id}">
+                            <input type="text" class="edit-choice-text" value="${c.choiceText || c.text || ''}" data-choice-id="${c.id}" style="flex:1;">
+                        </div>`).join('')}
                 </div>
-            `).join('');
+                <div style="margin-top:20px; display:flex; gap:10px;">
+                    <button onclick="saveEdit(${q.id})" class="btn-save">Änderungen speichern</button>
+                    <button onclick="startEdit(null)" class="btn">Abbrechen</button>
+                </div>
+            </div>`;
   }
 
-  function updateUIForType() {
-    const type = document.getElementById('cType').value;
-    document.getElementById('dropZone').style.display = (type === 'IMAGE') ? 'block' : 'none';
+  function startEdit(id) {
+    editingId = id ? Number(id) : null;
+    renderQuestions();
   }
 
-  function openModal() {
-    const m = document.getElementById('contentModal');
-    m.style.display = 'block'; setTimeout(() => m.classList.add('show'), 10);
-    document.body.classList.add('modal-open');
-  }
+  async function saveEdit(qId) {
+    const q = questions.find(x => x.id === qId);
+    if (!q) return showMessage("Fehler: Frage lokal nicht gefunden", "error");
 
-  function closeModal() {
-    const m = document.getElementById('contentModal');
-    m.classList.remove('show'); setTimeout(() => m.style.display = 'none', 300);
-    document.body.classList.remove('modal-open');
-  }
+    const newText = document.getElementById('edit-q-text').value;
 
-  function prepareEdit(id) {
-    const item = currentContents.find(c => c.id === id);
-    editingId = id;
-    document.getElementById('cTitle').value = item.title || '';
-    document.getElementById('cType').value = item.contentType;
-    document.getElementById('cBody').value = item.contentData || '';
-    document.getElementById('cOrder').value = item.displayOrder;
-    updateUIForType(); openModal();
-  }
-
-  function openCreate() {
-    editingId = null;
-    document.getElementById('cTitle').value = '';
-    document.getElementById('cBody').value = '';
-    updateUIForType(); openModal();
-  }
-
-  async function saveContent() {
-    const payload = {
-      title: document.getElementById('cTitle').value,
-      contentType: document.getElementById('cType').value,
-      contentData: document.getElementById('cBody').value,
-      displayOrder: parseInt(document.getElementById('cOrder').value)
+    // Daten für das Backend
+    const qUpdate = {
+      text: newText,
+      qtype: q.qtype || "MULTIPLE_CHOICE"
     };
-    const url = editingId ? `${API_BASE}/contents/${editingId}` : `${API_BASE}/modules/${moduleId}/contents`;
-    const res = await window.auth.authFetch(url, {
-      method: editingId ? 'PUT' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (res.ok) { closeModal(); loadData(); }
-  }
 
-  async function deleteContent(id) {
-    if(confirm("Löschen?")) {
-      await window.auth.authFetch(`${API_BASE}/contents/${id}`, { method: 'DELETE' });
-      loadData();
+    try {
+      // SAUBERER URL-BAU:
+      // Wir nehmen die API_BASE (http://localhost:8080/api)
+      // und hängen EXAKT den Pfad aus dem Java-Controller an.
+      const url = `${API_BASE}/admin/questions/${qId}`;
+
+      console.log("Prüfe diese URL in den DevTools:", url);
+
+      const qRes = await window.auth.authFetch(url, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(qUpdate)
+      });
+
+      if (!qRes.ok) {
+        if (qRes.status === 404) {
+          throw new Error("Pfad nicht gefunden (404). Prüfe die URL in der Konsole!");
+        }
+        const errData = await qRes.json();
+        throw new Error(errData.error || "Update fehlgeschlagen");
+      }
+
+      // Falls Frage ok, dann Choices speichern
+      const choiceRows = document.querySelectorAll('.edit-choice-row');
+      for (const row of choiceRows) {
+        const cId = row.querySelector('.edit-choice-text').dataset.choiceId;
+        const cBody = {
+          text: row.querySelector('.edit-choice-text').value,
+          isCorrect: row.querySelector('.edit-choice-correct').checked
+        };
+
+        // Pfad für Choices: /api/admin/choices/{id}
+        await window.auth.authFetch(`${API_BASE}/admin/choices/${cId}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(cBody)
+        });
+      }
+
+      showMessage('✓ Erfolgreich gespeichert', 'success');
+      editingId = null;
+      loadQuiz();
+    } catch (e) {
+      console.error("DevTools Info:", e);
+      showMessage(e.message, 'error');
     }
   }
 
-  function setupUpload() {
-    const fileInput = document.getElementById('fileInput');
-    document.getElementById('dropZone').onclick = () => fileInput.click();
-    fileInput.onchange = async (e) => {
-      const file = e.target.files[0];
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/admin/upload-image', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('authToken') },
-        body: formData
+  async function saveQuizInfo() {
+    const title = document.getElementById('quizTitle').value;
+    try {
+      const res = await window.auth.authFetch(`${API_BASE}/admin/quizzes/${quizId}`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ title: title })
       });
-      if(res.ok) {
-        const data = await res.json();
-        document.getElementById('cBody').value = data.url;
-        document.getElementById('uploadStatusText').innerText = "Upload fertig!";
-      }
-    };
+      if(res.ok) showMessage('Quiz-Titel aktualisiert', 'success');
+    } catch(e) { showMessage('Fehler beim Quiz-Update', 'error'); }
+  }
+
+  async function addQuestion() {
+    const txt = prompt('Neue Frage eingeben:');
+    if (!txt) return;
+    try {
+      const res = await window.auth.authFetch(`${API_BASE}/admin/questions`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ quizId: quizId, qtype: 'MULTIPLE_CHOICE', text: txt })
+      });
+      if (res.ok) loadQuiz();
+    } catch (e) { showMessage('Fehler beim Erstellen der Frage', 'error'); }
+  }
+
+  async function deleteQuestion(id) {
+    if (confirm('Diese Frage wirklich unwiderruflich löschen?')) {
+      await window.auth.authFetch(`${API_BASE}/admin/questions/${id}`, { method: 'DELETE' });
+      loadQuiz();
+    }
+  }
+
+  function showMessage(m, t) {
+    const c = document.getElementById('messageContainer');
+    c.innerHTML = `<div class="alert alert-${t}">${m}</div>`;
+    setTimeout(() => c.innerHTML = '', 4000);
   }
 </script>
 </body>

@@ -16,6 +16,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Admin Quiz Controller
@@ -45,6 +46,21 @@ public class AdminQuizController {
 
         return ResponseEntity.ok(ApiResponse.success(quizzes));
     }
+
+    /**
+     * Get single quiz by ID (for editing)
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<QuizDto>> getQuizById(@PathVariable Long id) {
+        // ✅ Verwende findByIdWithQuestions für eager-loading
+        Quiz quiz = quizService.findByIdWithQuestions(id)
+                .orElseThrow(() -> new NoSuchElementException("Quiz nicht gefunden mit ID: " + id));
+
+        QuizDto dto = QuizMapper.toDto(quiz);  // ← FULL DTO mit allen Fragen & Choices
+
+        return ResponseEntity.ok(ApiResponse.success(dto));
+    }
+
 
     /**
      * Create quiz

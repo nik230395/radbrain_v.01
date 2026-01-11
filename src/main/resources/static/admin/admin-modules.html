@@ -130,7 +130,7 @@
             <h1 id="areaTitle" style="font-size: 2rem;">Module laden...</h1>
             <p style="color: var(--gray-600);">Verwalte die Kapitel dieses Lernbereichs</p>
         </div>
-        <button onclick="openModuleModal()" class="btn btn-primary" style="padding: 10px 20px;">+ Neues Modul</button>
+        <button onclick="openModuleModal()" class="btn btn-primary" style="padding: 10px 20px;">+ Neuer Bereich</button>
     </div>
 
     <div id="modulesList">
@@ -227,7 +227,7 @@
 
     function openModuleModal(id = null, title = '', desc = '', order = 0) {
         editingModuleId = id;
-        document.getElementById('modalTitle').textContent = id ? 'Modul bearbeiten' : 'Neues Modul';
+        document.getElementById('modalTitle').textContent = id ? 'Bereich bearbeiten' : 'Neuer Bereich';
         document.getElementById('moduleTitle').value = title;
         document.getElementById('moduleDescription').value = desc;
         document.getElementById('moduleOrder').value = order;
@@ -267,7 +267,7 @@
     }
 
     async function deleteModule(id) {
-        if (!confirm('Dieses Modul und alle enthaltenen Bilder/Texte wirklich löschen?')) return;
+        if (!confirm('Diesen Bereich und alle enthaltenen Bilder/Texte wirklich löschen?')) return;
         try {
             const res = await window.auth.authFetch(`${API_BASE}/admin/learning-areas/modules/${id}`, {
                 method: 'DELETE'

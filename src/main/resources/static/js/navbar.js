@@ -24,7 +24,7 @@
                             <a href="${homeHref}" class="nav-link">${homeLabel}</a>
                         </li>
                         <li class="nav-item dropdown" id="learningAreasDropdown">
-                            <a href="javascript:void(0)" class="nav-link">Lernbereiche <small>▾</small></a>
+                            <a href="javascript:void(0)" class="nav-link">Lernmodule<small>▾</small></a>
                             <ul class="dropdown-menu" id="learningAreasMenu">
                                 <li><span class="dropdown-item" style="color: #999;">Lade Bereiche...</span></li>
                             </ul>

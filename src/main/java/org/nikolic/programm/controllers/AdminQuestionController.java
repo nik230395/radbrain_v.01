@@ -40,4 +40,47 @@ public class AdminQuestionController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateQuestion(@PathVariable Long id, @RequestBody Map<String, Object> request) {
+        try {
+            // 1. Debug-Log: Was kommt an?
+            System.out.println("DEBUG: Eingehendes Update für ID: " + id);
+
+            // 2. Suche die Frage
+            Question question = questionService.findById(id).orElse(null);
+
+            if (question == null) {
+                System.err.println("KRITISCH: ID " + id + " nicht in DB gefunden!");
+                return ResponseEntity.status(404).body(Map.of(
+                        "error", "Question not found in Database",
+                        "requestedId", id,
+                        "hint", "Bitte Seite neu laden (F5), die ID ist veraltet."
+                ));
+            }
+
+            // 3. Felder aktualisieren
+            if (request.containsKey("text")) {
+                question.setText(request.get("text").toString());
+            }
+
+            if (request.containsKey("qtype")) {
+                try {
+                    String typeStr = request.get("qtype").toString().toUpperCase().replace(" ", "_");
+                    question.setQtype(QuestionType.valueOf(typeStr));
+                } catch (Exception e) {
+                    System.out.println("QType Mapping fehlgeschlagen, behalte alten Wert.");
+                }
+            }
+
+            // 4. Speichern
+            questionService.save(question);
+
+            return ResponseEntity.ok(Map.of("success", true));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Interner Fehler: " + e.getMessage()));
+        }
+    }
 }

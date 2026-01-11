@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/admin/choices") // Pfad an Frontend angepasst
+@RequestMapping("/api/admin/choices")
 @CrossOrigin(origins = "*")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminChoiceController {
@@ -36,7 +36,6 @@ public class AdminChoiceController {
             String text = request.get("text").toString();
             boolean isCorrect = (boolean) request.get("isCorrect");
 
-            // Hier rufen wir den Service auf (stelle sicher, dass dein ChoiceService eine update-Methode hat)
             choiceService.updateChoice(id, text, isCorrect);
 
             return ResponseEntity.ok(Map.of("message", "Choice updated"));
@@ -44,9 +43,8 @@ public class AdminChoiceController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-    /**
-     * Delete choice
-     */
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteChoice(@PathVariable Long id) {
         try {
