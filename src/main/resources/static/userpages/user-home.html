@@ -50,7 +50,7 @@
             <h1 class="hero-title">Radiologie effektiv lernen</h1>
             <p class="hero-subtitle">Strukturierte Lernmodule, interaktive Quizzes und umfassende Materialien für deine Ausbildung</p>
             <div class="hero-actions">
-                <a href="#lernbereiche" class="btn btn-primary" style="background: white; color: var(--primary);">Zu den Lernbereichen</a>
+                <a href="#lernbereiche" class="btn btn-primary" style="background: white; color: var(--primary);">Zu den Lernmodulen</a>
                 <a href="/quiz/quizzes.html" class="btn btn-outline" style="border-color: white; color: white;">Quizzes starten</a>
             </div>
         </div>
@@ -59,7 +59,7 @@
 
 <section id="lernbereiche" class="section" style="background: white;">
     <div class="container">
-        <h2 class="section-title">Lernbereiche</h2>
+        <h2 class="section-title">Lernmodule</h2>
         <p class="section-subtitle">Wähle einen Lernbereich und starte mit strukturierten Modulen</p>
         <div id="learningAreasList" class="learning-areas-grid">
             <div class="skeleton"></div>
@@ -150,7 +150,7 @@
             if (!response.ok) throw new Error('Failed to load learning areas');
             const areas = await response.json();
             if (!Array.isArray(areas) || areas.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--gray-500);"><p>Keine Lernbereiche verfügbar.</p></div>';
+                container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--gray-500);"><p>Keine Lernmodule verfügbar.</p></div>';
                 return;
             }
             container.innerHTML = areas.filter(area => area.isPublished).sort((a, b) => a.displayOrder - b.displayOrder).map(area => `
@@ -167,7 +167,7 @@
             console.error('Error loading learning areas:', error);
             container.innerHTML = `
                 <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--error);">
-                    <p>Lernbereiche konnten nicht geladen werden.</p>
+                    <p>Lernmodule konnten nicht geladen werden.</p>
                     <button class="btn btn-primary" onclick="loadLearningAreas()" style="margin-top: 1rem;">Erneut versuchen</button>
                 </div>
             `;

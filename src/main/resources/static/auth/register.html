@@ -263,24 +263,38 @@
         registerBtn.innerHTML = '<div class="loading"></div>';
 
         try {
-            const response = await fetch('/api/users/register', {
+            console.log('📤 Registering user...', { fullname, email });
+
+            // ✅ FIX: Correct endpoint is /api/auth/register
+            const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ fullname, email, password })
             });
 
+            console.log('Response status:', response.status);
             const result = await response.json();
+            console.log('Response data:', result);
 
-            if (response.ok && result.success) {
-                showMessage('Registrierung erfolgreich!', 'success');
+            // ✅ FIX: Handle both wrapped and direct responses
+            const success = result.success !== undefined ? result.success : response.ok;
+
+            if (success) {
+                const message = result.message || 'Registrierung erfolgreich!';
+                showMessage(message, 'success');
+
+                console.log('✅ Registration successful, redirecting to verify page...');
+
                 setTimeout(() => {
-                    window.location.href = `/verify.html?email=${encodeURIComponent(email)}`;
+                    window.location.href = `/auth/verify.html?email=${encodeURIComponent(email)}`;
                 }, 2000);
             } else {
-                showMessage(result.message || 'Registrierung fehlgeschlagen', 'error');
+                const errorMsg = result.message || result.error || 'Registrierung fehlgeschlagen';
+                showMessage(errorMsg, 'error');
+                console.error('❌ Registration failed:', errorMsg);
             }
         } catch (error) {
-            console.error('Registration error:', error);
+            console.error('❌ Registration error:', error);
             showMessage('Verbindungsfehler. Bitte versuche es erneut.', 'error');
         } finally {
             registerBtn.disabled = false;

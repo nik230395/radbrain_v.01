@@ -183,7 +183,7 @@ public class DataInitializer implements CommandLineRunner {
             logger.info("   Inactive Users: {}", totalUsers - activeUsers);
 
             if (adminUsers == 0) {
-                logger.warn("⚠WARNING: No admin users found! System may not be manageable.");
+                logger.warn("WARNING: No admin users found! System may not be manageable.");
             }
 
             // Admin Login Info
@@ -191,7 +191,7 @@ public class DataInitializer implements CommandLineRunner {
                 logger.info("Admin Login:");
                 logger.info("   Email: {}", adminEmail);
                 logger.info("   Password: {}", adminPassword);
-                logger.info("   URL: http://localhost:8080/login.html");
+                logger.info("   URL: http://localhost:8080/");
             }
 
         } catch (Exception e) {

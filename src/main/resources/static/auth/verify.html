@@ -66,7 +66,6 @@
       margin-bottom: var(--space-6);
     }
 
-
     .verification-code {
       letter-spacing: 0.5rem;
       text-align: center;
@@ -147,23 +146,59 @@
     verifyBtn.innerHTML = '<div class="loading"></div>';
 
     try {
-      const response = await fetch('/api/users/verify', {
+      console.log('📤 Verifying email...', { email, code });
+
+      // ✅ FIX: Correct endpoint is /api/auth/verify-email
+      const response = await fetch('/api/auth/verify-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code })
       });
 
-      if (response.ok) {
+      console.log('Response status:', response.status);
+      const result = await response.json();
+      console.log('Response data:', result);
+
+      // ✅ FIX: Handle wrapped response and token
+      const success = result.success !== undefined ? result.success : response.ok;
+
+      if (success) {
         showMessage('Konto erfolgreich verifiziert!', 'success');
+
+        // ✅ Store token if provided
+        const data = result.data || result;
+        if (data.token) {
+          console.log('✅ Storing token and auto-logging in...');
+          localStorage.setItem('authToken', data.token);
+
+          // Also store user info if available
+          if (data.email) {
+            const userInfo = {
+              email: data.email,
+              fullname: data.fullname,
+              role: data.role
+            };
+            localStorage.setItem('user', JSON.stringify(userInfo));
+          }
+        }
+
         localStorage.removeItem('registrationEmail'); // Cleanup
+
         setTimeout(() => {
-          window.location.href = '/auth/login.html';
+          // Redirect to user home if token exists, otherwise to login
+          if (data.token) {
+            window.location.href = '/userpages/user-home.html';
+          } else {
+            window.location.href = '/auth/login.html';
+          }
         }, 2000);
       } else {
-        const result = await response.json();
-        showMessage(result.error || 'Ungültiger Code', 'error');
+        const errorMsg = result.message || result.error || 'Ungültiger Code';
+        showMessage(errorMsg, 'error');
+        console.error('❌ Verification failed:', errorMsg);
       }
     } catch (error) {
+      console.error('❌ Verification error:', error);
       showMessage('Verbindungsfehler.', 'error');
     } finally {
       verifyBtn.disabled = false;
@@ -173,16 +208,32 @@
 
   resendBtn.addEventListener('click', async (e) => {
     e.preventDefault();
+
     try {
-      const response = await fetch('/api/users/resend-code', {
+      console.log('📤 Resending verification code...', email);
+
+      // ✅ FIX: Correct endpoint is /api/auth/resend-verification
+      const response = await fetch('/api/auth/resend-verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
+
+      console.log('Resend response status:', response.status);
+
       if (response.ok) {
-        showMessage('Neuer Code wurde gesendet!', 'success');
+        const result = await response.json();
+        const message = result.message || 'Neuer Code wurde gesendet!';
+        showMessage(message, 'success');
+        console.log('✅ Code resent successfully');
+      } else {
+        const result = await response.json();
+        const errorMsg = result.message || result.error || 'Fehler beim Senden';
+        showMessage(errorMsg, 'error');
+        console.error('❌ Resend failed:', errorMsg);
       }
     } catch (error) {
+      console.error('❌ Resend error:', error);
       showMessage('Fehler beim Senden.', 'error');
     }
   });

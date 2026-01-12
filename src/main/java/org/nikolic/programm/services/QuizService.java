@@ -49,6 +49,18 @@ public class QuizService {
         this.objectMapper = objectMapper;
     }
 
+    // Add this method to QuizService.java if it doesn't exist
+
+    /**
+     * Check if a quiz exists by ID
+     * @param id Quiz ID to check
+     * @return true if quiz exists, false otherwise
+     */
+    public boolean existsById(Long id) {
+        logger.debug("Checking if quiz exists with id: {}", id);
+        return quizRepository.existsById(id);
+    }
+
     /**
      * Find quiz by ID
      */

@@ -7,35 +7,106 @@
   <link rel="stylesheet" href="/css/navbar.css">
   <style>
     :root { --primary: #2563eb; --success: #166534; --error: #991b1b; }
+    .error-container {
+      max-width: 600px;
+      margin: 100px auto;
+      padding: 40px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .error-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
     .quiz-info-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; margin-bottom: 24px; }
     .question-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 16px; position: relative; }
     .question-card.editing { border: 2px solid var(--primary); background: #f0f7ff; }
     .badge { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
     .badge-mc { background: #dbeafe; color: #1e40af; }
     .edit-choice-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; padding: 10px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
-    .alert { position: fixed; top: 20px; right: 20px; padding: 15px; border-radius: 8px; z-index: 10000; color: white; min-width: 250px; font-weight: bold; }
+    .alert { position: fixed; top: 20px; right: 20px; padding: 15px 20px; border-radius: 8px; z-index: 10000; color: white; min-width: 300px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); animation: slideIn 0.3s ease; }
     .alert-success { background: var(--success); }
     .alert-error { background: var(--error); }
-    .btn-save { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-    .form-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+    .alert-warning { background: #d97706; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .btn-save { background: var(--success); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .btn-save:hover { background: #15803d; }
+    .btn-save:disabled { background: #9ca3af; cursor: not-allowed; }
+    .form-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1rem; }
+    .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
+    .loading-large { width: 48px; height: 48px; border-width: 4px; border-color: #e2e8f0; border-top-color: var(--primary); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .debug-info {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+      font-family: monospace;
+      font-size: 0.875rem;
+    }
   </style>
 </head>
 <body>
 <div id="navbar-placeholder"></div>
 <div class="container" style="padding: 40px 20px;">
-  <div id="editorContainer">
+
+  <!-- Error Container (hidden by default) -->
+  <div id="errorContainer" style="display: none;">
+    <div class="error-container">
+      <div class="error-icon">⚠️</div>
+      <h2 id="errorTitle">Fehler beim Laden</h2>
+      <p id="errorMessage" style="color: #64748b; margin: 20px 0;"></p>
+      <div id="debugInfo" class="debug-info" style="display: none;"></div>
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 30px;">
+        <button onclick="retryLoad()" class="btn btn-primary">Erneut versuchen</button>
+        <button onclick="window.location.href='/admin/quiz-verwaltung.html'" class="btn btn-secondary">Zur Quiz-Verwaltung</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Editor Container -->
+  <div id="editorContainer" style="display: none;">
+    <button onclick="window.location.href='/admin/quiz-verwaltung.html'" class="btn btn-ghost" style="margin-bottom: 20px;">
+      ← Zurück zur Quiz-Verwaltung
+    </button>
+
     <div class="quiz-info-card">
-      <h2>Quiz bearbeiten</h2>
-      <input type="text" id="quizTitle" class="form-input" placeholder="Quiz Titel">
-      <button onclick="saveQuizInfo()" class="btn btn-primary" style="margin-top: 15px;">Titel speichern</button>
+      <h2 style="margin-bottom: 20px;">Quiz bearbeiten</h2>
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Quiz Titel *</label>
+        <input type="text" id="quizTitle" class="form-input" placeholder="Quiz Titel eingeben" required>
+      </div>
+      <div style="margin-bottom: 15px;">
+        <label style="display: block; font-weight: 600; margin-bottom: 8px;">Beschreibung (optional)</label>
+        <textarea id="quizDescription" class="form-input" rows="3" placeholder="Kurze Beschreibung des Quiz"></textarea>
+      </div>
+      <button onclick="saveQuizInfo()" class="btn btn-primary" id="saveInfoBtn">
+        Titel & Beschreibung speichern
+      </button>
     </div>
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <h2>Fragen (<span id="questionCount">0</span>)</h2>
-      <button onclick="addQuestion()" class="btn btn-primary">+ Neue Frage</button>
+      <button onclick="addQuestion()" class="btn btn-primary" id="addQuestionBtn">+ Neue Frage</button>
     </div>
-    <div id="questionsContainer"></div>
+    <div id="questionsContainer">
+      <div style="text-align: center; padding: 40px;">
+        <div class="loading loading-large" style="margin: 0 auto;"></div>
+        <p style="margin-top: 15px; color: #64748b;">Lade Quiz...</p>
+      </div>
+    </div>
   </div>
+
+  <!-- Loading Container -->
+  <div id="loadingContainer" style="text-align: center; padding: 100px 20px;">
+    <div class="loading loading-large" style="margin: 0 auto;"></div>
+    <p style="margin-top: 20px; color: #64748b; font-size: 1.1rem;">Quiz wird geladen...</p>
+  </div>
+
   <div id="messageContainer"></div>
 </div>
 
@@ -43,80 +114,244 @@
 <script src="/js/navbar.js"></script>
 <script>
   const API_BASE = 'http://localhost:8080/api';
-  const quizId = new URLSearchParams(window.location.search).get('id');
+  const urlParams = new URLSearchParams(window.location.search);
+  const quizId = urlParams.get('id');
+
   let questions = [];
   let editingId = null;
+  let quizExists = false;
+  let retryCount = 0;
 
-  document.addEventListener('DOMContentLoaded', () => { if(quizId) loadQuiz(); });
+  // Initialize
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Quiz Editor initialized');
+    console.log('📋 Quiz ID from URL:', quizId);
+
+    if (!quizId) {
+      showError(
+              'Keine Quiz-ID angegeben',
+              'Bitte wähle ein Quiz aus der Quiz-Verwaltung aus.',
+              'URL Parameter "id" fehlt'
+      );
+      return;
+    }
+
+    // Check authentication
+    if (!window.auth || !window.auth.isLoggedIn()) {
+      showError(
+              'Nicht angemeldet',
+              'Bitte melde dich an, um fortzufahren.',
+              'Authentication failed'
+      );
+      setTimeout(() => window.location.href = '/auth/login.html', 2000);
+      return;
+    }
+
+    if (!window.auth.hasRole('ADMIN')) {
+      showError(
+              'Keine Berechtigung',
+              'Diese Seite ist nur für Administratoren zugänglich.',
+              'Missing ADMIN role'
+      );
+      setTimeout(() => window.location.href = '/userpages/user-home.html', 2000);
+      return;
+    }
+
+    loadQuiz();
+  });
 
   async function loadQuiz() {
-    try {
-      const res = await window.auth.authFetch(`${API_BASE}/admin/quizzes/${quizId}`);
-      const result = await res.json();
-      const data = result.data || result;
-      document.getElementById('quizTitle').value = data.title || '';
+    retryCount++;
+    console.log(`🔄 Attempting to load quiz (attempt ${retryCount})...`);
 
-      // Wichtig: IDs explizit als Number speichern
-      questions = (data.questions || []).map(q => ({
-        ...q,
-        id: Number(q.id),
-        choices: (q.choices || []).map(c => ({...c, id: Number(c.id)}))
-      }));
+    try {
+      // First check if quiz exists
+      console.log(`📡 Fetching: ${API_BASE}/admin/quizzes/${quizId}`);
+
+      const res = await window.auth.authFetch(`${API_BASE}/admin/quizzes/${quizId}`);
+
+      console.log('📊 Response status:', res.status);
+
+      if (res.status === 404) {
+        showError(
+                'Quiz nicht gefunden',
+                `Das Quiz mit der ID ${quizId} existiert nicht in der Datenbank. Möglicherweise wurde es gelöscht.`,
+                `HTTP 404: Quiz ID ${quizId} not found`
+        );
+        return;
+      }
+
+      if (res.status === 403) {
+        showError(
+                'Zugriff verweigert',
+                'Du hast keine Berechtigung, dieses Quiz zu bearbeiten.',
+                'HTTP 403: Forbidden'
+        );
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      const result = await res.json();
+      console.log('✅ Quiz loaded:', result);
+
+      const data = result.data || result;
+
+      if (!data.id) {
+        throw new Error('Quiz data is missing ID field');
+      }
+
+      quizExists = true;
+
+      // Quiz info
+      document.getElementById('quizTitle').value = data.title || '';
+      document.getElementById('quizDescription').value = data.description || '';
+
+      // Questions with proper ID conversion
+      questions = (data.questions || []).map(q => {
+        console.log('📝 Processing question:', q.id, q.text);
+        return {
+          ...q,
+          id: Number(q.id),
+          text: q.text || '',
+          qtype: q.qtype || 'MULTIPLE_CHOICE',
+          choices: (q.choices || []).map(c => ({
+            id: Number(c.id),
+            text: c.text || '',
+            isCorrect: Boolean(c.isCorrect)
+          }))
+        };
+      });
+
+      console.log(`✅ Loaded ${questions.length} questions`);
+
+      // Hide loading, show editor
+      document.getElementById('loadingContainer').style.display = 'none';
+      document.getElementById('editorContainer').style.display = 'block';
 
       renderQuestions();
-    } catch (e) { showMessage('Fehler beim Laden des Quiz', 'error'); }
+
+    } catch (e) {
+      console.error('❌ Load error:', e);
+      showError(
+              'Fehler beim Laden',
+              e.message || 'Ein unbekannter Fehler ist aufgetreten.',
+              e.stack
+      );
+    }
+  }
+
+  function retryLoad() {
+    document.getElementById('errorContainer').style.display = 'none';
+    document.getElementById('loadingContainer').style.display = 'block';
+    loadQuiz();
+  }
+
+  function showError(title, message, debugDetails) {
+    console.error('🚨 Error:', title, message, debugDetails);
+
+    document.getElementById('loadingContainer').style.display = 'none';
+    document.getElementById('editorContainer').style.display = 'none';
+    document.getElementById('errorContainer').style.display = 'block';
+
+    document.getElementById('errorTitle').textContent = title;
+    document.getElementById('errorMessage').textContent = message;
+
+    if (debugDetails) {
+      const debugInfo = document.getElementById('debugInfo');
+      debugInfo.textContent = debugDetails;
+      debugInfo.style.display = 'block';
+    }
   }
 
   function getTypeLabel(type) {
-    if (!type) return "MULTIPLE CHOICE";
-    return type.toString().toUpperCase().replace('_', ' ');
+    const labels = {
+      'MULTIPLE_CHOICE': 'MULTIPLE CHOICE',
+      'SINGLE': 'SINGLE CHOICE',
+      'SHORT_TEXT': 'SHORT TEXT',
+      'FILL_GAP': 'FILL GAP'
+    };
+    return labels[type] || type.toString().toUpperCase().replace('_', ' ');
   }
 
   function renderQuestions() {
     const container = document.getElementById('questionsContainer');
     document.getElementById('questionCount').textContent = questions.length;
 
+    if (questions.length === 0) {
+      container.innerHTML = '<div class="quiz-info-card" style="text-align:center; padding: 40px;"><p style="color:#64748b;">Noch keine Fragen vorhanden. Klicke auf "+ Neue Frage" um zu beginnen.</p></div>';
+      return;
+    }
+
     container.innerHTML = questions.map((q, idx) => {
       if (editingId === q.id) return renderEditMode(q);
+
       return `
-                <div class="question-card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                        <span class="badge badge-mc">${getTypeLabel(q.qtype)}</span>
-                        <div>
-                            <button onclick="startEdit(${q.id})" class="btn btn-sm">Bearbeiten</button>
-                            <button onclick="deleteQuestion(${q.id})" class="btn btn-sm" style="color:red">Löschen</button>
-                        </div>
-                    </div>
-                    <p><strong>${q.text}</strong></p>
-                    <div style="margin-top:10px;">
-                        ${(q.choices || []).map(c => `
-                            <div style="padding:4px; ${c.isCorrect ? 'color:#166534; font-weight:bold;' : ''}">
-                                ${c.isCorrect ? '✔' : '○'} ${c.choiceText || c.text || 'Kein Text'}
-                            </div>`).join('')}
-                    </div>
-                </div>`;
+        <div class="question-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="background: #f1f5f9; color: #475569; padding: 4px 12px; border-radius: 6px; font-weight: 600;">#${idx + 1}</span>
+              <span class="badge badge-mc">${getTypeLabel(q.qtype)}</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="startEdit(${q.id})" class="btn btn-sm btn-secondary">Bearbeiten</button>
+              <button onclick="deleteQuestion(${q.id})" class="btn btn-sm" style="color:#dc2626; background:#fef2f2; border: 1px solid #fecaca;">Löschen</button>
+            </div>
+          </div>
+          <p style="margin: 15px 0;"><strong>${escapeHtml(q.text)}</strong></p>
+          <div style="margin-top:15px;">
+            ${(q.choices || []).map(c => `
+              <div style="padding:8px 12px; margin: 4px 0; border-radius: 6px; ${c.isCorrect ? 'background:#dcfce7; color:#166534; font-weight:600; border: 1px solid #86efac;' : 'background:#f8fafc; border: 1px solid #e2e8f0;'}">
+                ${c.isCorrect ? '✓' : '○'} ${escapeHtml(c.text)}
+              </div>`).join('')}
+          </div>
+        </div>`;
     }).join('');
   }
 
   function renderEditMode(q) {
     return `
-            <div class="question-card editing">
-                <label><strong>Fragetext:</strong></label>
-                <input type="text" id="edit-q-text" class="form-input" value="${q.text}" style="margin-bottom:15px;">
+      <div class="question-card editing">
+        <h3 style="margin-bottom: 15px; color: var(--primary);">Frage bearbeiten</h3>
 
-                <label><strong>Antworten:</strong></label>
-                <div id="edit-choices-list">
-                    ${q.choices.map((c) => `
-                        <div class="edit-choice-row">
-                            <input type="checkbox" class="edit-choice-correct" ${c.isCorrect ? 'checked' : ''} data-choice-id="${c.id}">
-                            <input type="text" class="edit-choice-text" value="${c.choiceText || c.text || ''}" data-choice-id="${c.id}" style="flex:1;">
-                        </div>`).join('')}
-                </div>
-                <div style="margin-top:20px; display:flex; gap:10px;">
-                    <button onclick="saveEdit(${q.id})" class="btn-save">Änderungen speichern</button>
-                    <button onclick="startEdit(null)" class="btn">Abbrechen</button>
-                </div>
-            </div>`;
+        <label style="display: block; font-weight: 600; margin-bottom: 8px;"><strong>Fragetext:</strong></label>
+        <input type="text" id="edit-q-text" class="form-input" value="${escapeHtml(q.text)}" style="margin-bottom:20px;">
+
+        <label style="display: block; font-weight: 600; margin-bottom: 8px;"><strong>Antworten:</strong></label>
+        <div id="edit-choices-list">
+          ${q.choices.map((c) => `
+            <div class="edit-choice-row">
+              <input type="checkbox"
+                     class="edit-choice-correct"
+                     ${c.isCorrect ? 'checked' : ''}
+                     data-choice-id="${c.id}"
+                     style="width: 20px; height: 20px; cursor: pointer;">
+              <input type="text"
+                     class="edit-choice-text form-input"
+                     value="${escapeHtml(c.text)}"
+                     data-choice-id="${c.id}"
+                     style="flex:1;"
+                     placeholder="Antworttext eingeben">
+              <button onclick="removeChoice(${q.id}, ${c.id})" class="btn btn-sm" style="color:#dc2626;">Entfernen</button>
+            </div>`).join('')}
+        </div>
+
+        <button onclick="addChoice(${q.id})" class="btn btn-sm btn-secondary" style="margin-top: 10px;">+ Antwort hinzufügen</button>
+
+        <div style="margin-top:25px; display:flex; gap:10px;">
+          <button onclick="saveEdit(${q.id})" class="btn-save" id="saveEditBtn">✓ Änderungen speichern</button>
+          <button onclick="cancelEdit()" class="btn btn-ghost">Abbrechen</button>
+        </div>
+      </div>`;
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   function startEdit(id) {
@@ -124,102 +359,265 @@
     renderQuestions();
   }
 
+  function cancelEdit() {
+    editingId = null;
+    renderQuestions();
+  }
+
   async function saveEdit(qId) {
     const q = questions.find(x => x.id === qId);
-    if (!q) return showMessage("Fehler: Frage lokal nicht gefunden", "error");
+    if (!q) return showMessage("Fehler: Frage nicht gefunden", "error");
 
-    const newText = document.getElementById('edit-q-text').value;
+    const newText = document.getElementById('edit-q-text').value.trim();
 
-    // Daten für das Backend
-    const qUpdate = {
-      text: newText,
-      qtype: q.qtype || "MULTIPLE_CHOICE"
-    };
+    if (!newText) {
+      return showMessage("Fragetext darf nicht leer sein", "error");
+    }
+
+    const saveBtn = document.getElementById('saveEditBtn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="loading"></span> Speichert...';
 
     try {
-      // SAUBERER URL-BAU:
-      // Wir nehmen die API_BASE (http://localhost:8080/api)
-      // und hängen EXAKT den Pfad aus dem Java-Controller an.
-      const url = `${API_BASE}/admin/questions/${qId}`;
+      console.log(`💾 Saving question ${qId}...`);
 
-      console.log("Prüfe diese URL in den DevTools:", url);
+      // Update question
+      const qUpdate = {
+        text: newText,
+        qtype: q.qtype || "MULTIPLE_CHOICE"
+      };
 
-      const qRes = await window.auth.authFetch(url, {
+      const qRes = await window.auth.authFetch(`${API_BASE}/admin/questions/${qId}`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(qUpdate)
       });
 
       if (!qRes.ok) {
-        if (qRes.status === 404) {
-          throw new Error("Pfad nicht gefunden (404). Prüfe die URL in der Konsole!");
-        }
-        const errData = await qRes.json();
-        throw new Error(errData.error || "Update fehlgeschlagen");
+        const errorData = await qRes.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${qRes.status}`);
       }
 
-      // Falls Frage ok, dann Choices speichern
+      console.log('✅ Question updated');
+
+      // Update choices
       const choiceRows = document.querySelectorAll('.edit-choice-row');
+      let hasCorrectAnswer = false;
+
       for (const row of choiceRows) {
         const cId = row.querySelector('.edit-choice-text').dataset.choiceId;
+        const choiceText = row.querySelector('.edit-choice-text').value.trim();
+        const isCorrect = row.querySelector('.edit-choice-correct').checked;
+
+        if (isCorrect) hasCorrectAnswer = true;
+
+        if (!choiceText) continue;
+
         const cBody = {
-          text: row.querySelector('.edit-choice-text').value,
-          isCorrect: row.querySelector('.edit-choice-correct').checked
+          text: choiceText,
+          isCorrect: isCorrect
         };
 
-        // Pfad für Choices: /api/admin/choices/{id}
-        await window.auth.authFetch(`${API_BASE}/admin/choices/${cId}`, {
+        console.log(`💾 Saving choice ${cId}...`);
+
+        const cRes = await window.auth.authFetch(`${API_BASE}/admin/choices/${cId}`, {
           method: 'PUT',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(cBody)
         });
+
+        if (!cRes.ok) {
+          console.warn(`⚠️ Failed to update choice ${cId}`);
+        } else {
+          console.log(`✅ Choice ${cId} updated`);
+        }
       }
 
-      showMessage('✓ Erfolgreich gespeichert', 'success');
+      if (!hasCorrectAnswer) {
+        showMessage('⚠️ Warnung: Keine richtige Antwort markiert!', 'warning');
+      } else {
+        showMessage('✓ Erfolgreich gespeichert', 'success');
+      }
+
       editingId = null;
-      loadQuiz();
+      await loadQuiz();
+
     } catch (e) {
-      console.error("DevTools Info:", e);
-      showMessage(e.message, 'error');
+      console.error("❌ Save error:", e);
+      showMessage('Fehler beim Speichern: ' + e.message, 'error');
+      saveBtn.disabled = false;
+      saveBtn.textContent = '✓ Änderungen speichern';
     }
   }
 
   async function saveQuizInfo() {
-    const title = document.getElementById('quizTitle').value;
+    const title = document.getElementById('quizTitle').value.trim();
+    const description = document.getElementById('quizDescription').value.trim();
+
+    if (!title) {
+      return showMessage('Titel darf nicht leer sein', 'error');
+    }
+
+    const saveBtn = document.getElementById('saveInfoBtn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="loading"></span> Speichert...';
+
     try {
+      console.log(`💾 Saving quiz info for ID ${quizId}...`);
+      console.log('📤 Payload:', { title, description });
+
       const res = await window.auth.authFetch(`${API_BASE}/admin/quizzes/${quizId}`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ title: title })
+        body: JSON.stringify({ title, description })
       });
-      if(res.ok) showMessage('Quiz-Titel aktualisiert', 'success');
-    } catch(e) { showMessage('Fehler beim Quiz-Update', 'error'); }
+
+      console.log('📊 Response status:', res.status);
+
+      if (res.status === 404) {
+        throw new Error(`Quiz mit ID ${quizId} wurde nicht gefunden. Möglicherweise wurde es gelöscht.`);
+      }
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || errorData.error || 'Update fehlgeschlagen');
+      }
+
+      console.log('✅ Quiz info saved');
+      showMessage('✓ Quiz-Informationen aktualisiert', 'success');
+
+    } catch(e) {
+      console.error('❌ Save quiz info error:', e);
+      showMessage('Fehler: ' + e.message, 'error');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Titel & Beschreibung speichern';
+    }
   }
 
   async function addQuestion() {
     const txt = prompt('Neue Frage eingeben:');
-    if (!txt) return;
+    if (!txt || !txt.trim()) return;
+
+    const addBtn = document.getElementById('addQuestionBtn');
+    addBtn.disabled = true;
+    addBtn.textContent = 'Wird erstellt...';
+
     try {
+      console.log(`➕ Adding question to quiz ${quizId}...`);
+
       const res = await window.auth.authFetch(`${API_BASE}/admin/questions`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ quizId: quizId, qtype: 'MULTIPLE_CHOICE', text: txt })
+        body: JSON.stringify({
+          quizId: Number(quizId),
+          qtype: 'MULTIPLE_CHOICE',
+          text: txt.trim(),
+          auxText: ''
+        })
       });
-      if (res.ok) loadQuiz();
-    } catch (e) { showMessage('Fehler beim Erstellen der Frage', 'error'); }
+
+      if (res.ok) {
+        console.log('✅ Question created');
+        showMessage('✓ Frage erstellt! Füge jetzt Antworten hinzu.', 'success');
+        await loadQuiz();
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Erstellen fehlgeschlagen');
+      }
+    } catch (e) {
+      console.error('❌ Add question error:', e);
+      showMessage('Fehler: ' + e.message, 'error');
+    } finally {
+      addBtn.disabled = false;
+      addBtn.textContent = '+ Neue Frage';
+    }
   }
 
   async function deleteQuestion(id) {
-    if (confirm('Diese Frage wirklich unwiderruflich löschen?')) {
-      await window.auth.authFetch(`${API_BASE}/admin/questions/${id}`, { method: 'DELETE' });
-      loadQuiz();
+    if (!confirm('Diese Frage wirklich unwiderruflich löschen?')) return;
+
+    try {
+      console.log(`🗑️ Deleting question ${id}...`);
+
+      const res = await window.auth.authFetch(`${API_BASE}/admin/questions/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        console.log('✅ Question deleted');
+        showMessage('✓ Frage gelöscht', 'success');
+        await loadQuiz();
+      } else {
+        throw new Error('Löschen fehlgeschlagen');
+      }
+    } catch (e) {
+      console.error('❌ Delete error:', e);
+      showMessage('Fehler: ' + e.message, 'error');
+    }
+  }
+
+  function addChoice(questionId) {
+    const q = questions.find(x => x.id === questionId);
+    if (!q) return;
+
+    q.choices.push({
+      id: -Date.now(),
+      text: '',
+      isCorrect: false
+    });
+
+    renderQuestions();
+  }
+
+  async function removeChoice(questionId, choiceId) {
+    const q = questions.find(x => x.id === questionId);
+    if (!q) return;
+
+    if (q.choices.length <= 2) {
+      return showMessage('Mindestens 2 Antworten erforderlich', 'error');
+    }
+
+    if (!confirm('Diese Antwort entfernen?')) return;
+
+    try {
+      if (choiceId > 0) {
+        console.log(`🗑️ Deleting choice ${choiceId}...`);
+
+        const res = await window.auth.authFetch(`${API_BASE}/admin/choices/${choiceId}`, {
+          method: 'DELETE'
+        });
+
+        if (!res.ok) {
+          throw new Error('Löschen fehlgeschlagen');
+        }
+
+        console.log('✅ Choice deleted');
+      }
+
+      q.choices = q.choices.filter(c => c.id !== choiceId);
+      renderQuestions();
+      showMessage('✓ Antwort entfernt', 'success');
+
+    } catch (e) {
+      console.error('❌ Remove choice error:', e);
+      showMessage('Fehler: ' + e.message, 'error');
     }
   }
 
   function showMessage(m, t) {
     const c = document.getElementById('messageContainer');
-    c.innerHTML = `<div class="alert alert-${t}">${m}</div>`;
-    setTimeout(() => c.innerHTML = '', 4000);
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${t}`;
+    alertDiv.textContent = m;
+
+    c.appendChild(alertDiv);
+
+    setTimeout(() => {
+      alertDiv.style.opacity = '0';
+      alertDiv.style.transform = 'translateX(100%)';
+      setTimeout(() => alertDiv.remove(), 300);
+    }, 4000);
   }
 </script>
 </body>

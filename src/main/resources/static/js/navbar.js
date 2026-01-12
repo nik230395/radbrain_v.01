@@ -88,7 +88,7 @@
         if (!isLoggedIn) {
             navRight.innerHTML = `
                 <div class="auth-buttons">
-                    <a href="/auth/login.html" class="btn-login">Anmelden</a>
+                    <a href="/auth/login.html" class="btn-login" style="color: white;">Anmelden</a>
                     <a href="/auth/register.html" class="btn btn-primary">Registrieren</a>
                 </div>
             `;

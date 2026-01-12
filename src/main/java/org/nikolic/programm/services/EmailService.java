@@ -9,10 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import jakarta.mail.internet.MimeMessage;
 
-/**
- * ✅ Email Service - Professional & Clean
- * Handles all email communications for RadBrain
- */
 @Service
 public class EmailService {
 
@@ -51,7 +47,7 @@ public class EmailService {
 
             helper.setFrom(fromEmail, appName);
             helper.setTo(toEmail);
-            helper.setSubject("🎯 " + appName + " - E-Mail-Verifikation");
+            helper.setSubject(appName + " - E-Mail-Verifikation");
 
             String htmlContent = createVerificationEmailHtml(fullname, verificationCode);
             helper.setText(htmlContent, true);
@@ -81,7 +77,7 @@ public class EmailService {
 
             helper.setFrom(fromEmail, appName);
             helper.setTo(toEmail);
-            helper.setSubject("🎉 Willkommen bei " + appName + "!");
+            helper.setSubject("Willkommen bei " + appName + "!");
 
             String htmlContent = createWelcomeEmailHtml(fullname);
             helper.setText(htmlContent, true);
@@ -110,9 +106,9 @@ public class EmailService {
 
             helper.setFrom(fromEmail, appName);
             helper.setTo(toEmail);
-            helper.setSubject("🔒 " + appName + " - Passwort zurücksetzen");
+            helper.setSubject(appName + " - Passwort zurücksetzen");
 
-            String resetUrl = baseUrl + "/reset-password.html?token=" + resetToken;
+            String resetUrl = baseUrl + "/auth/reset-password.html?token=" + resetToken;
             String htmlContent = createPasswordResetEmailHtml(fullname, resetUrl);
             helper.setText(htmlContent, true);
 
@@ -140,516 +136,343 @@ public class EmailService {
     }
 
     /**
-     * ✅ Modern HTML template for verification email
+     * ✅ Email-client-compatible HTML template for verification email
+     * Uses tables and inline styles for maximum compatibility
      */
     private String createVerificationEmailHtml(String fullname, String verificationCode) {
         return String.format("""
                 <!DOCTYPE html>
-                <html lang="de">
+                <html>
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>
-                        * { margin: 0; padding: 0; box-sizing: border-box; }
-                        body { 
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-                            line-height: 1.6;
-                            color: #1f2937;
-                            background-color: #f9fafb;
-                        }
-                        .email-wrapper {
-                            max-width: 600px;
-                            margin: 40px auto;
-                            background: white;
-                            border-radius: 16px;
-                            overflow: hidden;
-                            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                        }
-                        .header {
-                            background: linear-gradient(135deg, #645CBB 0%%, #A084DC 100%%);
-                            padding: 40px 20px;
-                            text-align: center;
-                            color: white;
-                        }
-                        .header h1 {
-                            font-size: 28px;
-                            font-weight: 800;
-                            margin-bottom: 8px;
-                        }
-                        .header p {
-                            font-size: 16px;
-                            opacity: 0.95;
-                        }
-                        .content {
-                            padding: 40px 30px;
-                        }
-                        .greeting {
-                            font-size: 18px;
-                            margin-bottom: 20px;
-                            color: #374151;
-                        }
-                        .greeting strong {
-                            color: #645CBB;
-                        }
-                        .message {
-                            font-size: 15px;
-                            color: #4b5563;
-                            margin-bottom: 30px;
-                            line-height: 1.7;
-                        }
-                        .code-container {
-                            background: linear-gradient(135deg, #f0edff 0%%, #f8f9ff 100%%);
-                            border: 3px dashed #645CBB;
-                            border-radius: 12px;
-                            padding: 30px;
-                            text-align: center;
-                            margin: 30px 0;
-                        }
-                        .code-label {
-                            font-size: 14px;
-                            color: #6b7280;
-                            margin-bottom: 10px;
-                            text-transform: uppercase;
-                            letter-spacing: 1px;
-                            font-weight: 600;
-                        }
-                        .code {
-                            font-size: 42px;
-                            font-weight: 800;
-                            color: #645CBB;
-                            letter-spacing: 8px;
-                            font-family: 'Courier New', monospace;
-                        }
-                        .info-box {
-                            background: #fef3c7;
-                            border-left: 4px solid #f59e0b;
-                            padding: 16px;
-                            border-radius: 8px;
-                            margin: 25px 0;
-                        }
-                        .info-box p {
-                            font-size: 14px;
-                            color: #92400e;
-                            margin: 0;
-                            font-weight: 600;
-                        }
-                        .security-tips {
-                            background: #f9fafb;
-                            border-radius: 8px;
-                            padding: 20px;
-                            margin: 25px 0;
-                        }
-                        .security-tips h3 {
-                            font-size: 16px;
-                            color: #374151;
-                            margin-bottom: 12px;
-                            display: flex;
-                            align-items: center;
-                            gap: 8px;
-                        }
-                        .security-tips ul {
-                            list-style: none;
-                            padding: 0;
-                        }
-                        .security-tips li {
-                            padding: 8px 0;
-                            padding-left: 24px;
-                            position: relative;
-                            font-size: 14px;
-                            color: #6b7280;
-                        }
-                        .security-tips li:before {
-                            content: "✓";
-                            position: absolute;
-                            left: 0;
-                            color: #10b981;
-                            font-weight: bold;
-                        }
-                        .footer {
-                            background: #f9fafb;
-                            padding: 30px;
-                            text-align: center;
-                            border-top: 1px solid #e5e7eb;
-                        }
-                        .footer p {
-                            font-size: 13px;
-                            color: #9ca3af;
-                            margin: 4px 0;
-                        }
-                        .footer a {
-                            color: #645CBB;
-                            text-decoration: none;
+                    <style type="text/css">
+                        @media only screen and (max-width: 600px) {
+                            .email-container { width: 100%% !important; }
+                            .header-title { font-size: 24px !important; }
+                            .code-text { font-size: 28px !important; letter-spacing: 4px !important; }
+                            .content-padding { padding: 25px 15px !important; }
                         }
                     </style>
                 </head>
-                <body>
-                    <div class="email-wrapper">
-                        <div class="header">
-                            <h1>🎯 %s</h1>
-                            <p>E-Mail-Verifikation</p>
-                        </div>
-                        
-                        <div class="content">
-                            <p class="greeting">Hallo <strong>%s</strong>!</p>
-                            
-                            <p class="message">
-                                Willkommen bei %s! Um Ihre Registrierung abzuschließen, 
-                                geben Sie bitte den folgenden Verifikationscode ein:
-                            </p>
-                            
-                            <div class="code-container">
-                                <div class="code-label">Ihr Verifikationscode</div>
-                                <div class="code">%s</div>
-                            </div>
-                            
-                            <div class="info-box">
-                                <p>⏱️ Dieser Code ist nur 10 Minuten gültig</p>
-                            </div>
-                            
-                            <div class="security-tips">
-                                <h3>🔒 Sicherheitshinweise</h3>
-                                <ul>
-                                    <li>Verwenden Sie diesen Code nur auf unserer offiziellen Website</li>
-                                    <li>Teilen Sie diesen Code niemals mit anderen Personen</li>
-                                    <li>Unser Team wird Sie niemals nach diesem Code fragen</li>
-                                </ul>
-                            </div>
-                            
-                            <p class="message" style="margin-top: 25px;">
-                                Falls Sie sich nicht registriert haben, können Sie diese E-Mail 
-                                ignorieren. Ihr Konto wird nicht aktiviert.
-                            </p>
-                        </div>
-                        
-                        <div class="footer">
-                            <p><strong>© 2025 %s</strong></p>
-                            <p>Medizinisches Lernportal für Radiologie</p>
-                        </div>
-                    </div>
+                <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+                    <table width="100%%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+                        <tr>
+                            <td align="center">
+                                <table class="email-container" width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 600px;">
+                                    
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background: linear-gradient(135deg, #645CBB 0%%, #A084DC 100%%); padding: 35px 20px; text-align: center;">
+                                            <h1 class="header-title" style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">%s</h1>
+                                            <p style="margin: 8px 0 0 0; color: #ffffff; font-size: 15px; opacity: 0.95;">E-Mail-Verifikation</p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Content -->
+                                    <tr>
+                                        <td class="content-padding" style="padding: 35px 25px;">
+                                            <p style="margin: 0 0 18px 0; font-size: 17px; color: #333333;">
+                                                Hallo <strong style="color: #645CBB;">%s</strong>!
+                                            </p>
+                                            
+                                            <p style="margin: 0 0 25px 0; font-size: 15px; color: #666666; line-height: 1.6;">
+                                                Willkommen bei %s! Um Ihre Registrierung abzuschließen, 
+                                                geben Sie bitte den folgenden Verifikationscode ein:
+                                            </p>
+                                            
+                                            <!-- Code Box -->
+                                            <table width="100%%" cellpadding="0" cellspacing="0" style="margin: 25px 0;">
+                                                <tr>
+                                                    <td align="center" style="background-color: #f8f9ff; border: 3px dashed #645CBB; border-radius: 8px; padding: 25px 15px;">
+                                                        <p style="margin: 0 0 8px 0; font-size: 11px; color: #999999; text-transform: uppercase; letter-spacing: 1px;">
+                                                            Ihr Verifikationscode
+                                                        </p>
+                                                        <p class="code-text" style="margin: 0; font-size: 36px; font-weight: bold; color: #645CBB; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                                                            %s
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- Warning Box -->
+                                            <table width="100%%" cellpadding="0" cellspacing="0" style="margin: 25px 0;">
+                                                <tr>
+                                                    <td style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px;">
+                                                        <p style="margin: 0; font-size: 14px; color: #856404; font-weight: bold;">
+                                                            ⏱️ Dieser Code ist nur 10 Minuten gültig
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- Security Tips -->
+                                            <table width="100%%" cellpadding="0" cellspacing="0" style="margin: 25px 0; background-color: #f8f9fa; border-radius: 8px; padding: 20px;">
+                                                <tr>
+                                                    <td>
+                                                        <p style="margin: 0 0 12px 0; font-size: 16px; color: #333333; font-weight: bold;">
+                                                            🔒 Sicherheitshinweise
+                                                        </p>
+                                                        <p style="margin: 8px 0; font-size: 14px; color: #666666;">
+                                                            ✓ Verwenden Sie diesen Code nur auf unserer offiziellen Website
+                                                        </p>
+                                                        <p style="margin: 8px 0; font-size: 14px; color: #666666;">
+                                                            ✓ Teilen Sie diesen Code niemals mit anderen Personen
+                                                        </p>
+                                                        <p style="margin: 8px 0; font-size: 14px; color: #666666;">
+                                                            ✓ Unser Team wird Sie niemals nach diesem Code fragen
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <p style="margin: 25px 0 0 0; font-size: 14px; color: #999999; line-height: 1.6;">
+                                                Falls Sie sich nicht registriert haben, können Sie diese E-Mail 
+                                                ignorieren. Ihr Konto wird nicht aktiviert.
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e0e0e0;">
+                                            <p style="margin: 0; font-size: 14px; color: #333333; font-weight: bold;">
+                                                © 2025 %s
+                                            </p>
+                                            <p style="margin: 5px 0 0 0; font-size: 13px; color: #999999;">
+                                                Medizinisches Lernportal für Radiologie
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
                 </body>
                 </html>
                 """, appName, fullname, appName, verificationCode, appName);
     }
 
     /**
-     * ✅ Modern HTML template for welcome email
+     * ✅ Email-client-compatible HTML template for welcome email
      */
     private String createWelcomeEmailHtml(String fullname) {
         return String.format("""
                 <!DOCTYPE html>
-                <html lang="de">
+                <html>
                 <head>
                     <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>
-                        * { margin: 0; padding: 0; box-sizing: border-box; }
-                        body { 
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-                            line-height: 1.6;
-                            color: #1f2937;
-                            background-color: #f9fafb;
-                        }
-                        .email-wrapper {
-                            max-width: 600px;
-                            margin: 40px auto;
-                            background: white;
-                            border-radius: 16px;
-                            overflow: hidden;
-                            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                        }
-                        .header {
-                            background: linear-gradient(135deg, #645CBB 0%%, #A084DC 100%%);
-                            padding: 50px 20px;
-                            text-align: center;
-                            color: white;
-                        }
-                        .header h1 {
-                            font-size: 32px;
-                            font-weight: 800;
-                            margin-bottom: 8px;
-                        }
-                        .content {
-                            padding: 40px 30px;
-                        }
-                        .greeting {
-                            font-size: 18px;
-                            margin-bottom: 20px;
-                            color: #374151;
-                        }
-                        .greeting strong {
-                            color: #645CBB;
-                        }
-                        .message {
-                            font-size: 15px;
-                            color: #4b5563;
-                            margin-bottom: 30px;
-                            line-height: 1.7;
-                        }
-                        .features {
-                            background: #f9fafb;
-                            border-radius: 12px;
-                            padding: 25px;
-                            margin: 25px 0;
-                        }
-                        .features h3 {
-                            font-size: 16px;
-                            color: #374151;
-                            margin-bottom: 15px;
-                        }
-                        .features ul {
-                            list-style: none;
-                            padding: 0;
-                        }
-                        .features li {
-                            padding: 12px 0;
-                            padding-left: 35px;
-                            position: relative;
-                            font-size: 15px;
-                            color: #4b5563;
-                        }
-                        .features li:before {
-                            content: attr(data-icon);
-                            position: absolute;
-                            left: 0;
-                            font-size: 20px;
-                        }
-                        .cta-button {
-                            display: inline-block;
-                            background: linear-gradient(135deg, #645CBB, #A084DC);
-                            color: white;
-                            padding: 16px 40px;
-                            text-decoration: none;
-                            border-radius: 12px;
-                            font-weight: 700;
-                            font-size: 16px;
-                            margin: 25px 0;
-                            box-shadow: 0 4px 12px rgba(100,92,187,0.3);
-                        }
-                        .cta-container {
-                            text-align: center;
-                        }
-                        .footer {
-                            background: #f9fafb;
-                            padding: 30px;
-                            text-align: center;
-                            border-top: 1px solid #e5e7eb;
-                        }
-                        .footer p {
-                            font-size: 13px;
-                            color: #9ca3af;
-                            margin: 4px 0;
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0;">
+                    <style type="text/css">
+                        @media only screen and (max-width: 600px) {
+                            .email-container { width: 100%% !important; }
+                            .header-title { font-size: 26px !important; }
+                            .content-padding { padding: 30px 15px !important; }
+                            .cta-button { padding: 14px 30px !important; font-size: 15px !important; }
                         }
                     </style>
                 </head>
-                <body>
-                    <div class="email-wrapper">
-                        <div class="header">
-                            <h1>🎉 Willkommen bei %s!</h1>
-                        </div>
-                        
-                        <div class="content">
-                            <p class="greeting">Hallo <strong>%s</strong>!</p>
-                            
-                            <p class="message">
-                                Ihre Registrierung war erfolgreich! Wir freuen uns, Sie in unserer 
-                                Lern-Community begrüßen zu dürfen.
-                            </p>
-                            
-                            <div class="features">
-                                <h3>Das erwartet Sie bei %s:</h3>
-                                <ul>
-                                    <li data-icon="🎯">Interaktive Radiologie-Quizzes für alle Schwierigkeitsgrade</li>
-                                    <li data-icon="📊">Detailliertes Fortschritts-Tracking und Statistiken</li>
-                                    <li data-icon="🏆">Achievements und Lernziele für zusätzliche Motivation</li>
-                                    <li data-icon="📚">Expertenwissen in Röntgen, CT, MRT und Ultraschall</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="cta-container">
-                                <a href="%s" class="cta-button">Jetzt loslegen! 🚀</a>
-                            </div>
-                            
-                            <p class="message" style="margin-top: 30px;">
-                                Bei Fragen oder Problemen stehen wir Ihnen jederzeit zur Verfügung. 
-                                Viel Erfolg beim Lernen!
-                            </p>
-                        </div>
-                        
-                        <div class="footer">
-                            <p><strong>© 2025 %s</strong></p>
-                            <p>Medizinisches Lernportal für Radiologie</p>
-                        </div>
-                    </div>
+                <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+                    <table width="100%%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+                        <tr>
+                            <td align="center">
+                                <table class="email-container" width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 600px;">
+                                    
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background: linear-gradient(135deg, #645CBB 0%%, #A084DC 100%%); padding: 40px 20px; text-align: center;">
+                                            <h1 class="header-title" style="margin: 0; color: #ffffff; font-size: 30px; font-weight: bold;">
+                                                Willkommen bei %s!
+                                            </h1>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Content -->
+                                    <tr>
+                                        <td class="content-padding" style="padding: 35px 25px;">
+                                            <p style="margin: 0 0 18px 0; font-size: 17px; color: #333333;">
+                                                Hallo <strong style="color: #645CBB;">%s</strong>!
+                                            </p>
+                                            
+                                            <p style="margin: 0 0 25px 0; font-size: 15px; color: #666666; line-height: 1.6;">
+                                                Ihre Registrierung war erfolgreich! Wir freuen uns, Sie in unserer 
+                                                Lern-Community begrüßen zu dürfen.
+                                            </p>
+                                            
+                                            <!-- Features Box -->
+                                            <table width="100%%" cellpadding="0" cellspacing="0" style="margin: 20px 0; background-color: #f8f9fa; border-radius: 8px; padding: 20px 15px;">
+                                                <tr>
+                                                    <td>
+                                                        <p style="margin: 0 0 12px 0; font-size: 16px; color: #333333; font-weight: bold;">
+                                                            Das erwartet Sie bei %s:
+                                                        </p>
+                                                        <p style="margin: 10px 0; font-size: 14px; color: #666666; line-height: 1.5;">
+                                                            🎯 Interaktive Radiologie-Quizzes für alle Schwierigkeitsgrade
+                                                        </p>
+                                                        <p style="margin: 10px 0; font-size: 14px; color: #666666; line-height: 1.5;">
+                                                            📊 Detailliertes Fortschritts-Tracking und Statistiken
+                                                        </p>
+                                                        <p style="margin: 10px 0; font-size: 14px; color: #666666; line-height: 1.5;">
+                                                            🏆 Achievements und Lernziele für zusätzliche Motivation
+                                                        </p>
+                                                        <p style="margin: 10px 0; font-size: 14px; color: #666666; line-height: 1.5;">
+                                                            📚 Expertenwissen in Röntgen, CT, MRT und Ultraschall
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- CTA Button -->
+                                            <table width="100%%" cellpadding="0" cellspacing="0" style="margin: 25px 0;">
+                                                <tr>
+                                                    <td align="center">
+                                                        <a href="%s" class="cta-button" style="display: inline-block; background: linear-gradient(135deg, #645CBB, #A084DC); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                                                            Jetzt loslegen!
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <p style="margin: 30px 0 0 0; font-size: 15px; color: #666666; line-height: 1.6;">
+                                                Bei Fragen oder Problemen stehen wir Ihnen jederzeit zur Verfügung. 
+                                                Viel Erfolg beim Lernen!
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e0e0e0;">
+                                            <p style="margin: 0; font-size: 14px; color: #333333; font-weight: bold;">
+                                                © 2025 %s
+                                            </p>
+                                            <p style="margin: 5px 0 0 0; font-size: 13px; color: #999999;">
+                                                Medizinisches Lernportal für Radiologie
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
                 </body>
                 </html>
                 """, appName, fullname, appName, baseUrl, appName);
     }
 
     /**
-     * ✅ Modern HTML template for password reset email
+     * ✅ Email-client-compatible HTML template for password reset email
      */
     private String createPasswordResetEmailHtml(String fullname, String resetUrl) {
         return String.format("""
                 <!DOCTYPE html>
-                <html lang="de">
+                <html>
                 <head>
                     <meta charset="UTF-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <style>
-                        * { margin: 0; padding: 0; box-sizing: border-box; }
-                        body { 
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-                            line-height: 1.6;
-                            color: #1f2937;
-                            background-color: #f9fafb;
-                        }
-                        .email-wrapper {
-                            max-width: 600px;
-                            margin: 40px auto;
-                            background: white;
-                            border-radius: 16px;
-                            overflow: hidden;
-                            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                        }
-                        .header {
-                            background: linear-gradient(135deg, #dc2626 0%%, #ef4444 100%%);
-                            padding: 40px 20px;
-                            text-align: center;
-                            color: white;
-                        }
-                        .header h1 {
-                            font-size: 28px;
-                            font-weight: 800;
-                            margin-bottom: 8px;
-                        }
-                        .content {
-                            padding: 40px 30px;
-                        }
-                        .greeting {
-                            font-size: 18px;
-                            margin-bottom: 20px;
-                            color: #374151;
-                        }
-                        .greeting strong {
-                            color: #dc2626;
-                        }
-                        .message {
-                            font-size: 15px;
-                            color: #4b5563;
-                            margin-bottom: 30px;
-                            line-height: 1.7;
-                        }
-                        .cta-button {
-                            display: inline-block;
-                            background: linear-gradient(135deg, #dc2626, #ef4444);
-                            color: white;
-                            padding: 16px 40px;
-                            text-decoration: none;
-                            border-radius: 12px;
-                            font-weight: 700;
-                            font-size: 16px;
-                            margin: 25px 0;
-                            box-shadow: 0 4px 12px rgba(220,38,38,0.3);
-                        }
-                        .cta-container {
-                            text-align: center;
-                        }
-                        .info-box {
-                            background: #fef3c7;
-                            border-left: 4px solid #f59e0b;
-                            padding: 16px;
-                            border-radius: 8px;
-                            margin: 25px 0;
-                        }
-                        .info-box p {
-                            font-size: 14px;
-                            color: #92400e;
-                            margin: 0;
-                            font-weight: 600;
-                        }
-                        .security-tips {
-                            background: #fee2e2;
-                            border-radius: 8px;
-                            padding: 20px;
-                            margin: 25px 0;
-                        }
-                        .security-tips h3 {
-                            font-size: 16px;
-                            color: #7f1d1d;
-                            margin-bottom: 12px;
-                        }
-                        .security-tips ul {
-                            list-style: none;
-                            padding: 0;
-                        }
-                        .security-tips li {
-                            padding: 8px 0;
-                            padding-left: 24px;
-                            position: relative;
-                            font-size: 14px;
-                            color: #991b1b;
-                        }
-                        .security-tips li:before {
-                            content: "⚠️";
-                            position: absolute;
-                            left: 0;
-                        }
-                        .footer {
-                            background: #f9fafb;
-                            padding: 30px;
-                            text-align: center;
-                            border-top: 1px solid #e5e7eb;
-                        }
-                        .footer p {
-                            font-size: 13px;
-                            color: #9ca3af;
-                            margin: 4px 0;
+                    <style type="text/css">
+                        @media only screen and (max-width: 600px) {
+                            .email-container { width: 100%% !important; }
+                            .header-title { font-size: 24px !important; }
+                            .content-padding { padding: 30px 15px !important; }
+                            .cta-button { padding: 14px 30px !important; font-size: 15px !important; }
                         }
                     </style>
                 </head>
-                <body>
-                    <div class="email-wrapper">
-                        <div class="header">
-                            <h1>🔒 Passwort zurücksetzen</h1>
-                        </div>
-                        
-                        <div class="content">
-                            <p class="greeting">Hallo <strong>%s</strong>!</p>
-                            
-                            <p class="message">
-                                Sie haben eine Passwort-Zurücksetzung für Ihr %s-Konto angefordert. 
-                                Klicken Sie auf den Button unten, um ein neues Passwort zu setzen:
-                            </p>
-                            
-                            <div class="cta-container">
-                                <a href="%s" class="cta-button">Neues Passwort setzen</a>
-                            </div>
-                            
-                            <div class="info-box">
-                                <p>⏱️ Dieser Link ist nur 30 Minuten gültig</p>
-                            </div>
-                            
-                            <div class="security-tips">
-                                <h3>🔒 Sicherheitshinweise</h3>
-                                <ul>
-                                    <li>Falls Sie keine Zurücksetzung angefordert haben, ignorieren Sie diese E-Mail</li>
-                                    <li>Teilen Sie diesen Link niemals mit anderen Personen</li>
-                                    <li>Nach 30 Minuten müssen Sie eine neue Anfrage stellen</li>
-                                    <li>Bei verdächtigen Aktivitäten kontaktieren Sie uns sofort</li>
-                                </ul>
-                            </div>
-                            
-                            <p class="message" style="margin-top: 25px; color: #6b7280; font-size: 14px;">
-                                <em>Wenn der Button nicht funktioniert, kopieren Sie diesen Link in Ihren Browser:</em><br>
-                                <a href="%s" style="color: #645CBB; word-break: break-all;">%s</a>
-                            </p>
-                        </div>
-                        
-                        <div class="footer">
-                            <p><strong>© 2025 %s</strong></p>
-                            <p>Medizinisches Lernportal für Radiologie</p>
-                        </div>
-                    </div>
+                <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+                    <table width="100%%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 20px 0;">
+                        <tr>
+                            <td align="center">
+                                <table class="email-container" width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 600px;">
+                                    
+                                    <!-- Header -->
+                                    <tr>
+                                        <td style="background: linear-gradient(135deg, #dc2626 0%%, #ef4444 100%%); padding: 35px 20px; text-align: center;">
+                                            <h1 class="header-title" style="margin: 0; color: #ffffff; font-size: 26px; font-weight: bold;">
+                                                Passwort zurücksetzen
+                                            </h1>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Content -->
+                                    <tr>
+                                        <td class="content-padding" style="padding: 35px 25px;">
+                                            <p style="margin: 0 0 18px 0; font-size: 17px; color: #333333;">
+                                                Hallo <strong style="color: #dc2626;">%s</strong>!
+                                            </p>
+                                            
+                                            <p style="margin: 0 0 25px 0; font-size: 15px; color: #666666; line-height: 1.6;">
+                                                Sie haben eine Passwort-Zurücksetzung für Ihr %s-Konto angefordert. 
+                                                Klicken Sie auf den Button unten, um ein neues Passwort zu setzen:
+                                            </p>
+                                            
+                                            <!-- CTA Button -->
+                                            <table width="100%%" cellpadding="0" cellspacing="0" style="margin: 25px 0;">
+                                                <tr>
+                                                    <td align="center">
+                                                        <a href="%s" class="cta-button" style="display: inline-block; background: linear-gradient(135deg, #dc2626, #ef4444); color: #ffffff; padding: 16px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                                                            Neues Passwort setzen
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- Warning Box -->
+                                            <table width="100%%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
+                                                <tr>
+                                                    <td style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; border-radius: 4px;">
+                                                        <p style="margin: 0; font-size: 13px; color: #856404; font-weight: bold;">
+                                                            ⏱️ Dieser Link ist nur 30 Minuten gültig
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <!-- Security Tips -->
+                                            <table width="100%%" cellpadding="0" cellspacing="0" style="margin: 20px 0; background-color: #fee2e2; border-radius: 8px; padding: 15px;">
+                                                <tr>
+                                                    <td>
+                                                        <p style="margin: 0 0 10px 0; font-size: 15px; color: #7f1d1d; font-weight: bold;">
+                                                            🔒 Sicherheitshinweise
+                                                        </p>
+                                                        <p style="margin: 7px 0; font-size: 13px; color: #991b1b; line-height: 1.4;">
+                                                            ⚠️ Falls Sie keine Zurücksetzung angefordert haben, ignorieren Sie diese E-Mail
+                                                        </p>
+                                                        <p style="margin: 7px 0; font-size: 13px; color: #991b1b; line-height: 1.4;">
+                                                            ⚠️ Teilen Sie diesen Link niemals mit anderen Personen
+                                                        </p>
+                                                        <p style="margin: 7px 0; font-size: 13px; color: #991b1b; line-height: 1.4;">
+                                                            ⚠️ Nach 30 Minuten müssen Sie eine neue Anfrage stellen
+                                                        </p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            
+                                            <p style="margin: 25px 0 0 0; font-size: 14px; color: #999999; line-height: 1.6;">
+                                                <em>Wenn der Button nicht funktioniert, kopieren Sie diesen Link in Ihren Browser:</em><br>
+                                                <a href="%s" style="color: #645CBB; word-break: break-all;">%s</a>
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    
+                                    <!-- Footer -->
+                                    <tr>
+                                        <td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e0e0e0;">
+                                            <p style="margin: 0; font-size: 14px; color: #333333; font-weight: bold;">
+                                                © 2025 %s
+                                            </p>
+                                            <p style="margin: 5px 0 0 0; font-size: 13px; color: #999999;">
+                                                Medizinisches Lernportal für Radiologie
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
                 </body>
                 </html>
                 """, fullname, appName, resetUrl, resetUrl, resetUrl, appName);

@@ -11,8 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Admin Question Controller
+ * Handles CRUD operations for quiz questions
+ */
 @RestController
-@RequestMapping("/api/admin/questions") // Pfad an Frontend angepasst
+@RequestMapping("/api/admin/questions")
 @CrossOrigin(origins = "*")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminQuestionController {
@@ -20,67 +24,168 @@ public class AdminQuestionController {
     @Autowired
     private QuestionService questionService;
 
+    /**
+     * Create a new question
+     * POST /api/admin/questions
+     */
     @PostMapping
     public ResponseEntity<?> createQuestion(@RequestBody Map<String, Object> request) {
         try {
-            // Validierung
-            if (request.get("quizId") == null) return ResponseEntity.badRequest().body("quizId fehlt");
+            // Validation
+            if (request.get("quizId") == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "quizId fehlt"));
+            }
+            if (request.get("text") == null || request.get("text").toString().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "text darf nicht leer sein"));
+            }
 
             Long quizId = Long.valueOf(request.get("quizId").toString());
-            QuestionType qtype = QuestionType.valueOf(request.get("qtype").toString());
-            String text = request.get("text").toString();
+            String qtypeStr = request.get("qtype") != null ? request.get("qtype").toString() : "MULTIPLE_CHOICE";
+            QuestionType qtype = QuestionType.valueOf(qtypeStr);
+            String text = request.get("text").toString().trim();
             String auxText = request.get("auxText") != null ? request.get("auxText").toString() : "";
 
             Question question = questionService.createQuestion(quizId, qtype, text, auxText);
 
             Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
             response.put("id", question.getId());
+            response.put("message", "Question created successfully");
+
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
+
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "Internal server error: " + e.getMessage()));
         }
     }
 
+    /**
+     * Update a question
+     * PUT /api/admin/questions/{id}
+     */
     @PutMapping("/{id}")
     public ResponseEntity<?> updateQuestion(@PathVariable Long id, @RequestBody Map<String, Object> request) {
         try {
-            // 1. Debug-Log: Was kommt an?
-            System.out.println("DEBUG: Eingehendes Update für ID: " + id);
-
-            // 2. Suche die Frage
+            // Find the question
             Question question = questionService.findById(id).orElse(null);
 
             if (question == null) {
-                System.err.println("KRITISCH: ID " + id + " nicht in DB gefunden!");
                 return ResponseEntity.status(404).body(Map.of(
-                        "error", "Question not found in Database",
+                        "error", "Question not found",
                         "requestedId", id,
-                        "hint", "Bitte Seite neu laden (F5), die ID ist veraltet."
+                        "hint", "Die Frage existiert nicht mehr. Bitte Seite neu laden."
                 ));
             }
 
-            // 3. Felder aktualisieren
+            // Update text if provided
             if (request.containsKey("text")) {
-                question.setText(request.get("text").toString());
+                String newText = request.get("text").toString().trim();
+                if (newText.isEmpty()) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "text darf nicht leer sein"));
+                }
+                question.setText(newText);
             }
 
+            // Update type if provided
             if (request.containsKey("qtype")) {
                 try {
-                    String typeStr = request.get("qtype").toString().toUpperCase().replace(" ", "_");
+                    String typeStr = request.get("qtype").toString()
+                            .toUpperCase()
+                            .replace(" ", "_")
+                            .replace("-", "_");
                     question.setQtype(QuestionType.valueOf(typeStr));
-                } catch (Exception e) {
-                    System.out.println("QType Mapping fehlgeschlagen, behalte alten Wert.");
+                } catch (IllegalArgumentException e) {
+                    // If invalid type, keep the old value
+                    System.out.println("Invalid question type provided, keeping old value");
                 }
             }
 
-            // 4. Speichern
-            questionService.save(question);
+            // Update auxText if provided
+            if (request.containsKey("auxText")) {
+                question.setAuxText(request.get("auxText").toString());
+            }
 
-            return ResponseEntity.ok(Map.of("success", true));
+            // Save the question
+            Question updated = questionService.save(question);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Question updated successfully",
+                    "id", updated.getId()
+            ));
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("error", "Interner Fehler: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Internal server error: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Delete a question
+     * DELETE /api/admin/questions/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteQuestion(@PathVariable Long id) {
+        try {
+            // Check if question exists
+            Question question = questionService.findById(id).orElse(null);
+
+            if (question == null) {
+                return ResponseEntity.status(404).body(Map.of(
+                        "error", "Question not found",
+                        "requestedId", id
+                ));
+            }
+
+            // Delete the question (this should also cascade delete choices)
+            questionService.deleteById(id);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Question deleted successfully"
+            ));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Failed to delete question: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Get a single question by ID
+     * GET /api/admin/questions/{id}
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getQuestion(@PathVariable Long id) {
+        try {
+            Question question = questionService.findById(id).orElse(null);
+
+            if (question == null) {
+                return ResponseEntity.status(404).body(Map.of(
+                        "error", "Question not found",
+                        "requestedId", id
+                ));
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", question.getId());
+            response.put("text", question.getText());
+            response.put("qtype", question.getQtype().toString());
+            response.put("auxText", question.getAuxText());
+            response.put("position", question.getPosition());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Internal server error: " + e.getMessage()
+            ));
         }
     }
 }

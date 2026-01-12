@@ -31,7 +31,7 @@
         .choice.single.selected .choice-indicator::after { border-radius: 50%; }
         .choice-text { flex: 1; color: #333; font-size: 1.05em; }
         .nav-buttons { display: flex; justify-content: space-between; gap: 15px; }
-        .btn { padding: 14px 28px; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn { padding: 14px 28px; border: none; border-radius: 10px; font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s; text-align: center; }
         .btn-prev { background: #f5f5f5; color: #666; }
         .btn-prev:hover { background: #e0e0e0; }
         .btn-prev:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -58,6 +58,11 @@
         .loading-state { background: white; padding: 60px 40px; border-radius: 16px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
         .spinner { width: 50px; height: 50px; border: 4px solid #e0e0e0; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .auth-error-card { background: white; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .auth-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 25px; }
+        .btn-login { background: #667eea; color: white; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 600; }
+        .btn-register { background: #764ba2; color: white; text-decoration: none; padding: 14px 28px; border-radius: 10px; font-weight: 600; }
+
         @media (max-width: 640px) {
             body { padding: 10px; }
             .quiz-header, .question-card, .results-card { padding: 20px; }
@@ -67,6 +72,7 @@
             .score-display { font-size: 3em; }
             .nav-buttons { flex-direction: column; }
             .btn-next { order: -1; }
+            .auth-buttons { flex-direction: column; }
         }
     </style>
 </head>
@@ -94,32 +100,86 @@
     let answers = {};
 
     document.addEventListener('DOMContentLoaded', async () => {
+        console.log('🎯 Quiz page loaded');
+        console.log('Quiz ID:', quizId);
+
+        // ✅ FIX: Use window.auth.isLoggedIn() instead of localStorage check
+        if (!window.auth || !window.auth.isLoggedIn()) {
+            console.log('❌ User not logged in');
+            showLoginRequired();
+            return;
+        }
+
+        console.log('✅ User is logged in');
+
         if (!quizId) {
             alert('Keine Quiz-ID angegeben');
             window.location.href = '/quiz/quizzes.html';
             return;
         }
+
         await loadQuiz();
     });
 
+    function showLoginRequired() {
+        document.getElementById('loadingState').style.display = 'none';
+        const content = document.getElementById('quizContent');
+        content.style.display = 'block';
+
+        content.innerHTML = `
+            <div class="auth-error-card">
+                <div style="font-size: 4em; margin-bottom: 20px;">🔒</div>
+                <h2 style="color: #333; margin-bottom: 10px;">Anmeldung erforderlich</h2>
+                <p style="color: #666;">Du musst eingeloggt sein, um dieses Quiz zu absolvieren und deine Ergebnisse zu speichern.</p>
+                <div class="auth-buttons">
+                    <a href="/auth/login.html" class="btn-login">Anmelden</a>
+                    <a href="/auth/register.html" class="btn-register">Registrieren</a>
+                </div>
+                <p style="margin-top: 25px;">
+                    <a href="/quiz/quizzes.html" style="color: #667eea; text-decoration: none; font-weight: 500;">← Zurück zur Übersicht</a>
+                </p>
+            </div>
+        `;
+    }
+
     async function loadQuiz() {
         try {
-            const response = await fetch(`${API_BASE}/quizzes/${quizId}`);
-            if (!response.ok) throw new Error('Quiz konnte nicht geladen werden');
+            console.log('📥 Loading quiz...', quizId);
+
+            // ✅ FIX: Use authFetch instead of regular fetch
+            const response = await window.auth.authFetch(`${API_BASE}/quizzes/${quizId}`);
+
+            console.log('Response status:', response.status);
+
+            if (!response.ok) {
+                throw new Error('Quiz konnte nicht geladen werden (HTTP ' + response.status + ')');
+            }
+
             const data = await response.json();
+            console.log('Quiz data:', data);
+
+            // Handle wrapped response
             quiz = data.data || data;
             questions = quiz.questions || [];
-            if (questions.length === 0) throw new Error('Dieses Quiz enthält keine Fragen');
+
+            console.log('Quiz:', quiz.title);
+            console.log('Questions:', questions.length);
+
+            if (questions.length === 0) {
+                throw new Error('Dieses Quiz enthält keine Fragen');
+            }
+
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('quizContent').style.display = 'block';
             showQuestion();
+
         } catch (error) {
-            console.error('Error loading quiz:', error);
+            console.error('❌ Error loading quiz:', error);
             document.getElementById('loadingState').innerHTML = `
-                <div style="color: #f44336;">
+                <div style="color: #f44336; padding: 40px; background: white; border-radius: 16px;">
                     <h2 style="margin-bottom: 10px;">Fehler beim Laden</h2>
                     <p>${error.message}</p>
-                    <button onclick="window.location.href='/quiz/quizzes.html'" class="btn btn-next" style="margin-top: 20px;">
+                    <button onclick="window.location.href='/quiz/quizzes.html'" class="btn btn-next" style="margin-top: 20px; max-width: 300px;">
                         Zurück zur Übersicht
                     </button>
                 </div>
@@ -129,8 +189,9 @@
 
     function showQuestion() {
         const question = questions[currentQuestionIndex];
-        const isMultiple = question.qtype === 'MULTIPLE';
+        const isMultiple = question.qtype === 'MULTIPLE' || question.qtype === 'MULTIPLE_CHOICE';
         const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+
         const html = `
             <div class="quiz-header">
                 <h1 class="quiz-title">${escapeHtml(quiz.title)}</h1>
@@ -172,7 +233,7 @@
             <div class="choice ${isMultiple ? 'multiple' : 'single'} ${isSelected ? 'selected' : ''}"
                  onclick="selectChoice(${questionId}, ${choice.id}, ${isMultiple})">
                 <div class="choice-indicator"></div>
-                <div class="choice-text">${escapeHtml(choice.text)}</div>
+                <div class="choice-text">${escapeHtml(choice.text || choice.choiceText || '')}</div>
             </div>
         `;
     }
@@ -207,6 +268,9 @@
     }
 
     async function submitQuiz() {
+        console.log('📤 Submitting quiz...');
+        console.log('Answers:', answers);
+
         let correct = 0;
         let total = questions.length;
         const reviewItems = questions.map((question, index) => {
@@ -217,15 +281,26 @@
         });
         const score = Math.round((correct / total) * 100);
 
+        console.log('Score:', score, `(${correct}/${total})`);
+
+        // Save to server
         try {
-            await window.auth?.authFetch(`${API_BASE}/quizzes/${quizId}/submit`, {
+            console.log('💾 Saving to server...');
+            const response = await window.auth.authFetch(`${API_BASE}/quizzes/${quizId}/submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ answers })
             });
+
+            if (response.ok) {
+                console.log('✅ Saved to server!');
+            } else {
+                console.warn('⚠️ Server save failed:', response.status);
+            }
         } catch (error) {
-            console.error('Error submitting quiz:', error);
+            console.error('❌ Error submitting quiz to server:', error);
         }
+
         showResults(score, correct, total, reviewItems);
     }
 
@@ -235,7 +310,10 @@
             return choice.isCorrect === true || choice.isCorrect === 1 ||
                 choice.is_correct === true || choice.is_correct === 1;
         };
-        if (question.qtype === 'MULTIPLE') {
+
+        const qtype = question.qtype;
+
+        if (qtype === 'MULTIPLE' || qtype === 'MULTIPLE_CHOICE') {
             const correctChoices = question.choices.filter(c => isChoiceCorrect(c));
             const userChoices = userAnswer || [];
             const allCorrectSelected = correctChoices.every(c => userChoices.includes(c.id));
@@ -252,11 +330,7 @@
     }
 
     function showResults(score, correct, total, reviewItems) {
-        let message = '';
-        if (score >= 90) message = 'Hervorragend!';
-        else if (score >= 75) message = 'Sehr gut!';
-        else if (score >= 60) message = 'Gut gemacht!';
-        else message = 'Weiter üben!';
+        let message = score >= 90 ? 'Hervorragend!' : score >= 75 ? 'Sehr gut!' : score >= 60 ? 'Gut gemacht!' : 'Weiter üben!';
 
         const html = `
             <div class="results-card">
@@ -281,8 +355,7 @@
     function renderReview(items) {
         const isChoiceCorrect = (choice) => {
             if (!choice) return false;
-            return choice.isCorrect === true || choice.isCorrect === 1 ||
-                choice.is_correct === true || choice.is_correct === 1;
+            return choice.isCorrect === true || choice.isCorrect === 1 || choice.is_correct === true || choice.is_correct === 1;
         };
         return `
             <div class="review-section">
@@ -293,22 +366,26 @@
             const isCorrect = item.isCorrect;
             let userAnswerText = 'Keine Antwort';
             let correctAnswerText = '';
-            if (question.qtype === 'MULTIPLE') {
+
+            const qtype = question.qtype;
+
+            if (qtype === 'MULTIPLE' || qtype === 'MULTIPLE_CHOICE') {
                 const correctChoices = question.choices.filter(c => isChoiceCorrect(c));
                 const userChoices = userAnswer || [];
                 userAnswerText = userChoices.map(id => {
                     const choice = question.choices.find(c => c.id === id);
-                    return choice ? choice.text : 'N/A';
+                    return choice ? (choice.text || choice.choiceText) : 'N/A';
                 }).join(', ') || 'Keine Antwort';
-                correctAnswerText = correctChoices.map(c => c.text).join(', ');
+                correctAnswerText = correctChoices.map(c => c.text || c.choiceText).join(', ');
             } else {
                 if (userAnswer) {
                     const choice = question.choices?.find(c => c.id === userAnswer);
-                    userAnswerText = choice ? choice.text : 'N/A';
+                    userAnswerText = choice ? (choice.text || choice.choiceText) : 'N/A';
                 }
                 const correctChoice = question.choices?.find(c => isChoiceCorrect(c));
-                correctAnswerText = correctChoice ? correctChoice.text : 'Keine richtige Antwort gefunden';
+                correctAnswerText = correctChoice ? (correctChoice.text || correctChoice.choiceText) : 'Keine richtige Antwort gefunden';
             }
+
             return `
                         <div class="review-item ${isCorrect ? 'correct' : 'incorrect'}">
                             <div class="review-header">
